@@ -2,19 +2,32 @@
 // - Accepts multipart/form-data with fields: files[] (audio file), duration_sec, goal
 // - Transcribes with Whisper
 // - Asks GPT for structured JSON feedback
-// - Returns JSON
+// - Returns JSON (falls back to friendly message if audio empty/too short)
 //
 // ENV: set OPENAI_API_KEY in Vercel (Project → Settings → Environment Variables)
 
-const { toFile } = require('openai/uploads');
-
 const { readFile } = require('fs/promises');
+const { IncomingForm } = require('formidable');
 const OpenAI = require('openai');
+const { toFile } = require('openai/uploads');
 
 function cors(res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST,GET,OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+}
+
+function fallbackJSON(msg) {
+  return {
+    fallback: true,
+    cefr_estimate: '—',
+    rationale: msg,
+    fluency: { wpm: 0, fillers: 0, note: 'No speech detected.' },
+    grammar_issues: [],
+    pronunciation: [],
+    one_thing_to_fix: 'Speak for at least 30–60 seconds in full sentences.',
+    next_prompt: 'Describe your last weekend in 45 seconds.'
+  };
 }
 
 module.exports = async (req, res) => {
@@ -33,38 +46,48 @@ module.exports = async (req, res) => {
   }
 
   try {
-    // ---- 1) Parse multipart/form-data with formidable (ESM-safe)
-    const mod = await import('formidable'); // ESM default
-    const formidable = mod.formidable || mod.default || mod; // handle both shapes
-    const form = formidable({
-      multiples: true,
-      keepExtensions: true,
-      // accept only audio parts (optional)
-      filter: part => (part.mimetype || '').startsWith('audio/')
-    });
-
+    // ---- 1) Parse multipart form
     const { fields, files } = await new Promise((resolve, reject) => {
-      form.parse(req, (err, flds, fls) => (err ? reject(err) : resolve({ fields: flds, files: fls })));
+      const form = new IncomingForm({ multiples: true, keepExtensions: true });
+      form.parse(req, (err, flds, fls) =>
+        err ? reject(err) : resolve({ fields: flds, files: fls })
+      );
     });
 
-    // Accept either files[] or audio/file, array or single
+    // Accept either files[] or audio/file
     const pick = (obj, keys) => keys.map(k => obj?.[k]).find(Boolean);
-    let f =
+    let fileEntry =
       pick(files, ['files[]', 'file', 'audio']) ||
       (Array.isArray(files) && files.length ? files[0] : null);
 
-    if (Array.isArray(f)) f = f[0];
-    if (!f) return res.status(400).json({ ok: false, error: 'No audio file found (expected files[]/audio/file).' });
+    fileEntry = Array.isArray(fileEntry) ? fileEntry[0] : fileEntry || {};
 
-    const filepath = f.filepath || f.file?.filepath || f.tempFilePath;
-    if (!filepath) return res.status(400).json({ ok: false, error: 'Upload missing filepath.' });
+    if (!fileEntry.filepath) {
+      return res
+        .status(200)
+        .json(fallbackJSON('We didn’t receive any audio. Please try again.'));
+    }
 
-    const filename = f.originalFilename || f.newFilename || f.name || 'audio.webm';
-    const mimetype = f.mimetype || f.type || 'audio/webm';
-    const buffer = await readFile(filepath);
+    const buffer = await readFile(fileEntry.filepath);
+    const filename = fileEntry.originalFilename || 'audio.webm';
+    const mimetype = fileEntry.mimetype || 'audio/webm';
 
-    const durationSec = parseFloat(fields?.duration_sec || fields?.duration || '0') || 0;
-    const goal = (fields?.goal || '').toString().trim() || 'General English';
+    // Quick sanity check: empty / almost empty
+    const size = buffer?.length || 0;
+    if (size < 2000) {
+      return res
+        .status(200)
+        .json(
+          fallbackJSON(
+            `The audio looked too short to analyze (${size} bytes). Try again closer to the mic.`
+          )
+        );
+    }
+
+    const goal =
+      (fields.goal || '').toString().trim() || 'General English';
+    const durationSec =
+      parseFloat(fields.duration_sec || fields.duration || '0') || 0;
 
     // ---- 2) Transcribe with Whisper
     const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
@@ -73,12 +96,20 @@ module.exports = async (req, res) => {
     const tr = await openai.audio.transcriptions.create({
       file: fileForOpenAI,
       model: 'whisper-1',
-      // language: 'en', // optional
+      // language: 'en', // uncomment if you want to force English
     });
 
     const transcript = (tr?.text || '').trim();
-    if (!transcript) {
-      return res.status(400).json({ ok: false, error: 'Transcription empty.' });
+    const words = transcript ? transcript.split(/\s+/).filter(Boolean).length : 0;
+
+    if (!transcript || words < 3) {
+      return res
+        .status(200)
+        .json(
+          fallbackJSON(
+            'We didn’t catch enough speech to analyze. Please speak for 30–60 seconds in full sentences.'
+          )
+        );
     }
 
     // ---- 3) Ask GPT for compact JSON feedback
@@ -107,20 +138,32 @@ No markdown, no code fences, no extra text.
         { role: 'system', content: system },
         { role: 'user', content: user },
       ],
-      temperature: 0.25,
+      temperature: 0.3,
     });
 
+    const raw = completion.choices?.[0]?.message?.content || '{}';
+
+    // Validate it's JSON
     let json;
     try {
-      json = JSON.parse(completion.choices?.[0]?.message?.content || '{}');
+      json = JSON.parse(raw);
     } catch {
-      return res.status(500).json({ ok: false, error: 'Model did not return JSON' });
+      // Friendly fallback if the model failed to return JSON
+      return res
+        .status(200)
+        .json(
+          fallbackJSON(
+            'I couldn’t build your feedback this time. Please try another recording.'
+          )
+        );
     }
 
     // ---- 4) Return feedback JSON
     return res.status(200).json(json);
   } catch (err) {
     console.error('analyze error:', err);
-    return res.status(500).json({ ok: false, error: err.message || 'Server error' });
+    return res
+      .status(500)
+      .json({ ok: false, error: err.message || 'Server error' });
   }
 };
