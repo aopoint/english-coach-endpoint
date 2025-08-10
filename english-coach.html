@@ -1,440 +1,463 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>English Coach — Instant Feedback</title>
-  <meta name="theme-color" content="#191919" />
-  <style>
-    :root{
-      --bg:#191919;
-      --panel:#1f1f1f;
-      --panel-2:#232323;
-      --muted:#8b8b8b;
-      --text:#f5f5f5;
-      --primary:#4E0A7A;
-      --primary-2:#7f3bb6;
-      --ok:#22c55e;
-      --ring:rgba(78,10,122,.35);
-      --chip:#262626;
-      --card:#151515;
-      --shadow:0 10px 30px rgba(0,0,0,.35);
-      --radius:16px;
-    }
-    *{box-sizing:border-box}
-    html,body{height:100%}
-    body{
-      margin:0;
-      background:var(--bg);
-      color:var(--text);
-      font:16px/1.45 "Avenir Next", "Avenir", -apple-system, BlinkMacSystemFont, "Segoe UI",
-            Roboto, Oxygen, Ubuntu, Cantarell, "Helvetica Neue", Arial, "Apple Color Emoji",
-            "Segoe UI Emoji", "Segoe UI Symbol", sans-serif;
-    }
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>English Coach — Instant English Feedback</title>
+<meta name="description" content="Record 60–90 seconds and get instant English feedback: level, key corrections, and your next prompt." />
 
-    /* Header */
-    header{
-      position:sticky; top:0; z-index:10;
-      display:flex; align-items:center; gap:14px;
-      padding:14px 18px;
-      background:
-        radial-gradient(1200px 600px at 15% -20%, rgba(78,10,122,.25), transparent 55%),
-        radial-gradient(1000px 500px at 90% -10%, rgba(78,10,122,.18), transparent 60%),
-        var(--bg);
-      border-bottom:1px solid #202020;
-      backdrop-filter:saturate(120%) blur(6px);
-    }
-    .brand{font-size:22px; font-weight:800; letter-spacing:.2px}
-    .tag{
-      background:linear-gradient(135deg, var(--primary), var(--primary-2));
-      color:#fff; padding:6px 10px; border-radius:999px; font-weight:700; font-size:12px;
-      box-shadow:0 4px 16px rgba(78,10,122,.45);
-    }
-    .api-box{margin-left:auto; display:flex; gap:8px; align-items:center}
-    .api-box input{
-      width:min(56vw,520px); max-width:75vw;
-      background:#101010; color:#ddd; border:1px solid #2a2a2a; outline:none;
-      padding:10px 12px; border-radius:10px;
-    }
-    .api-box button{
-      background:var(--primary); color:#fff; border:none; padding:10px 12px; border-radius:10px;
-      cursor:pointer;
-    }
+<style>
+  :root{
+    --bg:#191919;
+    --panel:#1f1f1f;
+    --panel-2:#242424;
+    --text:#f5f5f5;
+    --muted:#a7a7a7;
+    --ring:rgba(78,10,122,.35);
+    --ok:#22c55e;
+    --err:#ef4444;
+    --chip:#2a2a2a;
+    --primary:#4E0A7A;
+    --primary-2:#6c1aa3;
+    --shadow: 0 10px 30px rgba(0,0,0,.35);
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0;
+    background: radial-gradient(800px 400px at 90% -10%, rgba(78,10,122,.20), transparent 60%), var(--bg);
+    color:var(--text);
+    font: 16px/1.5 "Avenir Next",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,"Apple Color Emoji","Segoe UI Emoji";
+  }
+  a{color:#a6a8ff;text-decoration:none}
+  a:hover{text-decoration:underline}
 
-    /* Layout */
-    .wrap{
-      margin:18px auto; padding:0 16px; width:100%; max-width:1280px;
-      display:grid; gap:16px;
-      grid-template-columns: 1fr;  /* Mobile default */
-    }
-    @media (min-width: 960px){
-      .wrap{
-        grid-template-columns: 380px 1fr; /* Sidebar + Content */
-        align-items:start;
-      }
-    }
+  header{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:18px 20px 10px; gap:16px;
+  }
+  .brand{display:flex;align-items:center;gap:12px}
+  .badge{background:linear-gradient(90deg, var(--primary), var(--primary-2)); padding:8px 12px; border-radius:999px; font-weight:700; box-shadow:0 6px 20px rgba(78,10,122,.35)}
+  .app-title{font-size:22px;font-weight:800;letter-spacing:.2px}
 
-    /* Cards & widgets */
-    .card{
-      background:var(--panel);
-      border:1px solid #242424;
-      border-radius:var(--radius);
-      box-shadow:var(--shadow);
-    }
-    .pad{padding:16px}
-    .title{
-      font-weight:800; font-size:18px; margin:0 0 10px;
-    }
-    .muted{color:var(--muted); font-size:14px}
+  .wrap{
+    max-width:1200px;margin:0 auto;padding:10px 16px 80px;
+    display:grid;grid-template-columns: 360px 1fr;gap:20px;
+  }
+  @media (max-width:980px){ .wrap{grid-template-columns:1fr} }
 
-    .row{display:flex; gap:10px; flex-wrap:wrap; align-items:center}
-    .grow{flex:1}
-    .btn{
-      appearance:none; border:none; cursor:pointer; font-weight:800;
-      color:#fff; border-radius:12px; padding:14px 16px; min-width:120px;
-      background:#2a2a2a; transition:.15s transform, .15s box-shadow, .15s background;
-    }
-    .btn.primary{ background:linear-gradient(135deg, var(--primary), var(--primary-2)); box-shadow:0 8px 20px var(--ring) }
-    .btn:hover{ transform: translateY(-1px) }
-    .btn:active{ transform: translateY(0) scale(.98) }
+  .card{
+    background:linear-gradient(180deg, var(--panel), var(--panel-2));
+    border:1px solid rgba(255,255,255,.06);
+    border-radius:14px; box-shadow:var(--shadow);
+  }
+  .card .head{padding:16px 16px 8px;font-weight:800;font-size:14px;letter-spacing:.3px;color:#d8d8d8}
 
-    .select, .timer{
-      background:#131313; color:#ddd; border:1px solid #2b2b2b;
-      padding:10px 12px; border-radius:12px;
-    }
-    select.select{ min-width: 100% }
-    .timer{min-width:110px; text-align:center; font-weight:800}
+  .left .inner{padding:16px}
+  .hint{color:var(--muted); font-size:14px;margin-top:6px}
 
-    .divider{height:1px; background:#242424; margin:14px -16px}
+  .row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .btn{
+     appearance:none;border:0;border-radius:12px;padding:12px 16px;
+     background:#2b2b2b;color:var(--text);font-weight:700;cursor:pointer;
+     box-shadow: inset 0 0 0 1px rgba(255,255,255,.06);
+     transition:.15s transform ease, .2s background ease, .2s box-shadow ease;
+  }
+  .btn:hover{transform:translateY(-1px)}
+  .btn:disabled{opacity:.65;cursor:not-allowed;transform:none}
+  .btn.primary{background:linear-gradient(180deg,var(--primary),var(--primary-2));box-shadow:0 8px 24px rgba(78,10,122,.45)}
+  .btn.ghost{background:#2a2a2a}
+  .btn.icon{padding:10px 12px;border-radius:10px}
 
-    /* Right side content */
-    .grid{
-      display:grid; gap:12px;
-    }
-    .pill{
-      display:inline-flex; gap:8px; align-items:center;
-      background:#101010; padding:8px 10px; border-radius:999px; color:#cfcfcf;
-      border:1px solid #242424; font-size:13px
-    }
-    .ok-dot{width:10px; height:10px; border-radius:999px; background:var(--ok); box-shadow:0 0 0 3px rgba(34,197,94,.15)}
+  /* goal chips */
+  .chips{display:flex;gap:8px;flex-wrap:wrap}
+  .chip{
+    padding:8px 12px;border-radius:999px;background:var(--chip);
+    border:1px solid rgba(255,255,255,.07);cursor:pointer;font-weight:700;color:#ddd;
+  }
+  .chip.active{background:linear-gradient(180deg,var(--primary),var(--primary-2)); color:#fff; box-shadow:0 6px 20px rgba(78,10,122,.35)}
 
-    .field{display:flex; flex-direction:column; gap:8px}
-    .input{
-      width:100%; min-height:42px; display:flex; align-items:center;
-      background:#121212; border:1px solid #2b2b2b; color:#eaeaea; border-radius:12px;
-      padding:10px 12px;
-    }
-    .mono{
-      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
-                   "Courier New", monospace;
-    }
+  /* API bar */
+  .api-bar{display:flex;gap:8px;align-items:center;justify-content:flex-end;padding:0 16px}
+  .api-input{
+    width:min(520px,90vw);background:#141414;border:1px solid rgba(255,255,255,.08);
+    color:#ddd;border-radius:10px;padding:10px 12px;outline:none;
+  }
+  .api-dot{width:10px;height:10px;border-radius:50%;background:var(--ok);box-shadow:0 0 0 3px rgba(34,197,94,.2)}
 
-    .panel-title{font-weight:800; margin:8px 0 6px}
-    .slot{ background:var(--panel-2); border:1px solid #2a2a2a; border-radius:10px; padding:12px }
+  /* fields */
+  .field{display:flex;flex-direction:column;gap:8px;margin-top:12px}
+  .lbl{font-weight:800;font-size:12px;color:#c9c9c9;letter-spacing:.3px}
+  .box{
+    background:#171717;border:1px solid rgba(255,255,255,.08);color:#dcdcdc;
+    padding:12px;border-radius:10px;min-height:44px;display:flex;align-items:center
+  }
+  .box.multiline{min-height:56px;line-height:1.4}
+  .box code{font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; font-size:13px;color:#c7cfff}
 
-    /* Responsive tweaks */
-    @media (max-width: 959px){
-      .api-box input{max-width: 56vw}
-      .row.mobile-stack{flex-direction:column; align-items:stretch}
-      .btn{width:100%}
-    }
+  .metric{display:flex;gap:6px;align-items:center}
+  .pill{background:#2c2c2c;border:1px solid rgba(255,255,255,.08);padding:6px 10px;border-radius:999px;font-weight:800;color:#dcdcdc}
 
-    .foot{
-      color:#aaa; font-size:12px; padding:18px; text-align:center;
-    }
-    a{color:#b98cff; text-decoration:none}
-    a:hover{text-decoration:underline}
-  </style>
+  footer{max-width:1200px;margin:26px auto; padding:0 16px;color:#bdbdbd;font-size:13px;opacity:.9}
+  .kbd{background:#2a2a2a;border:1px solid rgba(255,255,255,.12);border-radius:6px;padding:2px 6px;font-family:ui-monospace}
+
+  .ghost-text{opacity:.55}
+</style>
 </head>
 <body>
-  <header>
-    <div class="brand">English Coach</div>
-    <span class="tag">Instant English Feedback</span>
 
-    <div class="api-box">
-      <small class="muted" style="opacity:.7">API:</small>
-      <input id="apiUrl" placeholder="https://…/api/analyze" />
-      <button id="saveApi">Save</button>
+<header>
+  <div class="brand">
+    <div class="badge">Instant English Feedback</div>
+    <div class="app-title">English Coach</div>
+  </div>
+
+  <div class="api-bar">
+    <div class="api-dot" id="apiDot" title="API status"></div>
+    <input id="api" class="api-input" type="url"
+      placeholder="https://your-domain.vercel.app/api/analyze" />
+    <button class="btn icon" id="saveApi" title="Save API">Save</button>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <!-- LEFT: recorder / controls -->
+  <section class="card left">
+    <div class="inner">
+      <div class="lbl">Record for <strong>60–90 seconds</strong>.
+        We’ll analyze fluency and correctness, then show key corrections and a next prompt.</div>
+
+      <!-- goals -->
+      <div class="field" style="margin-top:12px">
+        <div class="lbl">Goal</div>
+        <div class="chips" id="goalChips">
+          <button class="chip active" data-goal="Work English">Work</button>
+          <button class="chip" data-goal="Casual English">Casual</button>
+          <button class="chip" data-goal="Interview Prep">Interview</button>
+          <button class="chip" data-goal="Travel English">Travel</button>
+        </div>
+      </div>
+
+      <!-- starter prompt -->
+      <div class="field">
+        <div class="lbl" style="display:flex;align-items:center;gap:8px">
+          Try saying this to start
+          <button class="btn icon ghost" id="shuffle">🎲</button>
+        </div>
+        <div class="box multiline" id="starterBox">—</div>
+        <div class="hint">You can talk about this for ~60–90 seconds, then press <b>Send & Analyze</b>.</div>
+      </div>
+
+      <!-- controls -->
+      <div class="field" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:14px">
+        <button class="btn primary" id="startBtn">Start recording</button>
+        <button class="btn ghost" id="stopBtn" disabled>Stop</button>
+        <button class="btn" id="sendBtn" disabled>Send & Analyze</button>
+        <div class="box" style="min-width:120px;flex:0 0 auto" id="timer">00:00</div>
+      </div>
+
+      <div class="hint">We don’t store your audio; it’s sent to the analyzer and immediately discarded.</div>
     </div>
-  </header>
+  </section>
 
-  <main class="wrap">
-    <!-- Left column: controls -->
-    <section class="card pad" id="controls">
-      <p class="muted">Record for <strong>60–90 seconds</strong>. We’ll analyze fluency and correctness, then show key corrections and a next prompt.</p>
-
-      <div class="row mobile-stack" style="margin:12px 0 6px">
-        <div class="grow">
-          <label class="muted" for="goal">Goal</label>
-          <select id="goal" class="select">
-            <option>Work English</option>
-            <option>General English</option>
-            <option>Interview practice</option>
-            <option>Travel English</option>
-          </select>
-        </div>
-
-        <div>
-          <label class="muted">Timer</label>
-          <div class="timer" id="timer">00:00</div>
-        </div>
+  <!-- RIGHT: debug + results -->
+  <section>
+    <div class="card">
+      <div class="head">Debug / Raw response</div>
+      <div class="inner" style="padding:12px 16px 16px">
+        <div class="box multiline" id="debug">—</div>
       </div>
+    </div>
 
-      <div class="row mobile-stack" style="margin-top:10px">
-        <button class="btn primary" id="btnStart">Start recording</button>
-        <button class="btn" id="btnStop" disabled>Stop</button>
-        <button class="btn" id="btnSend" disabled>Send & Analyze</button>
-      </div>
-    </section>
-
-    <!-- Right column: results -->
-    <section class="grid">
-      <!-- Debug / raw -->
-      <div class="card pad">
-        <div class="row" style="justify-content:space-between; align-items:center">
-          <div class="row" style="gap:10px; align-items:center">
-            <span class="ok-dot" id="liveDot"></span>
-            <span class="pill mono" id="apiPill">…</span>
+    <div class="card" style="margin-top:14px">
+      <div class="head">Summary</div>
+      <div class="inner" style="padding:12px 16px 16px">
+        <div class="row" style="gap:10px; margin-bottom:10px">
+          <div class="metric">
+            <span class="pill" id="levelFriendly">–</span>
+            <span class="ghost-text" id="cefrSmall" style="margin-left:6px"></span>
+          </div>
+          <div class="metric">
+            <span class="pill"><span class="ghost-text">Fillers:</span> <span id="fillersNum">0</span></span>
           </div>
         </div>
 
-        <div class="divider"></div>
         <div class="field">
-          <div class="panel-title">Debug / Raw response</div>
-          <pre id="debug" class="slot mono" style="white-space:pre-wrap; overflow:auto; max-height:38vh">—</pre>
-        </div>
-      </div>
-
-      <!-- Summaries -->
-      <div class="card pad">
-        <div class="title">Summary</div>
-        <div class="row" style="gap:10px; flex-wrap:wrap">
-          <div class="pill"><strong>Level:</strong>&nbsp;<span id="lv">–</span></div>
-          <div class="pill"><strong>Fillers:</strong>&nbsp;<span id="fillers">0</span></div>
+          <div class="lbl">What to fix now</div>
+          <div class="box multiline" id="fixNow">–</div>
         </div>
 
-        <div class="field" style="margin-top:12px">
-          <div class="panel-title">What to fix now</div>
-          <div class="slot" id="fixNow">—</div>
-        </div>
-
-        <div class="field" style="margin-top:12px">
-          <div class="panel-title">Next prompt (30–45s)</div>
-          <div class="slot" id="next">—</div>
+        <div class="field">
+          <div class="lbl">Next prompt (30–45s)</div>
+          <div class="box multiline" id="nextPrompt">–</div>
         </div>
       </div>
+    </div>
 
-      <!-- Grammar -->
-      <div class="card pad">
-        <div class="title">Grammar</div>
-        <div class="slot" id="grammar">—</div>
+    <div class="card" style="margin-top:14px">
+      <div class="head">Grammar</div>
+      <div class="inner">
+        <div class="box multiline" id="grammarBox">–</div>
       </div>
+    </div>
 
-      <!-- Pronunciation -->
-      <div class="card pad">
-        <div class="title">Pronunciation</div>
-        <div class="slot" id="pron">—</div>
+    <div class="card" style="margin-top:14px">
+      <div class="head">Pronunciation</div>
+      <div class="inner">
+        <div class="box multiline" id="pronBox">–</div>
       </div>
-    </section>
-  </main>
+    </div>
+  </section>
+</div>
 
-  <div class="foot">© 2025 <a href="https://simpleia.com" target="_blank" rel="noopener">Simpleia</a> — Built by Abdo Osama</div>
+<footer>
+  © 2025 <a href="https://simpleia.com" target="_blank">Simpleia</a> — Built by <a href="https://aosama.net/" target="_blank">Abdo Osama</a>.
+</footer>
 
-  <script>
-    // ====== SETTINGS ======
-    const DEFAULT_API = "https://english-coach-endpoint.vercel.app/api/analyze"; // <- change if needed
-    const LS_KEY = "ec_api_url_v1";
+<script>
+/* ==============================
+   Config & helpers
+============================== */
+const API_INPUT = document.getElementById('api');
+const apiDot = document.getElementById('apiDot');
+const saveApiBtn = document.getElementById('saveApi');
+const debugBox = document.getElementById('debug');
 
-    // ====== ELEMENTS ======
-    const apiInput = document.getElementById('apiUrl');
-    const apiSave  = document.getElementById('saveApi');
-    const apiPill  = document.getElementById('apiPill');
-    const liveDot  = document.getElementById('liveDot');
+const levelFriendly = document.getElementById('levelFriendly');
+const cefrSmall = document.getElementById('cefrSmall');
+const fillersNum = document.getElementById('fillersNum');
+const fixNow = document.getElementById('fixNow');
+const nextPrompt = document.getElementById('nextPrompt');
+const grammarBox = document.getElementById('grammarBox');
+const pronBox = document.getElementById('pronBox');
 
-    const goalSel  = document.getElementById('goal');
-    const timerEl  = document.getElementById('timer');
+const startBtn = document.getElementById('startBtn');
+const stopBtn  = document.getElementById('stopBtn');
+const sendBtn  = document.getElementById('sendBtn');
+const timerEl  = document.getElementById('timer');
 
-    const btnStart = document.getElementById('btnStart');
-    const btnStop  = document.getElementById('btnStop');
-    const btnSend  = document.getElementById('btnSend');
+const goalChips = document.getElementById('goalChips');
+const shuffleBtn = document.getElementById('shuffle');
+const starterBox = document.getElementById('starterBox');
 
-    const debugPre = document.getElementById('debug');
-    const lvEl     = document.getElementById('lv');
-    const fillersEl= document.getElementById('fillers');
-    const fixEl    = document.getElementById('fixNow');
-    const nextEl   = document.getElementById('next');
-    const gramEl   = document.getElementById('grammar');
-    const pronEl   = document.getElementById('pron');
+const FRIENDLY = {
+  A1:{friendly:'Beginner'},
+  A2:{friendly:'Basic'},
+  B1:{friendly:'Average'},
+  B2:{friendly:'Advanced'},
+  C1:{friendly:'Fluent'},
+  C2:{friendly:'Fluent+'},
+};
 
-    // ====== STATE ======
-    let chunks = [];
-    let mediaRecorder = null;
-    let startedAt = 0;
-    let tHandle = null;
+const STARTER = {
+  'Work English': [
+    "Give a quick update on a project you’re working on. What changed this week?",
+    "Explain one problem your team faced and how you solved it.",
+    "Describe a recent meeting: goals, outcomes, and next steps."
+  ],
+  'Casual English': [
+    "Talk about your last weekend from morning to night.",
+    "Describe your favorite hobby and how you got into it.",
+    "Tell a short story about a happy memory."
+  ],
+  'Interview Prep': [
+    "Introduce yourself and explain your biggest strength with an example.",
+    "Describe a time you overcame a challenge at work.",
+    "Explain a project you’re proud of: your role and impact."
+  ],
+  'Travel English': [
+    "Describe your favorite city to visit. What should a new visitor do?",
+    "Tell the story of a trip that went wrong and what you learned.",
+    "Explain how you would plan a weekend in a new country."
+  ]
+};
 
-    function apiUrl(){
-      return (localStorage.getItem(LS_KEY) || DEFAULT_API).trim();
-    }
-    function setApiUi(){
-      const url = apiUrl();
-      apiInput.value = url;
-      apiPill.textContent = url;
-    }
-    apiSave.onclick = () => {
-      const url = (apiInput.value || "").trim();
-      if(!/^https?:\/\//i.test(url)){ alert("Please enter a valid https:// URL"); return; }
-      localStorage.setItem(LS_KEY, url);
-      setApiUi();
-      flash("Saved API URL.");
-    };
+function pickStarter(goal){
+  const arr = STARTER[goal] || STARTER['Work English'];
+  return arr[Math.floor(Math.random()*arr.length)];
+}
 
-    function flash(msg){
-      debugPre.textContent = msg;
-    }
+function setStarter(){
+  const active = goalChips.querySelector('.chip.active');
+  const goal = active?.dataset.goal || 'Work English';
+  const text = pickStarter(goal);
+  starterBox.textContent = text;
+  nextPrompt.textContent = text; // prefill so users always have something to say
+}
 
-    function formatTime(ms){
-      const s = Math.max(0, Math.round(ms/1000));
-      const m = String(Math.floor(s/60)).padStart(2,'0');
-      const r = String(s%60).padStart(2,'0');
-      return `${m}:${r}`;
-    }
+/* Persist API */
+const LS_KEY = 'ec_api_url';
+API_INPUT.value = localStorage.getItem(LS_KEY) || localStorage.getItem('ec_make_url') || ''; // read old key too
+saveApiBtn.onclick = () => {
+  localStorage.setItem(LS_KEY, API_INPUT.value.trim());
+  apiDot.style.background = '#22c55e';
+};
 
-    // ====== Recording ======
-    btnStart.onclick = async () => {
-      if(!navigator.mediaDevices?.getUserMedia){
-        alert("Recording not supported in this browser.");
-        return;
-      }
-      try{
-        const stream = await navigator.mediaDevices.getUserMedia({ audio:true });
-        chunks = [];
-        mediaRecorder = new MediaRecorder(stream);
-        mediaRecorder.ondataavailable = e => { if(e.data?.size) chunks.push(e.data); };
-        mediaRecorder.onstop = () => { stream.getTracks().forEach(t=>t.stop()); };
-        mediaRecorder.start();
-        startedAt = performance.now();
-        tHandle = setInterval(()=>{
-          timerEl.textContent = formatTime(performance.now() - startedAt);
-        }, 250);
-        btnStart.disabled = true;
-        btnStop.disabled  = false;
-        btnSend.disabled  = true;
-        flash("Recording…");
-      }catch(err){
-        console.error(err);
-        alert("Could not start microphone.");
-      }
-    };
+/* Goal chips */
+goalChips.addEventListener('click', (e)=>{
+  const chip = e.target.closest('.chip');
+  if(!chip) return;
+  goalChips.querySelectorAll('.chip').forEach(c=>c.classList.remove('active'));
+  chip.classList.add('active');
+  setStarter();
+});
 
-    btnStop.onclick = () => {
-      if(mediaRecorder && mediaRecorder.state !== "inactive"){
-        mediaRecorder.stop();
-      }
-      clearInterval(tHandle);
-      btnStop.disabled  = true;
-      btnStart.disabled = false;
-      btnSend.disabled  = false;
-      flash("Ready to analyze.");
-    };
+shuffleBtn.addEventListener('click', setStarter);
 
-    // ====== Analyze ======
-    btnSend.onclick = async () => {
-      const url = apiUrl();
-      if(!chunks.length){ flash("No audio recorded. Please record first."); return; }
+/* ==============================
+   Recorder
+============================== */
+let mediaRecorder, chunks=[], startedAt=0, timerInt=null;
 
-      const durSec = Math.round((performance.now() - startedAt)/1000);
-      const blob = new Blob(chunks, { type:"audio/webm" });
-      const file = new File([blob], "audio.webm", { type: blob.type });
+function fmt(sec){
+  sec = Math.max(0,Math.floor(sec));
+  const m = String(Math.floor(sec/60)).padStart(2,'0');
+  const s = String(sec%60).padStart(2,'0');
+  return `${m}:${s}`;
+}
 
-      const fd = new FormData();
-      fd.append("files[]", file);
-      fd.append("duration_sec", String(durSec));
-      fd.append("goal", goalSel.value || "General English");
+function tick(){
+  const sec = (Date.now()-startedAt)/1000;
+  timerEl.textContent = fmt(sec);
+}
 
-      setBusy(true);
-      debugPre.textContent = "Sending…";
+startBtn.onclick = async () => {
+  try{
+    const stream = await navigator.mediaDevices.getUserMedia({audio:true});
+    chunks = [];
+    mediaRecorder = new MediaRecorder(stream,{mimeType:'audio/webm'});
+    mediaRecorder.ondataavailable = e => { if(e.data.size>0) chunks.push(e.data); };
+    mediaRecorder.start(250);
 
-      try{
-        const res = await fetch(url, { method:"POST", body:fd });
-        const raw = await res.text();
-        debugPre.textContent = raw || "(empty response)";
-        let js = null;
-        try{ js = JSON.parse(raw); }catch(e){ /* keep null */ }
+    startedAt = Date.now();
+    timerInt = setInterval(tick, 250);
 
-        if(js) render(js);
-        liveDot.style.background = res.ok ? "var(--ok)" : "#ef4444";
-      }catch(err){
-        console.error(err);
-        flash("Request failed: "+ (err?.message||err));
-        liveDot.style.background = "#ef4444";
-      }finally{
-        setBusy(false);
-      }
-    };
+    startBtn.disabled = true;
+    stopBtn.disabled  = false;
+    sendBtn.disabled  = true;
+  }catch(err){
+    alert("Mic access failed: " + err.message);
+  }
+};
 
-    function render(j){
-      // Fallback path (empty or too short)
-      if(j.fallback){
-        lvEl.textContent = "–";
-        fillersEl.textContent = "0";
-        fixEl.textContent = j.one_thing_to_fix || "Speak for at least 30–60 seconds in full sentences.";
-        nextEl.textContent = j.next_prompt || "Describe your last weekend in 45 seconds.";
-        gramEl.textContent = "—";
-        pronEl.textContent = "—";
-        return;
-      }
+stopBtn.onclick = () => {
+  if(!mediaRecorder) return;
+  mediaRecorder.stop();
+  mediaRecorder.stream.getTracks().forEach(t=>t.stop());
+  clearInterval(timerInt);
+  sendBtn.disabled = false;
+  stopBtn.disabled = true;
+  startBtn.disabled = false;
+};
 
-      lvEl.textContent = j.cefr_estimate || "–";
-      const wpm = j.fluency?.wpm ?? 0;
-      const fillers = j.fluency?.fillers ?? 0;
-      fillersEl.textContent = String(fillers);
+async function sendAnalyze(){
+  const api = (API_INPUT.value||'').trim();
+  if(!/^https?:\/\//.test(api)) {
+    alert('Please set a valid Analyzer API URL first.'); return;
+  }
+  if(!chunks.length){ alert('Please record something first.'); return; }
 
-      fixEl.textContent = j.one_thing_to_fix || "—";
-      nextEl.textContent = j.next_prompt || "—";
+  const blob = new Blob(chunks,{type:'audio/webm'});
+  const file = new File([blob], 'audio.webm', {type: blob.type});
+  const dur = Math.round((Date.now()-startedAt)/1000);
 
-      // Grammar list
-      if(Array.isArray(j.grammar_issues) && j.grammar_issues.length){
-        gramEl.innerHTML = j.grammar_issues.map(g =>
-          `<div style="margin:6px 0">
-             <div><strong>${escapeHtml(g.error||"")}</strong></div>
-             <div class="muted">→ ${escapeHtml(g.fix||"")}</div>
-             <div class="muted" style="font-size:12px">${escapeHtml(g.why||"")}</div>
-           </div>`
-        ).join("");
-      }else{
-        gramEl.textContent = "—";
-      }
+  const active = goalChips.querySelector('.chip.active');
+  const goal = active?.dataset.goal || 'Work English';
 
-      // Pronunciation list
-      if(Array.isArray(j.pronunciation) && j.pronunciation.length){
-        pronEl.innerHTML = j.pronunciation.map(p =>
-          `<div style="margin:6px 0">
-             <div><strong>${escapeHtml(p.sound_or_word||"")}</strong> — ${escapeHtml(p.issue||"")}</div>
-             ${p.minimal_pair ? `<div class="muted" style="font-size:12px">Try: ${escapeHtml(p.minimal_pair)}</div>`:""}
-           </div>`
-        ).join("");
-      }else{
-        pronEl.textContent = "—";
-      }
-    }
+  const fd = new FormData();
+  fd.append('files[]', file);
+  fd.append('duration_sec', String(dur));
+  fd.append('goal', goal);
 
-    function setBusy(b){
-      [btnStart,btnStop,btnSend].forEach(el => el.disabled = b || (el===btnStop && !mediaRecorder));
-      document.body.style.cursor = b ? "progress" : "default";
-    }
-    function escapeHtml(s){
-      return String(s||"").replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-    }
+  setBusy(true, 'Sending…');
 
-    // Boot
-    setApiUi();
-    // ping GET to set green dot on load
-    (async ()=>{
-      try{
-        const res = await fetch(apiUrl(), { method:"GET" });
-        liveDot.style.background = res.ok ? "var(--ok)" : "#ef4444";
-      }catch{ liveDot.style.background = "#ef4444"; }
-    })();
-  </script>
+  try{
+    const res = await fetch(api, {method:'POST', body: fd});
+    const raw = await res.text();
+    debugBox.textContent = raw || '(empty)';
+    let json=null;
+    try { json = JSON.parse(raw); } catch(e){ json = null; }
+    if(json) render(json);
+    else statusBubble(false);
+  }catch(err){
+    debugBox.textContent = 'Request failed: ' + err.message;
+    statusBubble(false);
+  }finally{
+    setBusy(false);
+  }
+}
+sendBtn.onclick = sendAnalyze;
+
+function setBusy(b, txt=''){
+  document.body.style.cursor = b ? 'progress' : 'default';
+  [startBtn, stopBtn, sendBtn, shuffleBtn].forEach(bn => bn.disabled = !!b);
+  if(b) debugBox.textContent = txt;
+}
+function statusBubble(ok){
+  apiDot.style.background = ok ? '#22c55e' : '#ef4444';
+}
+
+/* ==============================
+   Render results
+============================== */
+function render(d){
+  statusBubble(true);
+
+  // Friendly level
+  let cefr = (d.cefr_estimate||'').toUpperCase();
+  let friendly = FRIENDLY[cefr]?.friendly || (cefr ? cefr : '—');
+  levelFriendly.textContent = friendly;
+  cefrSmall.textContent = cefr ? `(${cefr})` : '';
+
+  // Fillers
+  const fillers = (d.fluency && typeof d.fluency.fillers==='number') ? d.fluency.fillers : 0;
+  fillersNum.textContent = String(fillers);
+
+  // What to fix now & next prompt
+  fixNow.textContent = d.one_thing_to_fix || '—';
+  nextPrompt.textContent = d.next_prompt || nextPrompt.textContent || starterBox.textContent || '—';
+
+  // Grammar
+  if(Array.isArray(d.grammar_issues) && d.grammar_issues.length){
+    grammarBox.innerHTML = d.grammar_issues.map(g => {
+      const err = (g.error||'').trim();
+      const fix = (g.fix||'').trim();
+      const why = (g.why||'').trim();
+      return `<div style="margin-bottom:10px">
+        <div><strong>✖ ${escapeHTML(err||'-')}</strong></div>
+        <div style="opacity:.7">→ ${escapeHTML(fix||'-')}</div>
+        <div class="hint" style="margin-top:4px">${escapeHTML(why||'')}</div>
+      </div>`;
+    }).join('');
+  }else{
+    grammarBox.textContent = '—';
+  }
+
+  // Pronunciation
+  if(Array.isArray(d.pronunciation) && d.pronunciation.length){
+    pronBox.innerHTML = d.pronunciation.map(p => {
+      const w = (p.sound_or_word||'').trim();
+      const issue = (p.issue||'').trim();
+      const pair = (p.minimal_pair||'').trim();
+      return `<div style="margin-bottom:10px">
+        <div><strong>${escapeHTML(w||'-')}</strong> — ${escapeHTML(issue||'-')}</div>
+        ${pair ? `<div class="hint">Try: ${escapeHTML(pair)}</div>` : ``}
+      </div>`;
+    }).join('');
+  }else{
+    pronBox.textContent = '—';
+  }
+}
+
+function escapeHTML(s){
+  return (s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+/* bootstrap */
+setStarter();
+const saved = localStorage.getItem(LS_KEY);
+if(saved){ API_INPUT.value = saved; apiDot.style.background = '#22c55e'; }
+</script>
 </body>
 </html>
