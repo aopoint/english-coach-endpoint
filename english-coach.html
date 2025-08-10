@@ -4,509 +4,430 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>English Coach — Instant English Feedback</title>
-<meta name="description" content="Record 60–90 seconds and get instant English feedback: level, key corrections, and your next prompt." />
-
+<meta name="color-scheme" content="dark">
 <style>
   :root{
     --bg:#191919;
     --panel:#1f1f1f;
-    --panel-2:#242424;
+    --panel-2:#181818;
     --text:#f5f5f5;
     --muted:#a7a7a7;
-    --ring:rgba(78,10,122,.35);
+    --chip:#222;
     --ok:#22c55e;
     --err:#ef4444;
-    --chip:#2a2a2a;
+    --ring:rgba(78,10,122,.45);
     --primary:#4E0A7A;
-    --primary-2:#6c1aa3;
-    --shadow: 0 10px 30px rgba(0,0,0,.35);
+    --primary-2:#7123a7;
+    --shadow:0 10px 30px rgba(0,0,0,.35);
+    --radius:14px;
   }
-  *{box-sizing:border-box}
   html,body{height:100%}
   body{
-    margin:0;
-    background: radial-gradient(800px 400px at 90% -10%, rgba(78,10,122,.20), transparent 60%), var(--bg);
-    color:var(--text);
-    font: 16px/1.5 "Avenir Next",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,"Apple Color Emoji","Segoe UI Emoji";
+    margin:0; background:var(--bg); color:var(--text);
+    font-family:"Avenir Next",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,"Apple Color Emoji","Segoe UI Emoji";
   }
-  a{color:#a6a8ff;text-decoration:none}
-  a:hover{text-decoration:underline}
-
+  .wrap{max-width:1200px; margin:24px auto; padding:0 16px}
   header{
-    display:flex;align-items:center;justify-content:space-between;
-    padding:18px 20px 10px; gap:16px;
+    display:flex; align-items:center; gap:16px; margin-bottom:20px;
   }
-  .brand{display:flex;align-items:center;gap:12px}
-  .badge{background:linear-gradient(90deg, var(--primary), var(--primary-2)); padding:8px 12px; border-radius:999px; font-weight:700; box-shadow:0 6px 20px rgba(78,10,122,.35)}
-  .app-title{font-size:22px;font-weight:800;letter-spacing:.2px}
-
-  .wrap{
-    max-width:1200px;margin:0 auto;padding:10px 16px 80px;
-    display:grid;grid-template-columns: 360px 1fr;gap:20px;
+  .brand{font-size:28px; font-weight:800; letter-spacing:.3px}
+  .pill{font-size:14px; padding:8px 14px; border-radius:999px;
+        background:linear-gradient(135deg,var(--primary),var(--primary-2)); box-shadow:var(--shadow)}
+  .grid{
+    display:grid; grid-template-columns:360px 1fr; gap:18px;
   }
-  @media (max-width:980px){ .wrap{grid-template-columns:1fr} }
+  @media (max-width:980px){ .grid{grid-template-columns:1fr} }
 
   .card{
-    background:linear-gradient(180deg, var(--panel), var(--panel-2));
-    border:1px solid rgba(255,255,255,.06);
-    border-radius:14px; box-shadow:var(--shadow);
+    background:linear-gradient(180deg,var(--panel),var(--panel-2));
+    border:1px solid #262626; border-radius:var(--radius); box-shadow:var(--shadow);
   }
-  .card .head{padding:16px 16px 8px;font-weight:800;font-size:14px;letter-spacing:.3px;color:#d8d8d8}
+  .card .inner{padding:18px}
+  .title{font-weight:800; font-size:18px; margin-bottom:6px}
+  .muted{color:var(--muted); font-size:14px}
 
-  .left .inner{padding:16px}
-  .hint{color:var(--muted); font-size:14px;margin-top:6px}
-
-  .row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
-  .btn{
-     appearance:none;border:0;border-radius:12px;padding:12px 16px;
-     background:#2b2b2b;color:var(--text);font-weight:700;cursor:pointer;
-     box-shadow: inset 0 0 0 1px rgba(255,255,255,.06);
-     transition:.15s transform ease, .2s background ease, .2s box-shadow ease;
-  }
-  .btn:hover{transform:translateY(-1px)}
-  .btn:disabled{opacity:.65;cursor:not-allowed;transform:none}
-  .btn.primary{background:linear-gradient(180deg,var(--primary),var(--primary-2));box-shadow:0 8px 24px rgba(78,10,122,.45)}
-  .btn.ghost{background:#2a2a2a}
-  .btn.icon{padding:10px 12px;border-radius:10px}
-
-  /* goal chips */
-  .chips{display:flex;gap:8px;flex-wrap:wrap}
+  /* left control */
+  .goal-chips{display:flex; flex-wrap:wrap; gap:8px}
   .chip{
-    padding:8px 12px;border-radius:999px;background:var(--chip);
-    border:1px solid rgba(255,255,255,.07);cursor:pointer;font-weight:700;color:#ddd;
+    padding:8px 12px; border-radius:12px; background:var(--chip); color:#ddd; cursor:pointer;
+    border:1px solid #2a2a2a; user-select:none; transition:.15s;
   }
-  .chip.active{background:linear-gradient(180deg,var(--primary),var(--primary-2)); color:#fff; box-shadow:0 6px 20px rgba(78,10,122,.35)}
+  .chip:hover{border-color:#3a3a3a}
+  .chip.active{background:linear-gradient(135deg,var(--primary),var(--primary-2)); color:#fff; border-color:transparent}
+  .row{display:flex; align-items:center; justify-content:space-between; gap:12px}
+  .btn{
+    appearance:none; border:0; border-radius:12px; padding:12px 16px; cursor:pointer;
+    font-weight:700; color:#fff; background:#2b2b2b;
+    border:1px solid #2a2a2a; transition:.15s; box-shadow:inset 0 0 0 1px rgba(255,255,255,.02);
+  }
+  .btn:hover{background:#343434}
+  .btn.primary{background:linear-gradient(135deg,var(--primary),var(--primary-2)); border-color:transparent}
+  .timer{min-width:86px; text-align:center; padding:10px 12px; border-radius:12px; background:#202020; border:1px solid #2a2a2a}
 
-  /* API bar */
-  .api-bar{display:flex;gap:8px;align-items:center;justify-content:flex-end;padding:0 16px}
+  .starter{
+    margin-top:14px; border-radius:12px; border:1px dashed #323232; padding:14px;
+    background:#1a1a1a; color:#ddd; font-size:14px; line-height:1.35;
+  }
+
+  /* Debug & API */
+  .api-bar{display:flex; align-items:center; gap:10px; margin:0 0 12px}
+  .api-dot{width:10px; height:10px; border-radius:999px; background:var(--err); box-shadow:0 0 0 4px rgba(239,68,68,.1)}
   .api-input{
-    width:min(520px,90vw);background:#141414;border:1px solid rgba(255,255,255,.08);
-    color:#ddd;border-radius:10px;padding:10px 12px;outline:none;
+    flex:1; padding:10px 12px; border-radius:12px; border:1px solid #2a2a2a; background:#141414; color:#ddd
   }
-  .api-dot{width:10px;height:10px;border-radius:50%;background:var(--ok);box-shadow:0 0 0 3px rgba(34,197,94,.2)}
-
-  /* fields */
-  .field{display:flex;flex-direction:column;gap:8px;margin-top:12px}
-  .lbl{font-weight:800;font-size:12px;color:#c9c9c9;letter-spacing:.3px}
-  .box{
-    background:#171717;border:1px solid rgba(255,255,255,.08);color:#dcdcdc;
-    padding:12px;border-radius:10px;min-height:44px;display:flex;align-items:center
+  .kbd{font-size:12px; opacity:.8}
+  pre{
+    background:#0f0f0f; border:1px solid #222; border-radius:12px; padding:14px; color:#e5e5e5;
+    overflow:auto; min-height:54px; font-size:13px; line-height:1.4
   }
-  .box.multiline{min-height:56px;line-height:1.4}
-  .box code{font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; font-size:13px;color:#c7cfff}
 
-  .metric{display:flex;gap:6px;align-items:center}
-  .pill{background:#2c2c2c;border:1px solid rgba(255,255,255,.08);padding:6px 10px;border-radius:999px;font-weight:800;color:#dcdcdc}
+  /* Summary cards */
+  .two{display:grid; grid-template-columns:1fr; gap:14px}
+  .row-mini{display:flex; gap:10px; align-items:center}
+  .badge{font-size:12px; padding:6px 10px; border-radius:999px; border:1px solid #2a2a2a; background:#151515}
+  .ok{background:rgba(34,197,94,.08); border-color:rgba(34,197,94,.2); color:#a7f3d0}
+  .bad{background:rgba(239,68,68,.08); border-color:rgba(239,68,68,.2); color:#fecaca}
+  .out{padding:12px; border-radius:12px; border:1px solid #2a2a2a; background:#151515; color:#ddd; min-height:42px}
+  .list{display:grid; gap:10px}
+  .li{padding:12px; border-radius:12px; border:1px solid #2a2a2a; background:#141414}
+  .tag{display:inline-block; padding:2px 8px; border-radius:8px; font-size:12px; margin-right:6px; background:#232323; border:1px solid #2a2a2a}
 
-  footer{max-width:1200px;margin:26px auto; padding:0 16px;color:#bdbdbd;font-size:13px;opacity:.9}
-  .kbd{background:#2a2a2a;border:1px solid rgba(255,255,255,.12);border-radius:6px;padding:2px 6px;font-family:ui-monospace}
+  footer{margin:26px 0 40px; color:#bdbdbd; font-size:13px; text-align:center}
+  footer a{color:#caa8ff; text-decoration:none}
+  footer a:hover{text-decoration:underline}
 
-  .ghost-text{opacity:.55}
+  .toast{
+    position:fixed; left:50%; bottom:24px; transform:translateX(-50%);
+    background:#262626; color:#fff; border:1px solid #333; border-radius:12px; padding:12px 16px; box-shadow:var(--shadow);
+    display:none; z-index:50;
+  }
 </style>
 </head>
 <body>
+  <div class="wrap">
+    <header>
+      <div class="brand">English Coach</div>
+      <div class="pill">Instant English Feedback</div>
+      <div style="flex:1"></div>
+      <div class="kbd">API field sits on the “Debug / Raw response” card.</div>
+    </header>
 
-<header>
-  <div class="brand">
-    <div class="badge">Instant English Feedback</div>
-    <div class="app-title">English Coach</div>
-  </div>
+    <div class="grid">
+      <!-- LEFT: controls -->
+      <section class="card">
+        <div class="inner">
+          <div class="title">Record for <strong>60–90 seconds</strong>.</div>
+          <div class="muted">We’ll analyze fluency & correctness, then show key corrections and a next prompt.</div>
 
-  <div class="api-bar">
-    <div class="api-dot" id="apiDot" title="API status"></div>
-    <input id="api" class="api-input" type="url"
-      placeholder="https://your-domain.vercel.app/api/analyze" />
-    <button class="btn icon" id="saveApi" title="Save API">Save</button>
-      <button class="btn icon" id="shareLink" title="Copy public link">Share</button>
-  </div>
-</header>
+          <div style="height:10px"></div>
+          <div class="muted" style="margin-bottom:8px">Goal</div>
+          <div id="goalChips" class="goal-chips"></div>
 
-<div class="wrap">
-
-  <!-- LEFT: recorder / controls -->
-  <section class="card left">
-    <div class="inner">
-      <div class="lbl">Record for <strong>60–90 seconds</strong>.
-        We’ll analyze fluency and correctness, then show key corrections and a next prompt.</div>
-
-      <!-- goals -->
-      <div class="field" style="margin-top:12px">
-        <div class="lbl">Goal</div>
-        <div class="chips" id="goalChips">
-          <button class="chip active" data-goal="Work English">Work</button>
-          <button class="chip" data-goal="Casual English">Casual</button>
-          <button class="chip" data-goal="Interview Prep">Interview</button>
-          <button class="chip" data-goal="Travel English">Travel</button>
-        </div>
-      </div>
-
-      <!-- starter prompt -->
-      <div class="field">
-        <div class="lbl" style="display:flex;align-items:center;gap:8px">
-          Try saying this to start
-          <button class="btn icon ghost" id="shuffle">🎲</button>
-        </div>
-        <div class="box multiline" id="starterBox">—</div>
-        <div class="hint">You can talk about this for ~60–90 seconds, then press <b>Send & Analyze</b>.</div>
-      </div>
-
-      <!-- controls -->
-      <div class="field" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:14px">
-        <button class="btn primary" id="startBtn">Start recording</button>
-        <button class="btn ghost" id="stopBtn" disabled>Stop</button>
-        <button class="btn" id="sendBtn" disabled>Send & Analyze</button>
-        <div class="box" style="min-width:120px;flex:0 0 auto" id="timer">00:00</div>
-      </div>
-
-      <div class="hint">We don’t store your audio; it’s sent to the analyzer and immediately discarded.</div>
-    </div>
-  </section>
-
-  <!-- RIGHT: debug + results -->
-  <section>
-    <div class="card">
-      <div class="head">Debug / Raw response</div>
-      <div class="inner" style="padding:12px 16px 16px">
-        <div class="box multiline" id="debug">—</div>
-      </div>
-    </div>
-
-    <div class="card" style="margin-top:14px">
-      <div class="head">Summary</div>
-      <div class="inner" style="padding:12px 16px 16px">
-        <div class="row" style="gap:10px; margin-bottom:10px">
-          <div class="metric">
-            <span class="pill" id="levelFriendly">–</span>
-            <span class="ghost-text" id="cefrSmall" style="margin-left:6px"></span>
+          <div style="height:14px"></div>
+          <div class="row">
+            <button id="btnStart" class="btn primary">Start recording</button>
+            <button id="btnStop" class="btn">Stop</button>
+            <div class="timer" id="timer">00:00</div>
           </div>
-          <div class="metric">
-            <span class="pill"><span class="ghost-text">Fillers:</span> <span id="fillersNum">0</span></span>
+
+          <div style="height:10px"></div>
+          <button id="btnSend" class="btn" style="width:100%">Send & Analyze</button>
+
+          <div class="starter">
+            <div class="muted" style="margin-bottom:6px">What to say to start</div>
+            <div id="starterText">Describe your last weekend in 45 seconds.</div>
+            <div style="height:6px"></div>
+            <button id="btnDice" class="btn" style="padding:8px 12px">Randomize prompt 🎲</button>
+          </div>
+
+          <div class="muted" style="margin-top:14px; font-size:12px">
+            We don’t store your audio; it’s sent to the analyzer and immediately discarded.
           </div>
         </div>
+      </section>
 
-        <div class="field">
-          <div class="lbl">What to fix now</div>
-          <div class="box multiline" id="fixNow">–</div>
+      <!-- RIGHT: debug + results -->
+      <section class="card">
+        <div class="inner">
+          <div class="api-bar">
+            <div class="api-dot" id="apiDot" title="API status"></div>
+            <input id="api" class="api-input" placeholder="https://your-endpoint.vercel.app/api/analyze" />
+            <button class="btn" id="saveApi">Save</button>
+            <button class="btn" id="shareLink">Share</button>
+          </div>
+
+          <div class="title">Debug / Raw response</div>
+          <pre id="raw">–</pre>
+
+          <div style="height:10px"></div>
+          <div class="title">Summary</div>
+          <div class="row-mini" style="margin-bottom:8px">
+            <span class="badge">Level: <span id="levelOut">–</span></span>
+            <span class="badge">Fillers: <span id="fillersOut">0</span></span>
+          </div>
+
+          <div class="two">
+            <div>
+              <div class="muted" style="margin-bottom:6px">What to fix now</div>
+              <div class="out" id="fixNowOut">–</div>
+            </div>
+            <div>
+              <div class="muted" style="margin-bottom:6px">Next prompt (30–45s)</div>
+              <div class="out" id="nextPromptOut">–</div>
+            </div>
+          </div>
+
+          <div style="height:16px"></div>
+          <div class="title">Grammar</div>
+          <div class="list" id="grammarList"></div>
+
+          <div style="height:16px"></div>
+          <div class="title">Pronunciation</div>
+          <div class="list" id="pronList"></div>
         </div>
-
-        <div class="field">
-          <div class="lbl">Next prompt (30–45s)</div>
-          <div class="box multiline" id="nextPrompt">–</div>
-        </div>
-      </div>
+      </section>
     </div>
 
-    <div class="card" style="margin-top:14px">
-      <div class="head">Grammar</div>
-      <div class="inner">
-        <div class="box multiline" id="grammarBox">–</div>
-      </div>
-    </div>
+    <footer>
+      © 2025 <a href="https://simpleia.com" target="_blank" rel="noopener">Simpleia</a> — Built by
+      <a href="https://aosama.net/" target="_blank" rel="noopener">Abdo Osama</a>
+    </footer>
+  </div>
 
-    <div class="card" style="margin-top:14px">
-      <div class="head">Pronunciation</div>
-      <div class="inner">
-        <div class="box multiline" id="pronBox">–</div>
-      </div>
-    </div>
-  </section>
-</div>
-
-<footer>
-  © 2025 <a href="https://simpleia.com" target="_blank">Simpleia</a> — Built by <a href="https://aosama.net/" target="_blank">Abdo Osama</a>.
-</footer>
+  <div class="toast" id="toast"></div>
 
 <script>
+/* ================== SETTINGS / GOALS / PROMPTS =================== */
+const GOALS = [
+  {
+    key:'work', label:'Work English',
+    starters:[
+      'Explain one problem your team faced and how you solved it.',
+      'Describe a recent project you led and one lesson you learned.',
+      'Give a 45-second update on your current task and next step.'
+    ]
+  },
+  {
+    key:'daily', label:'Daily Life',
+    starters:[
+      'Describe your last weekend in 45 seconds.',
+      'Tell me about a typical day in your life.',
+      'Talk about a hobby you enjoy and why.'
+    ]
+  },
+  {
+    key:'interview', label:'Interview Prep',
+    starters:[
+      'Tell me about yourself in under one minute.',
+      'What is your biggest strength at work?',
+      'Describe a time you handled a difficult situation.'
+    ]
+  },
+  {
+    key:'travel', label:'Travel',
+    starters:[
+      'Describe a city you want to visit and why.',
+      'Talk about your best travel experience.',
+      'Explain how you plan a short weekend trip.'
+    ]
+  }
+];
 
-  
-/* ==============================
-   Config & helpers
-============================== */
-const API_INPUT = document.getElementById('api');
-const apiDot = document.getElementById('apiDot');
-const saveApiBtn = document.getElementById('saveApi');
-const debugBox = document.getElementById('debug');
+const FRIENDLY_LEVEL = (cefr) => {
+  const x = (cefr||'').toUpperCase();
+  if (x==='A1'||x==='A2') return 'Beginner';
+  if (x==='B1') return 'Intermediate';
+  if (x==='B2') return 'Advanced';
+  if (x==='C1') return 'Advanced';
+  if (x==='C2') return 'Fluent';
+  return '–';
+};
 
-const levelFriendly = document.getElementById('levelFriendly');
-const cefrSmall = document.getElementById('cefrSmall');
-const fillersNum = document.getElementById('fillersNum');
-const fixNow = document.getElementById('fixNow');
-const nextPrompt = document.getElementById('nextPrompt');
-const grammarBox = document.getElementById('grammarBox');
-const pronBox = document.getElementById('pronBox');
-
-const startBtn = document.getElementById('startBtn');
-const stopBtn  = document.getElementById('stopBtn');
-const sendBtn  = document.getElementById('sendBtn');
+/* =========================== UI REFS ============================= */
+const btnStart = document.getElementById('btnStart');
+const btnStop  = document.getElementById('btnStop');
+const btnSend  = document.getElementById('btnSend');
 const timerEl  = document.getElementById('timer');
 
+const starterText = document.getElementById('starterText');
+const btnDice = document.getElementById('btnDice');
 const goalChips = document.getElementById('goalChips');
-const shuffleBtn = document.getElementById('shuffle');
-const starterBox = document.getElementById('starterBox');
 
-const FRIENDLY = {
-  A1:{friendly:'Beginner'},
-  A2:{friendly:'Basic'},
-  B1:{friendly:'Average'},
-  B2:{friendly:'Advanced'},
-  C1:{friendly:'Fluent'},
-  C2:{friendly:'Fluent+'},
-};
+const raw = document.getElementById('raw');
+const levelOut = document.getElementById('levelOut');
+const fillersOut = document.getElementById('fillersOut');
+const fixNowOut = document.getElementById('fixNowOut');
+const nextPromptOut = document.getElementById('nextPromptOut');
+const grammarList = document.getElementById('grammarList');
+const pronList = document.getElementById('pronList');
 
-const STARTER = {
-  'Work English': [
-    "Give a quick update on a project you’re working on. What changed this week?",
-    "Explain one problem your team faced and how you solved it.",
-    "Describe a recent meeting: goals, outcomes, and next steps."
-  ],
-  'Casual English': [
-    "Talk about your last weekend from morning to night.",
-    "Describe your favorite hobby and how you got into it.",
-    "Tell a short story about a happy memory."
-  ],
-  'Interview Prep': [
-    "Introduce yourself and explain your biggest strength with an example.",
-    "Describe a time you overcame a challenge at work.",
-    "Explain a project you’re proud of: your role and impact."
-  ],
-  'Travel English': [
-    "Describe your favorite city to visit. What should a new visitor do?",
-    "Tell the story of a trip that went wrong and what you learned.",
-    "Explain how you would plan a weekend in a new country."
-  ]
-};
-
-function pickStarter(goal){
-  const arr = STARTER[goal] || STARTER['Work English'];
-  return arr[Math.floor(Math.random()*arr.length)];
-}
-
-function setStarter(){
-  const active = goalChips.querySelector('.chip.active');
-  const goal = active?.dataset.goal || 'Work English';
-  const text = pickStarter(goal);
-  starterBox.textContent = text;
-  nextPrompt.textContent = text; // prefill so users always have something to say
-}
-
-/* Persist API */
-const LS_KEY = 'ec_api_url';
-API_INPUT.value = localStorage.getItem(LS_KEY) || localStorage.getItem('ec_make_url') || ''; // read old key too
-saveApiBtn.onclick = () => {
-  localStorage.setItem(LS_KEY, API_INPUT.value.trim());
-  apiDot.style.background = '#22c55e';
-};
-
-  // --- Prefill from ?api= (and save it)
-(function hydrateFromQuery() {
-  const qs = new URLSearchParams(location.search);
-  const apiParam = qs.get('api');
-  if (apiParam) {
-    API_INPUT.value = apiParam.trim();
-    localStorage.setItem(LS_KEY, API_INPUT.value);
-    apiDot.style.background = '#22c55e';
-  }
-})();
-
-// Optional: also honor ?goal=Work%20English etc.
-(function hydrateGoal() {
-  const qs = new URLSearchParams(location.search);
-  const g = qs.get('goal');
-  if (!g) return;
-  const chip = [...goalChips.querySelectorAll('.chip')]
-    .find(c => (c.dataset.goal || '').toLowerCase() === g.toLowerCase());
-  if (chip) {
-    goalChips.querySelectorAll('.chip').forEach(c=>c.classList.remove('active'));
-    chip.classList.add('active');
-    setStarter();
-  }
-})();
-
-// --- Share button: copies link with ?api=<current value>
-function buildShareURL() {
-  const api = (API_INPUT.value || '').trim();
-  const u = new URL(location.href);
-  if (api) u.searchParams.set('api', api);
-  else u.searchParams.delete('api');
-  // keep ?goal= if present (useful when sharing a goal)
-  return u.toString();
-}
-
+const apiDot = document.getElementById('apiDot');
+const apiInput = document.getElementById('api');
+const saveBtn = document.getElementById('saveApi');
 const shareBtn = document.getElementById('shareLink');
-shareBtn?.addEventListener('click', async () => {
-  try {
-    const url = buildShareURL();
-    await navigator.clipboard.writeText(url);
-    debugBox.textContent = 'Copied share link:\n' + url;
-  } catch (e) {
-    debugBox.textContent = 'Could not copy link: ' + e.message + '\n' + buildShareURL();
-  }
-});
+const toast = document.getElementById('toast');
 
-/* Goal chips */
-goalChips.addEventListener('click', (e)=>{
-  const chip = e.target.closest('.chip');
-  if(!chip) return;
-  goalChips.querySelectorAll('.chip').forEach(c=>c.classList.remove('active'));
-  chip.classList.add('active');
-  setStarter();
-});
-
-shuffleBtn.addEventListener('click', setStarter);
-
-/* ==============================
-   Recorder
-============================== */
-let mediaRecorder, chunks=[], startedAt=0, timerInt=null;
-
-function fmt(sec){
-  sec = Math.max(0,Math.floor(sec));
-  const m = String(Math.floor(sec/60)).padStart(2,'0');
-  const s = String(sec%60).padStart(2,'0');
-  return `${m}:${s}`;
+/* ====================== API MEMORY / STATUS ====================== */
+const LS_KEY='ec_api';
+function isValidApi(u){
+  try{ const v=new URL(u); return /^https?:/.test(v.protocol) && /\/api\/analyze$/.test(v.pathname); }
+  catch{ return false; }
 }
+function setApi(u){ localStorage.setItem(LS_KEY,u); apiInput.value=u; markApi(true); }
+function getApi(){ return (localStorage.getItem(LS_KEY)||'').trim(); }
+function markApi(ok){ apiDot.style.background = ok ? 'var(--ok)' : 'var(--err)'; }
+(function hydrateApi(){
+  const qs = new URLSearchParams(location.search);
+  const fromQuery=(qs.get('api')||'').trim();
+  const stored=getApi(); const chosen=fromQuery||stored;
+  if (chosen && isValidApi(chosen)) setApi(chosen); else markApi(false);
+})();
+saveBtn.addEventListener('click', ()=>{
+  const v=(apiInput.value||'').trim();
+  if(!isValidApi(v)) return notify('Please paste a valid API like https://…/api/analyze');
+  setApi(v); notify('Saved!');
+});
+shareBtn.addEventListener('click', async ()=>{
+  const api=getApi(); const url=new URL(location.href);
+  if(api) url.searchParams.set('api',api); else url.searchParams.delete('api');
+  try{ await navigator.clipboard.writeText(url.toString()); notify('Share link copied.'); }
+  catch{ notify(url.toString()); }
+});
+function requireApiOrWarn(){ const a=getApi(); if(!isValidApi(a)){ notify('Please set a valid Analyzer API URL first.'); return null; } return a; }
 
-function tick(){
-  const sec = (Date.now()-startedAt)/1000;
-  timerEl.textContent = fmt(sec);
+/* ====================== GOAL CHIPS / STARTER ===================== */
+let currentGoal = GOALS[0];
+function renderGoalChips(){
+  goalChips.innerHTML='';
+  GOALS.forEach(g=>{
+    const el=document.createElement('div');
+    el.className='chip'+(g.key===currentGoal.key?' active':'');
+    el.textContent=g.label;
+    el.onclick=()=>{ currentGoal=g; renderGoalChips(); setRandomStarter(); };
+    goalChips.appendChild(el);
+  });
 }
+function setRandomStarter(){
+  const arr=currentGoal.starters;
+  starterText.textContent = arr[Math.floor(Math.random()*arr.length)];
+}
+btnDice.addEventListener('click', setRandomStarter);
+renderGoalChips(); setRandomStarter();
 
-startBtn.onclick = async () => {
+/* ============================ RECORDER =========================== */
+let media,rec,chunks=[],startTime=0,timerI=null,blob=null;
+
+function fmt(ms){ const s=Math.floor(ms/1000); const m=String(Math.floor(s/60)).padStart(2,'0'); const r=String(s%60).padStart(2,'0'); return `${m}:${r}`; }
+function setButtons(busy){
+  btnStart.disabled=busy; btnStop.disabled=!busy; btnSend.disabled=busy;
+  document.body.style.cursor = busy ? 'progress' : 'default';
+}
+async function startRec(){
   try{
-    const stream = await navigator.mediaDevices.getUserMedia({audio:true});
-    chunks = [];
-    mediaRecorder = new MediaRecorder(stream,{mimeType:'audio/webm'});
-    mediaRecorder.ondataavailable = e => { if(e.data.size>0) chunks.push(e.data); };
-    mediaRecorder.start(250);
-
-    startedAt = Date.now();
-    timerInt = setInterval(tick, 250);
-
-    startBtn.disabled = true;
-    stopBtn.disabled  = false;
-    sendBtn.disabled  = true;
-  }catch(err){
-    alert("Mic access failed: " + err.message);
+    media = await navigator.mediaDevices.getUserMedia({audio:true});
+    chunks=[]; rec = new MediaRecorder(media, {mimeType:'audio/webm;codecs=opus'});
+    rec.ondataavailable=e=>{ if(e.data?.size>0) chunks.push(e.data); };
+    rec.onstop=()=>{ blob=new Blob(chunks,{type:'audio/webm'}); if(media){media.getTracks().forEach(t=>t.stop());} };
+    rec.start(200);
+    startTime=performance.now(); clearInterval(timerI);
+    timerI=setInterval(()=>{ timerEl.textContent = fmt(performance.now()-startTime); }, 250);
+    setButtons(true);
+  }catch(e){
+    notify('Microphone not available.'); console.error(e);
   }
-};
+}
+function stopRec(){
+  try{ rec?.stop(); }catch{}
+  clearInterval(timerI);
+  timerEl.textContent = fmt(performance.now()-startTime);
+  setButtons(false);
+}
 
-stopBtn.onclick = () => {
-  if(!mediaRecorder) return;
-  mediaRecorder.stop();
-  mediaRecorder.stream.getTracks().forEach(t=>t.stop());
-  clearInterval(timerInt);
-  sendBtn.disabled = false;
-  stopBtn.disabled = true;
-  startBtn.disabled = false;
-};
+btnStart.addEventListener('click', startRec);
+btnStop.addEventListener('click', stopRec);
 
+/* ============================ ANALYZE ============================ */
 async function sendAnalyze(){
-  const api = (API_INPUT.value||'').trim();
-  if(!/^https?:\/\//.test(api)) {
-    alert('Please set a valid Analyzer API URL first.'); return;
-  }
-  if(!chunks.length){ alert('Please record something first.'); return; }
-
-  const blob = new Blob(chunks,{type:'audio/webm'});
-  const file = new File([blob], 'audio.webm', {type: blob.type});
-  const dur = Math.round((Date.now()-startedAt)/1000);
-
-  const active = goalChips.querySelector('.chip.active');
-  const goal = active?.dataset.goal || 'Work English';
-
-  const fd = new FormData();
+  const api=requireApiOrWarn(); if(!api) return;
+  if(!blob || blob.size===0){ notify('Please record first, then Send & Analyze.'); return; }
+  const dur=Math.round((performance.now()-startTime)/1000);
+  const fd=new FormData();
+  const file=new File([blob],'audio.webm',{type:blob.type||'audio/webm'});
   fd.append('files[]', file);
   fd.append('duration_sec', String(dur));
-  fd.append('goal', goal);
+  fd.append('goal', currentGoal.label);
 
-  setBusy(true, 'Sending…');
+  markApi(true);
+  setButtons(true);
+  raw.textContent='Sending…';
 
   try{
-    const res = await fetch(api, {method:'POST', body: fd});
-    const raw = await res.text();
-    debugBox.textContent = raw || '(empty)';
-    let json=null;
-    try { json = JSON.parse(raw); } catch(e){ json = null; }
-    if(json) render(json);
-    else statusBubble(false);
+    const res=await fetch(api,{method:'POST',body:fd});
+    const text=await res.text();
+    raw.textContent=text||'(empty response)';
+
+    if(!res.ok){ notify('Analyzer error'); setButtons(false); return; }
+
+    let json; try{ json=JSON.parse(text); }catch{ notify('Analyzer returned non-JSON'); setButtons(false); return; }
+    renderResult(json);
   }catch(err){
-    debugBox.textContent = 'Request failed: ' + err.message;
-    statusBubble(false);
+    notify('Network error'); console.error(err);
   }finally{
-    setBusy(false);
+    setButtons(false);
   }
 }
-sendBtn.onclick = sendAnalyze;
+btnSend.addEventListener('click', sendAnalyze);
 
-function setBusy(b, txt=''){
-  document.body.style.cursor = b ? 'progress' : 'default';
-  [startBtn, stopBtn, sendBtn, shuffleBtn].forEach(bn => bn.disabled = !!b);
-  if(b) debugBox.textContent = txt;
-}
-function statusBubble(ok){
-  apiDot.style.background = ok ? '#22c55e' : '#ef4444';
-}
+/* =========================== RENDERING =========================== */
+function renderResult(j){
+  // Fallback if analyzer says nothing useful
+  if(j.fallback){
+    levelOut.textContent = '–';
+    fillersOut.textContent = '0';
+    fixNowOut.textContent = 'Speak for at least 30–60 seconds in full sentences.';
+    nextPromptOut.textContent = starterText.textContent;
+    grammarList.innerHTML=''; pronList.innerHTML='';
+    return;
+  }
 
-/* ==============================
-   Render results
-============================== */
-function render(d){
-  statusBubble(true);
-
-  // Friendly level
-  let cefr = (d.cefr_estimate||'').toUpperCase();
-  let friendly = FRIENDLY[cefr]?.friendly || (cefr ? cefr : '—');
-  levelFriendly.textContent = friendly;
-  cefrSmall.textContent = cefr ? `(${cefr})` : '';
-
-  // Fillers
-  const fillers = (d.fluency && typeof d.fluency.fillers==='number') ? d.fluency.fillers : 0;
-  fillersNum.textContent = String(fillers);
-
-  // What to fix now & next prompt
-  fixNow.textContent = d.one_thing_to_fix || '—';
-  nextPrompt.textContent = d.next_prompt || nextPrompt.textContent || starterBox.textContent || '—';
+  levelOut.textContent   = FRIENDLY_LEVEL(j.cefr_estimate);
+  fillersOut.textContent = String(j?.fluency?.fillers ?? 0);
+  fixNowOut.textContent  = (j?.one_thing_to_fix || j?.rationale || '–');
+  nextPromptOut.textContent = (j?.next_prompt || starterText.textContent);
 
   // Grammar
-  if(Array.isArray(d.grammar_issues) && d.grammar_issues.length){
-    grammarBox.innerHTML = d.grammar_issues.map(g => {
-      const err = (g.error||'').trim();
-      const fix = (g.fix||'').trim();
-      const why = (g.why||'').trim();
-      return `<div style="margin-bottom:10px">
-        <div><strong>✖ ${escapeHTML(err||'-')}</strong></div>
-        <div style="opacity:.7">→ ${escapeHTML(fix||'-')}</div>
-        <div class="hint" style="margin-top:4px">${escapeHTML(why||'')}</div>
-      </div>`;
-    }).join('');
-  }else{
-    grammarBox.textContent = '—';
-  }
+  grammarList.innerHTML='';
+  (j?.grammar_issues||[]).forEach(g=>{
+    const row=document.createElement('div'); row.className='li';
+    row.innerHTML = `
+      <div class="tag">error</div> ${escapeHtml(g.error||'')}
+      <div style="height:6px"></div>
+      <div class="tag">fix</div> ${escapeHtml(g.fix||'')}
+      ${g.why ? `<div style="height:6px"></div><div class="tag">why</div> ${escapeHtml(g.why)}`:''}
+    `;
+    grammarList.appendChild(row);
+  });
 
   // Pronunciation
-  if(Array.isArray(d.pronunciation) && d.pronunciation.length){
-    pronBox.innerHTML = d.pronunciation.map(p => {
-      const w = (p.sound_or_word||'').trim();
-      const issue = (p.issue||'').trim();
-      const pair = (p.minimal_pair||'').trim();
-      return `<div style="margin-bottom:10px">
-        <div><strong>${escapeHTML(w||'-')}</strong> — ${escapeHTML(issue||'-')}</div>
-        ${pair ? `<div class="hint">Try: ${escapeHTML(pair)}</div>` : ``}
-      </div>`;
-    }).join('');
-  }else{
-    pronBox.textContent = '—';
-  }
+  pronList.innerHTML='';
+  (j?.pronunciation||[]).forEach(p=>{
+    const row=document.createElement('div'); row.className='li';
+    row.innerHTML = `
+      <div class="tag">word</div> ${escapeHtml(p.sound_or_word||'')}
+      ${p.issue ? `<div style="height:6px"></div><div class="tag">issue</div> ${escapeHtml(p.issue)}`:''}
+      ${p.minimal_pair ? `<div style="height:6px"></div><div class="tag">try</div> ${escapeHtml(p.minimal_pair)}`:''}
+    `;
+    pronList.appendChild(row);
+  });
 }
+function escapeHtml(s){ return (s??'').toString().replace(/[<>&"]/g,m=>({ '<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;' }[m])); }
 
-function escapeHTML(s){
-  return (s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+/* ============================== UX =============================== */
+let toastT=null;
+function notify(msg){
+  toast.textContent=msg; toast.style.display='block';
+  clearTimeout(toastT); toastT=setTimeout(()=>toast.style.display='none', 2200);
 }
-
-/* bootstrap */
-setStarter();
-const saved = localStorage.getItem(LS_KEY);
-if(saved){ API_INPUT.value = saved; apiDot.style.background = '#22c55e'; }
 </script>
 </body>
 </html>
