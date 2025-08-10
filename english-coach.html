@@ -1,508 +1,558 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>English Coach</title>
-<link rel="icon" href="/favicon.svg">
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>English Coach — Instant English Feedback</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='96' height='96'%3E%3Crect rx='20' ry='20' width='96' height='96' fill='%237b3ff6'/%3E%3C/svg%3E" />
 <style>
   :root{
-    --bg:#0f0f12;--panel:#16161a;--chip:#202028;--text:#e9e9ee;--muted:#9a9aa6;
-    --accent1:#7b2cf1;--accent2:#5c2df5;--ok:#27d1a0;--warn:#f0c032;--danger:#f06464;
+    --bg:#0f0f12;--panel:#17181c;--panel-2:#1c1e23;--muted:#a3a7b0;--text:#e9e9ef;
+    --accent:#7b3ff6;--accent-2:#5b2cd3;--ok:#28c281;--warn:#ffc858;--danger:#ff5a6d;
+    --card:#1a1b21;--chip:#22232a;--shadow:0 10px 30px rgba(0,0,0,.35);
+    --radius:14px;--radius-sm:10px;--radius-lg:18px;
   }
   *{box-sizing:border-box}
-  body{margin:0;background:var(--bg);color:var(--text);font:16px/1.5 Inter,system-ui,Segoe UI,Roboto,Helvetica,Arial}
-  .wrap{max-width:1180px;margin:32px auto;padding:0 16px}
-  header{display:flex;align-items:center;gap:14px;justify-content:space-between;margin-bottom:18px}
-  .brand{display:flex;align-items:center;gap:12px}
-  .logo{width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,var(--accent1),var(--accent2));box-shadow:0 0 0 2px #0006 inset}
-  h1{margin:0;font-weight:800;font-size:24px}
-  .auth{display:flex;align-items:center;gap:10px}
-  .avatar{width:28px;height:28px;border-radius:50%;object-fit:cover;border:1px solid #0006}
+  html,body{background:var(--bg);color:var(--text);font:16px/1.5 Inter,system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif;margin:0}
+  .wrap{max-width:1220px;margin:32px auto;padding:0 20px}
+  header{display:flex;align-items:center;gap:14px;margin-bottom:22px}
+  .logo{width:26px;height:26px;border-radius:8px;background:linear-gradient(135deg,var(--accent),#9b6bff);box-shadow:0 0 18px rgba(123,63,246,.45)}
+  h1{font-size:26px;margin:0 6px 0 0}
+  .version{margin-left:auto;color:var(--muted);font-size:12px;opacity:.8}
+  .grid{display:grid;grid-template-columns:340px 1fr;gap:18px}
+  @media (max-width:980px){.grid{grid-template-columns:1fr}}
+  .card{background:var(--panel);border:1px solid #23252c;border-radius:var(--radius);box-shadow:var(--shadow)}
+  .card h3{margin:0 0 10px;font-size:14px;color:#cfd2da;letter-spacing:.4px}
+  .section{padding:16px}
+  .chip-row{display:flex;flex-wrap:wrap;gap:10px}
+  .chip{background:var(--chip);color:#dfe2ea;border:1px solid #2a2c35;padding:10px 14px;border-radius:999px;cursor:pointer;user-select:none}
+  .chip.active{background:linear-gradient(135deg,var(--accent),#9b6bff);border-color:transparent;color:#fff;box-shadow:0 8px 20px rgba(123,63,246,.35)}
+  .row{display:flex;gap:10px;align-items:center}
+  .btn{border:0;border-radius:14px;padding:14px 18px;font-weight:700;letter-spacing:.2px;cursor:pointer}
+  .btn-primary{background:linear-gradient(135deg,var(--accent),#9b6bff);color:#fff}
+  .btn-ghost{background:#24252c;color:#cdd1da}
+  .btn-secondary{background:#23242b;color:#dfe2ea;border:1px solid #2b2d36}
+  .btn-tertiary{background:#1f2026;color:#c2c6cf;border:1px solid #2a2c33}
+  .btn[disabled]{opacity:.5;cursor:not-allowed}
   .muted{color:var(--muted)}
-  .btn{display:inline-flex;align-items:center;gap:10px;border:0;border-radius:12px;padding:10px 14px;font-weight:800;cursor:pointer;color:#fff;background:linear-gradient(135deg,var(--accent1),var(--accent2))}
-  .btn.secondary{background:var(--chip);color:var(--text)}
-  .btn:disabled{opacity:.5;cursor:not-allowed}
-
-  .grid{display:grid;grid-template-columns:320px 1fr;gap:18px}
-  @media (max-width:950px){.grid{grid-template-columns:1fr}}
-  .card{background:var(--panel);border-radius:14px;box-shadow:0 8px 24px rgba(0,0,0,.25);padding:16px}
-
-  .section-title{font-weight:700;margin:0 0 8px}
-  .chip-row{display:flex;flex-wrap:wrap;gap:10px;margin:6px 0 12px}
-  .chip{background:var(--chip);color:var(--text);border-radius:12px;padding:10px 14px;font-weight:700}
-  .chip.active{background:linear-gradient(135deg,var(--accent1),var(--accent2));box-shadow:0 10px 18px rgba(124,45,240,.25)}
-
-  .row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
-  .timer{font-weight:900;font-size:34px;background:#111218;border-radius:14px;padding:10px 14px;min-width:150px;text-align:center}
-  .bar{height:10px;border-radius:8px;background:#2a2a33;flex:1;position:relative;overflow:hidden}
-  .bar>i{position:absolute;left:0;top:0;bottom:0;width:0;border-radius:8px;background:var(--danger);transition:width .3s ease,background .3s ease}
-  .list{list-style:none;margin:6px 0 0;padding:0;display:grid;gap:8px}
-  .item{background:#1a1a20;border-radius:12px;padding:12px}
-
-  .km{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
-  .k{background:#1b1b23;border-radius:12px;padding:8px 10px;font-weight:700}
-
-  footer{display:flex;justify-content:center;margin:20px 0 40px;color:var(--muted);gap:8px;font-size:13px}
-  .badge{background:#1b1b23;padding:3px 8px;border-radius:10px}
-
+  .mono{font-family:ui-monospace,Menlo,Consolas,monospace}
+  .pill{padding:6px 10px;border-radius:999px;background:#202129;border:1px solid #2c2e37;font-size:12px;color:#c7cbd5}
+  .meter{height:12px;background:#24252b;border:1px solid #2c2e36;border-radius:999px;overflow:hidden}
+  .meter>i{display:block;height:100%;background:linear-gradient(90deg,#ff6b6b,#ffc858,#34d399);width:0%}
+  .timer{font-size:38px;font-weight:900;letter-spacing:.5px;background:#1a1b21;border:1px solid #2a2c34;border-radius:20px;padding:16px 18px;min-width:190px;text-align:center}
+  .title{font-weight:800;font-size:28px;line-height:1.2;margin:0 0 10px}
+  .subtitle{color:#c8cbd4;margin-top:-4px}
+  .block{background:var(--panel-2);border:1px solid #262830;border-radius:14px;padding:14px}
+  .list{display:grid;gap:10px}
+  .item{background:#1a1b21;border:1px solid #272a33;border-radius:12px;padding:12px}
+  .small{font-size:12px;color:#b7bbc6}
+  textarea, input[type="text"], input[type="email"]{background:#1a1b21;border:1px solid #2c2f37;color:#e7e9ef;border-radius:12px;padding:12px;width:100%}
+  .footer{margin:26px 0 60px;color:#aeb3bf;text-align:center}
   /* modal */
-  .modalBg{position:fixed;inset:0;background:#0008;display:none;align-items:center;justify-content:center;padding:16px}
-  .modal{background:var(--panel);border-radius:16px;max-width:560px;width:100%;padding:16px;box-shadow:0 10px 30px #000a}
-  .field{display:flex;flex-direction:column;gap:6px;margin:8px 0}
-  input,textarea{background:#1b1b23;border:1px solid #282838;color:var(--text);border-radius:10px;padding:10px}
-  .stars{display:flex;gap:6px}
-  .star{font-size:22px;cursor:pointer}
-  .star.on{color:#ffd36a}
+  .modal{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;z-index:50}
+  .modal.open{display:flex}
+  .modal .sheet{width:min(560px,92vw);background:var(--panel);border:1px solid #262931;border-radius:16px;box-shadow:var(--shadow)}
+  .sheet header{padding:14px 16px;border-bottom:1px solid #262931}
+  .sheet .body{padding:16px}
+  .sheet footer{padding:12px 16px;border-top:1px solid #262931;display:flex;justify-content:flex-end;gap:10px}
+  .stars{display:flex;gap:6px;font-size:20px;cursor:pointer}
+  .star{filter:grayscale(1);opacity:.6}
+  .star.active{filter:none;opacity:1}
+  /* auth bar */
+  .auth-card .btn{padding:10px 14px}
+  .link{color:#cdbbff;text-decoration:underline;cursor:pointer}
 </style>
 </head>
 <body>
 <div class="wrap">
   <header>
-    <div class="brand">
-      <div class="logo" aria-hidden="true"></div>
-      <h1>English Coach</h1>
-    </div>
-    <div class="auth">
-      <img id="avatar" class="avatar" src="" alt="" style="display:none">
-      <span id="who" class="muted"></span>
-      <button id="btnAuth" class="btn secondary">Sign in with Google</button>
-    </div>
+    <div class="logo"></div>
+    <h1>English Coach</h1>
+    <div class="version mono">v1.2.12</div>
   </header>
 
-  <div class="grid">
-    <!-- left column -->
-    <aside class="card">
-      <h2 class="section-title">Goal</h2>
-      <div id="goalRow" class="chip-row">
-        <button class="chip active" data-goal="Work English">Work English</button>
-        <button class="chip" data-goal="Daily Life">Daily Life</button>
-        <button class="chip" data-goal="Interview Prep">Interview Prep</button>
-        <button class="chip" data-goal="Travel">Travel</button>
-        <button class="chip" data-goal="Presentation">Presentation</button>
+  <!-- Auth bar -->
+  <div id="auth-bar" class="card section auth-card" style="margin-bottom:14px;">
+    <div id="auth-out">
+      <div class="muted" style="margin-bottom:8px">Sign in to save your streak & appear on the leaderboard</div>
+      <div class="row" style="flex-wrap:wrap;gap:8px">
+        <button id="btn-google"   class="btn btn-secondary">Continue with Google</button>
+        <button id="btn-facebook" class="btn btn-secondary">Continue with Facebook</button>
       </div>
-
-      <div class="section-title" style="margin-top:12px">Recording</div>
-      <div class="row">
-        <button id="btnStart" class="btn"><span>▶</span> Start recording</button>
-        <button id="btnStop" class="btn secondary">■ Stop</button>
+      <div class="row" style="margin-top:8px;gap:8px">
+        <input id="email-input" type="email" placeholder="you@email.com" style="max-width:260px">
+        <button id="btn-email" class="btn btn-secondary">Email sign-in link</button>
       </div>
-      <div class="row" style="margin-top:8px">
-        <div id="timer" class="timer">00:00</div>
-        <div class="bar"><i id="timeFill"></i></div>
+      <div id="email-hint" class="small" style="display:none;margin-top:6px">Check your inbox for the magic link.</div>
+    </div>
+    <div id="auth-in" style="display:none">
+      <div class="row" style="justify-content:space-between">
+        <div id="user-badge" class="muted"></div>
+        <button id="btn-signout" class="btn btn-tertiary">Sign out</button>
       </div>
-      <button id="btnSend" class="btn" style="width:100%;margin-top:12px" disabled>Send & Analyze</button>
-
-      <div class="section-title" style="margin-top:16px">What to say to start</div>
-      <div class="item" id="promptBox">Describe a recent project you led and one lesson you learned.</div>
-      <div class="row" style="margin-top:8px">
-        <button id="btnRandom" class="btn secondary">🎲 Randomize prompt</button>
-        <span class="muted" style="margin-left:auto">We don’t store your audio.</span>
-      </div>
-    </aside>
-
-    <!-- right column -->
-    <main class="card">
-      <div class="km">
-        <span id="liveDot" class="k">● Idle</span>
-        <span class="k">Level: <b id="lvlTxt">–</b></span>
-        <span class="k">Fillers: <b id="fillersTxt">0</b></span>
-        <span class="k">Streak: <b id="streakTxt">0</b></span>
-        <span class="k">Sessions: <b id="sessionsTxt">0</b></span>
-      </div>
-
-      <div class="km" style="margin-bottom:8px">
-        <span class="k" style="min-width:240px">Level meter
-          <span class="bar" style="width:140px;margin-left:8px"><i id="levelFill" style="width:0;background:var(--warn)"></i></span>
-          <span id="levelPct" class="muted" style="margin-left:6px">0%</span>
-        </span>
-        <!-- Relevancy removed as requested -->
-      </div>
-
-      <section>
-        <h3 class="section-title">Pronunciation</h3>
-        <ul id="pronList" class="list"><li class="muted">–</li></ul>
-      </section>
-
-      <section style="margin-top:8px">
-        <h3 class="section-title">Grammar</h3>
-        <ul id="gramList" class="list"><li class="muted">–</li></ul>
-      </section>
-
-      <section style="margin-top:8px">
-        <h3 class="section-title">What to fix now</h3>
-        <div id="fixNow" class="item muted">–</div>
-      </section>
-
-      <section style="margin-top:8px">
-        <h3 class="section-title">Next prompt (30–45s)</h3>
-        <div id="nextPrompt" class="item muted">–</div>
-      </section>
-
-      <section style="margin-top:8px">
-        <h3 class="section-title">Leaderboard</h3>
-        <ul id="leaderboard-list" class="list"><li class="muted">Loading…</li></ul>
-      </section>
-    </main>
+    </div>
   </div>
 
-  <footer>
-    <span>© 2025 <a href="https://simpleia.com" target="_blank" class="muted" style="text-decoration:none;color:inherit">Simpleia</a> — Built by <a href="https://aosama.net" target="_blank" class="muted" style="text-decoration:none;color:inherit">Abdo Osama</a></span>
-    <span class="badge">v1.3.2</span>
-  </footer>
+  <div class="grid">
+    <!-- LEFT: controls -->
+    <div class="card section">
+      <div class="title">Record for 60–90 seconds.</div>
+      <div class="subtitle">We’ll analyze fluency & correctness, then show key corrections and a next prompt.</div>
+
+      <div style="height:10px"></div>
+      <h3>Goal</h3>
+      <div class="chip-row" id="goal-row">
+        <div class="chip active" data-goal="Work English">Work English</div>
+        <div class="chip" data-goal="Daily Life">Daily Life</div>
+        <div class="chip" data-goal="Interview Prep">Interview Prep</div>
+        <div class="chip" data-goal="Travel">Travel</div>
+        <div class="chip" data-goal="Presentation">Presentation</div>
+      </div>
+
+      <div style="height:16px"></div>
+      <h3>Recording</h3>
+      <div class="row" style="flex-wrap:wrap">
+        <button id="btn-start" class="btn btn-primary">▶️&nbsp;&nbsp;Start recording</button>
+        <button id="btn-stop"  class="btn btn-tertiary" disabled>⏹️&nbsp;&nbsp;Stop</button>
+      </div>
+
+      <div class="row" style="align-items:center;margin-top:12px">
+        <div id="timer" class="timer mono">00:00</div>
+        <div class="meter" style="flex:1">
+          <i id="progress" style="width:0%"></i>
+        </div>
+      </div>
+
+      <div style="height:12px"></div>
+      <button id="btn-send" class="btn btn-primary" style="width:100%" disabled>Send & Analyze</button>
+
+      <div style="height:16px"></div>
+      <h3>What to say to start</h3>
+      <div class="block">
+        <textarea id="prompt" rows="3">Describe a recent project you led and one lesson you learned.</textarea>
+        <div class="row" style="margin-top:10px;gap:8px">
+          <button id="btn-random" class="btn btn-ghost">🎲 Randomize prompt</button>
+          <div class="small muted">We don’t store your audio; it’s sent to the analyzer and immediately discarded.</div>
+        </div>
+      </div>
+
+      <div style="height:18px"></div>
+      <div class="block">
+        <div class="row" style="gap:8px;flex-wrap:wrap">
+          <div class="pill" id="pill-live">● Idle</div>
+          <div class="pill"><b>Level:</b> <span id="level-text">—</span></div>
+          <div class="pill"><b>Fillers:</b> <span id="fillers">0</span></div>
+          <div class="pill"><b>Streak:</b> <span id="streak">0</span></div>
+          <div class="pill"><b>Sessions:</b> <span id="sessions">0</span></div>
+        </div>
+        <div style="height:10px"></div>
+        <div class="small muted">Level meter</div>
+        <div class="meter"><i id="level-meter" style="width:0%"></i></div>
+      </div>
+    </div>
+
+    <!-- RIGHT: results -->
+    <div class="card section">
+      <div class="list">
+
+        <div class="item">
+          <h3>Pronunciation</h3>
+          <div id="pron" class="small muted">–</div>
+        </div>
+
+        <div class="item">
+          <h3>Grammar</h3>
+          <div id="grammar" class="list"></div>
+        </div>
+
+        <div class="item">
+          <h3>What to fix now</h3>
+          <div id="fixnow" class="small muted">–</div>
+        </div>
+
+        <div class="item">
+          <h3>Next prompt (30–45s)</h3>
+          <div id="next" class="small muted">–</div>
+        </div>
+
+        <div class="item">
+          <h3>Leaderboard</h3>
+          <div id="leader" class="small">
+            Public leaderboard requires sign-in. You’ll still see your local totals below.
+            <div id="leader-table" class="list" style="margin-top:10px"></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <div class="footer small">
+    © 2025 <a class="link" href="https://simpleia.com" target="_blank" rel="noreferrer">Simpleia</a> — Built by <a class="link" href="https://aosama.net" target="_blank" rel="noreferrer">Abdo Osama</a> • <span class="mono">v1.2.12</span>
+  </div>
 </div>
 
 <!-- Feedback modal -->
-<div id="fbBg" class="modalBg">
-  <div class="modal">
-    <h3 class="section-title">Quick feedback (required to continue)</h3>
-    <div class="field">
-      <label>Name</label>
-      <input id="fbName" placeholder="Your name"/>
-    </div>
-    <div class="field">
-      <label>Email</label>
-      <input id="fbEmail" placeholder="you@email.com"/>
-    </div>
-    <div class="field">
-      <label>Rating</label>
-      <div id="stars" class="stars">
-        <span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span>
+<div id="modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="fb-title">
+  <div class="sheet">
+    <header><strong id="fb-title">Quick feedback (required to continue)</strong></header>
+    <div class="body">
+      <div class="row" style="gap:10px;flex-wrap:wrap">
+        <input id="fb-name" type="text" placeholder="Your name" style="flex:1;min-width:180px">
+        <input id="fb-email" type="email" placeholder="you@email.com" style="flex:1;min-width:220px">
       </div>
+      <div style="height:10px"></div>
+      <div>Rating</div>
+      <div class="stars" id="stars">
+        <span class="star">⭐</span><span class="star">⭐</span><span class="star">⭐</span><span class="star">⭐</span><span class="star">⭐</span>
+      </div>
+      <div style="height:10px"></div>
+      <textarea id="fb-text" rows="4" placeholder="What did you like? What can be improved?"></textarea>
     </div>
-    <div class="field">
-      <label>Feedback / Suggestions</label>
-      <textarea id="fbMsg" rows="4" placeholder="Tell us what to improve…"></textarea>
-    </div>
-    <div class="row" style="justify-content:flex-end;margin-top:8px">
-      <button id="fbCancel" class="btn secondary">Cancel</button>
-      <button id="fbSubmit" class="btn">Submit feedback</button>
-    </div>
+    <footer>
+      <button id="fb-cancel" class="btn btn-tertiary">Cancel</button>
+      <button id="fb-submit" class="btn btn-primary">Submit feedback</button>
+    </footer>
   </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-/* ====== CONFIG (EDIT THESE) ====== */
-const API_URL = "https://english-coach-endpoint-git-main-abelrahman-osamas-projects.vercel.app/api/analyze"; // <- your analyzer
-const SUPABASE_URL = "https://cstwbjtbwwnxrsvpxqro.supabase.co";          // <- Supabase project URL
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNzdHdianRid3dueHJzdnB4cXJvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ4NDg1OTgsImV4cCI6MjA3MDQyNDU5OH0.D-P8NWdJoro_pzSk6qoi5_Hl6Ohz_hiTZr4-fqmyXkM";                 // <- anon public key
-/* ================================= */
+/* ---------- CONFIG (replace) ---------- */
+const APP_VERSION = 'v1.2.12';
+const ANALYZE_URL = 'https://english-coach-endpoint.vercel.app/api/analyze';   // ← your Vercel API
+const SUPABASE_URL = 'https://YOUR_PROJECT_REF.supabase.co';                   // ← replace
+const SUPABASE_ANON = 'YOUR_SUPABASE_ANON_PUBLIC_KEY';                         // ← replace
 
-const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-const EC_USER_KEY = "ec_user_id";
-const EC_SESSIONS_LOCAL = "ec_sessions_count";
-const EC_STREAK = "ec_streak_days";
-const EC_LAST_DAY = "ec_last_day";
-const FEEDBACK_EVERY_N = 1; // require feedback every N sessions (1 = every time)
+/* ---------- SUPABASE ---------- */
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+const authOut = document.getElementById('auth-out');
+const authIn  = document.getElementById('auth-in');
+const userBadge = document.getElementById('user-badge');
 
-/* --------- Auth UI --------- */
-const btnAuth = document.getElementById("btnAuth");
-const who = document.getElementById("who");
-const avatar = document.getElementById("avatar");
+document.getElementById('btn-google').onclick = () =>
+  supabase.auth.signInWithOAuth({ provider: 'google', options:{ redirectTo: location.origin }});
 
-async function refreshAuthUI(){
-  const { data: { session } } = await sb.auth.getSession();
-  if(session?.user){
-    const { user } = session;
-    // try profile
-    const { data: prof } = await sb.from("profiles").select("*").eq("id", user.id).maybeSingle();
-    who.textContent = prof?.display_name || user.email || "Signed in";
-    if(prof?.avatar_url){ avatar.src = prof.avatar_url; avatar.style.display="block"; } else { avatar.style.display="none"; }
-    btnAuth.textContent = "Sign out";
-    btnAuth.onclick = async ()=>{ await sb.auth.signOut(); await refreshAuthUI(); };
+document.getElementById('btn-facebook').onclick = () =>
+  supabase.auth.signInWithOAuth({ provider: 'facebook', options:{ redirectTo: location.origin }});
+
+document.getElementById('btn-email').onclick = async () => {
+  const email = document.getElementById('email-input').value.trim();
+  if(!email) return;
+  const { error } = await supabase.auth.signInWithOtp({ email, options:{ emailRedirectTo: location.origin }});
+  document.getElementById('email-hint').style.display = error ? 'none' : 'block';
+};
+
+document.getElementById('btn-signout').onclick = async () => { await supabase.auth.signOut(); };
+
+async function onAuthInit(){
+  const { data:{ session } } = await supabase.auth.getSession();
+  applyAuth(session?.user || null);
+}
+supabase.auth.onAuthStateChange((_e, session)=> applyAuth(session?.user || null));
+
+function applyAuth(user){
+  if(user){
+    authOut.style.display = 'none';
+    authIn.style.display = 'block';
+    const name = user.user_metadata?.full_name || user.user_metadata?.name || '';
+    userBadge.textContent = name ? `${name} — ${user.email}` : (user.email||'');
+    document.getElementById('fb-name').value = name||'';
+    document.getElementById('fb-email').value = user.email||'';
   }else{
-    who.textContent = "Guest";
-    avatar.style.display="none";
-    btnAuth.textContent = "Sign in with Google";
-    btnAuth.onclick = async ()=>{
-      await sb.auth.signInWithOAuth({ provider: "google" });
-    };
+    authOut.style.display = 'block';
+    authIn.style.display = 'none';
   }
 }
+onAuthInit();
 
-function getLocalUserId(){
-  let id = localStorage.getItem(EC_USER_KEY);
-  if(!id){ id = crypto.randomUUID(); localStorage.setItem(EC_USER_KEY, id); }
-  return id;
+/* ---------- UI refs ---------- */
+const chips = [...document.querySelectorAll('.chip')];
+const promptEl = document.getElementById('prompt');
+const btnRandom = document.getElementById('btn-random');
+
+const btnStart = document.getElementById('btn-start');
+const btnStop  = document.getElementById('btn-stop');
+const btnSend  = document.getElementById('btn-send');
+const timerEl  = document.getElementById('timer');
+const progEl   = document.getElementById('progress');
+
+const pillLive = document.getElementById('pill-live');
+const levelText= document.getElementById('level-text');
+const levelMeter=document.getElementById('level-meter');
+const fillersEl= document.getElementById('fillers');
+const streakEl = document.getElementById('streak');
+const sessionsEl=document.getElementById('sessions');
+
+const pronEl   = document.getElementById('pron');
+const grammarEl= document.getElementById('grammar');
+const fixEl    = document.getElementById('fixnow');
+const nextEl   = document.getElementById('next');
+
+const leaderWrap = document.getElementById('leader-table');
+
+/* ---------- prompts by goal ---------- */
+const PROMPTS = {
+  'Work English': [
+    'Describe a recent project you led and one lesson you learned.',
+    'Explain one problem your team faced and how you solved it.',
+    'Share a time you gave feedback that helped a teammate improve.'
+  ],
+  'Daily Life': [
+    'What did you do last weekend? Describe it in 45 seconds.',
+    'Explain your morning routine and one habit you’re trying to build.',
+    'Tell a short story about a small win this week.'
+  ],
+  'Interview Prep': [
+    'Tell me about a challenge you faced and how you overcame it.',
+    'Describe your most impactful project and your role.',
+    'What’s a mistake you learned from? Explain briefly.'
+  ],
+  'Travel': [
+    'Describe your favorite trip and one memorable moment.',
+    'If a friend visited your city, where would you take them and why?',
+    'Explain a travel problem you faced and how you handled it.'
+  ],
+  'Presentation': [
+    'Summarize a presentation you recently gave in simple terms.',
+    'Pitch a product you like to someone who has never seen it.',
+    'Explain a chart or figure as if the audience can’t see it.'
+  ]
+};
+function setPromptFor(goal){ promptEl.value = PROMPTS[goal][0]; }
+function randomizePrompt(){
+  if(recording) return; // disabled while recording
+  const goal = currentGoal();
+  const list = PROMPTS[goal]; const i = Math.floor(Math.random()*list.length);
+  promptEl.value = list[i];
 }
+btnRandom.onclick = randomizePrompt;
 
-/* --------- Recorder --------- */
-const btnStart = document.getElementById("btnStart");
-const btnStop  = document.getElementById("btnStop");
-const btnSend  = document.getElementById("btnSend");
-const btnRandom= document.getElementById("btnRandom");
-const promptBox= document.getElementById("promptBox");
-const timerEl  = document.getElementById("timer");
-const timeFill = document.getElementById("timeFill");
-const lvlTxt    = document.getElementById("lvlTxt");
-const fillersTxt= document.getElementById("fillersTxt");
-const streakTxt = document.getElementById("streakTxt");
-const sessionsTxt = document.getElementById("sessionsTxt");
-const levelFill = document.getElementById("levelFill");
-const levelPct  = document.getElementById("levelPct");
-const pronList  = document.getElementById("pronList");
-const gramList  = document.getElementById("gramList");
-const fixNowEl  = document.getElementById("fixNow");
-const nextPromptEl = document.getElementById("nextPrompt");
-const liveDot   = document.getElementById("liveDot");
-
-const MAX_SEC = 95;
-let media, rec, chunks = [];
-let sec = 0, timerInt = null;
-let currentGoal = "Work English";
-let lastResult = null;
-
-document.getElementById("goalRow").addEventListener("click", (e)=>{
-  const b = e.target.closest("[data-goal]");
-  if(!b) return;
-  document.querySelectorAll("#goalRow .chip").forEach(c=>c.classList.remove("active"));
-  b.classList.add("active");
-  currentGoal = b.dataset.goal;
+/* ---------- goal chips ---------- */
+function currentGoal(){ return document.querySelector('.chip.active').dataset.goal; }
+chips.forEach(ch=>{
+  ch.onclick = ()=>{ chips.forEach(c=>c.classList.remove('active')); ch.classList.add('active'); setPromptFor(currentGoal()); };
 });
+setPromptFor(currentGoal());
 
-btnStart.onclick = async () => {
+/* ---------- recorder ---------- */
+let media, rec, chunks=[], startedAt=0, tickInt=null, duration=0, recording=false;
+const MAX_SEC=95; // auto-stop safeguard
+
+function fmt(s){s|=0; const m=String(Math.floor(s/60)).padStart(2,'0'); const sec=String(s%60).padStart(2,'0'); return `${m}:${sec}`;}
+function setLive(on){ pillLive.textContent = on ? '● Live' : '● Idle'; pillLive.style.background = on?'#1e2620':'#202129'; pillLive.style.color=on?'#9ee8c1':'#c7cbd5'; }
+
+async function startRec(){
   try{
-    btnStart.disabled = true; btnStop.disabled = false; btnSend.disabled = true; btnRandom.disabled = true;
-    liveDot.textContent = "● Live";
-    media = await navigator.mediaDevices.getUserMedia({ audio:true });
-    rec = new MediaRecorder(media, { mimeType:"audio/webm" });
-    chunks = [];
-    rec.ondataavailable = e => e.data.size && chunks.push(e.data);
-    rec.onstop = () => media.getTracks().forEach(t=>t.stop());
-    rec.start(250);
+    media = await navigator.mediaDevices.getUserMedia({audio:true});
+    rec = new MediaRecorder(media);
+    chunks=[]; rec.ondataavailable = e=> chunks.push(e.data);
+    rec.onstop = ()=> media.getTracks().forEach(t=>t.stop());
+    rec.start(200);
+    startedAt = Date.now(); duration = 0; updateTimer(0);
+    tickInt = setInterval(()=>{
+      duration = Math.floor((Date.now()-startedAt)/1000);
+      updateTimer(duration);
+      if(duration>=MAX_SEC) stopRec();
+    }, 200);
+    recording = true; btnStart.disabled=true; btnStop.disabled=false; btnSend.disabled=true; btnRandom.disabled=true;
+    setLive(true);
+  }catch(e){ alert('Mic permission denied.'); }
+}
+function stopRec(){
+  if(!recording) return;
+  rec.stop(); clearInterval(tickInt); recording=false;
+  btnStart.disabled=false; btnStop.disabled=true; btnSend.disabled = (chunks.length===0);
+  btnRandom.disabled=false;
+  setLive(false);
+}
+function updateTimer(s){
+  timerEl.textContent = fmt(s);
+  const pct = Math.min(100, Math.round( (s/90)*100 ));
+  const color = s<20?'var(--danger)':(s<45?'var(--warn)':'var(--ok)');
+  progEl.style.width = pct+'%'; progEl.style.background = color;
+}
 
-    sec = 0; paintTimer();
-    clearInterval(timerInt);
-    timerInt = setInterval(()=>{
-      sec++; paintTimer();
-      if(sec>=MAX_SEC) btnStop.click();
-    }, 1000);
-  }catch(e){
-    alert("Mic permission error: "+e.message);
-    btnStart.disabled = false;
-  }
-};
+btnStart.onclick = startRec;
+btnStop.onclick  = stopRec;
 
-btnStop.onclick = () => {
-  if(rec && rec.state!=="inactive") rec.stop();
-  clearInterval(timerInt);
-  btnSend.disabled = chunks.length===0;
-  btnRandom.disabled = false;
-  liveDot.textContent = "● Idle";
-};
+/* ---------- analyze ---------- */
+let feedbackRequired = false;
 
-btnRandom.onclick = () => {
-  if(btnStart.disabled) return; // disabled while recording
-  const options = [
-    "Describe a recent project you led and one lesson you learned.",
-    "Explain a challenge your team faced and how you solved it.",
-    "Talk about a time you disagreed and how you handled it.",
-    "Describe your typical day (~45s).",
-    "What is one skill you want to improve and why?"
-  ];
-  promptBox.textContent = options[Math.floor(Math.random()*options.length)];
-};
+btnSend.onclick = async ()=>{
+  if(recording) stopRec();
+  if(chunks.length===0) return;
+  btnSend.disabled=true;
 
-btnSend.onclick = async () => {
-  if(!chunks.length) return;
-  btnSend.disabled = true;
-
-  const blob = new Blob(chunks, { type:"audio/webm" });
+  const blob = new Blob(chunks, {type:'audio/webm'}); chunks=[];
   const fd = new FormData();
-  fd.append("files[]", blob, "audio.webm");
-  fd.append("duration_sec", String(sec));
-  fd.append("goal", currentGoal);
-  fd.append("prompt_text", promptBox.textContent.trim());
+  fd.append('files[]', new File([blob], 'audio.webm', {type:'audio/webm'}));
+  fd.append('duration_sec', String(duration||0));
+  fd.append('goal', currentGoal());
+  fd.append('prompt_text', promptEl.value);
 
-  const res = await fetch(API_URL, { method:"POST", body:fd });
-  const json = await res.json();
-  renderResult(json);
+  const res = await fetch(ANALYZE_URL, { method:'POST', body: fd }).catch(()=>null);
+  if(!res){ btnSend.disabled=false; return alert('Network error.'); }
+  const json = await res.json().catch(()=> ({}));
 
-  // reset for next try
-  chunks = []; sec = 0; paintTimer(); liveDot.textContent = "● Idle"; btnSend.disabled = true;
-
-  // Save session + refresh leaderboard
-  await postAnalysis(json, { goal: currentGoal, duration_sec: sec });
-  await fetchAndRenderLeaderboard();
-
-  // counters / streak
-  bumpLocalCounters();
-
-  // feedback gate
-  const runs = Number(localStorage.getItem(EC_SESSIONS_LOCAL)||0);
-  if(runs % FEEDBACK_EVERY_N === 0) openFeedback();
-};
-
-function paintTimer(){
-  const mm = String(Math.floor(sec/60)).padStart(2,"0");
-  const ss = String(sec%60).padStart(2,"0");
-  timerEl.textContent = `${mm}:${ss}`;
-  const pct = Math.min(100, Math.round((sec/MAX_SEC)*100));
-  timeFill.style.width = pct+"%";
-  timeFill.style.background = sec<30 ? "var(--danger)" : (sec<60 ? "var(--warn)" : "var(--ok)");
-}
-
-/* --------- Render results --------- */
-function escapeHTML(s){ return String(s||"").replace(/[&<>"']/g, c=>({ "&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;" }[c])); }
-function renderResult(r){
-  lastResult = r;
-  const L = r.friendly_level || r.cefr_estimate || "–";
-  lvlTxt.textContent = L;
-  fillersTxt.textContent = r?.fluency?.fillers ?? 0;
-
-  levelPct.textContent = (r.level_score||0)+"%";
-  levelFill.style.width = (r.level_score||0)+"%";
-  levelFill.style.background = (r.level_score||0) > 66 ? "var(--ok)" : (r.level_score||0) > 33 ? "var(--warn)" : "var(--danger)";
-
-  pronList.innerHTML = (r.pronunciation||[]).map(p => `
-    <li class="item">
-      <b>${escapeHTML(p.sound_or_word||"-")}</b> — ${escapeHTML(p.issue||"-")}
-      <div class="muted">Try: ${escapeHTML(p.minimal_pair||"-")}</div>
-    </li>`).join("") || `<li class="muted">–</li>`;
-
-  gramList.innerHTML = (r.grammar_issues||[]).map(g => `
-    <li class="item">
-      → ${escapeHTML(g.error||"-")}
-      <div>Try: ${escapeHTML(g.fix||"-")}</div>
-      <div class="muted">Why: ${escapeHTML(g.why||"-")}</div>
-    </li>`).join("") || `<li class="muted">–</li>`;
-
-  fixNowEl.textContent = r.one_thing_to_fix || "–";
-  nextPromptEl.textContent = r.next_prompt || "–";
-}
-
-/* --------- Local counters + streak --------- */
-function bumpLocalCounters(){
-  const today = new Date().toISOString().slice(0,10);
-  const last = localStorage.getItem(EC_LAST_DAY);
-  let streak = Number(localStorage.getItem(EC_STREAK)||0);
-  if(!last || last===today){
-    if(!streak) streak = 1; // first day
+  // fallback or error
+  if(json.fallback){
+    levelText.textContent = 'Beginner';
+    levelMeter.style.width = '10%';
+    fillersEl.textContent = '0';
+    pronEl.textContent='–';
+    grammarEl.innerHTML='';
+    fixEl.textContent = json.one_thing_to_fix || 'Speak for at least 30–60 seconds in full sentences.';
+    nextEl.textContent = json.next_prompt || 'Describe your last weekend in ~45 seconds.';
+  }else if(json.ok===false){
+    alert(json.error||'Analyzer error');
   }else{
-    const d1 = new Date(last); const d2 = new Date(today);
-    const diff = (d2 - d1)/(1000*60*60*24);
-    streak = diff===1 ? streak+1 : 1;
+    // render
+    levelText.textContent = json.friendly_level || json.cefr_estimate || '—';
+    levelMeter.style.width = (json.level_score||50)+'%';
+    fillersEl.textContent = json.fluency?.fillers ?? 0;
+
+    // pronunciation list
+    if(Array.isArray(json.pronunciation) && json.pronunciation.length){
+      pronEl.innerHTML = json.pronunciation.map(p=>(
+        `<div class="item small"><b>${escapeHtml(p.sound_or_word||'')}</b> — ${escapeHtml(p.issue||'')}
+         ${p.minimal_pair? `<div class="small muted">Try: ${escapeHtml(p.minimal_pair)}</div>`:''}</div>`
+      )).join('');
+    }else pronEl.textContent='—';
+
+    // grammar list
+    grammarEl.innerHTML = (json.grammar_issues||[]).map(g=>(
+      `<div class="item">
+        <div>→ ${escapeHtml(g.error||'')}</div>
+        <div class="small muted">Try: ${escapeHtml(g.fix||'')}</div>
+        <div class="small muted">Why: ${escapeHtml(g.why||'')}</div>
+      </div>`
+    )).join('') || '<div class="small muted">—</div>';
+
+    fixEl.textContent = json.one_thing_to_fix || '—';
+    nextEl.textContent = json.next_prompt || '—';
   }
-  localStorage.setItem(EC_LAST_DAY, today);
-  localStorage.setItem(EC_STREAK, String(streak));
 
-  let localCount = Number(localStorage.getItem(EC_SESSIONS_LOCAL)||0) + 1;
-  localStorage.setItem(EC_SESSIONS_LOCAL, String(localCount));
+  // save session + update counters
+  await addSession(duration||0, levelText.textContent);
 
-  streakTxt.textContent = String(streak);
-  sessionsTxt.textContent = String(localCount);
-}
+  // reset UI for next
+  timerEl.textContent='00:00'; progEl.style.width='0%'; btnSend.disabled=true;
 
-/* --------- Supabase: store sessions + leaderboard --------- */
-async function getUserIdOrGuest(){
-  const { data:{ session } } = await sb.auth.getSession();
-  return session?.user?.id || getLocalUserId();
-}
-
-async function saveSessionToSupabase({ goal, duration_sec, result }){
-  try{
-    const user_id = await getUserIdOrGuest();
-    const payload = {
-      user_id,
-      goal,
-      duration_sec: Math.round(duration_sec||0),
-      wpm: result?.fluency?.wpm ?? null,
-      fillers: result?.fluency?.fillers ?? null,
-      level_score: result?.level_score ?? null,
-      relevance_score: null /* removed from UI */,
-    };
-    await sb.from("sessions").insert(payload).throwOnError();
-  }catch(e){ console.warn("Supabase insert:", e.message); }
-}
-
-async function fetchAndRenderLeaderboard(){
-  const UL = document.getElementById("leaderboard-list");
-  try{
-    // Get counts per user
-    const { data } = await sb.from("sessions").select("user_id");
-    const counts = new Map();
-    (data||[]).forEach(r => counts.set(r.user_id, (counts.get(r.user_id)||0)+1));
-
-    // fetch names for top 10
-    const top = [...counts.entries()].sort((a,b)=>b[1]-a[1]).slice(0,10);
-    if(!top.length){ UL.innerHTML = `<li class="muted">No sessions yet.</li>`; return; }
-
-    const ids = top.map(([id])=>id);
-    const { data: profs } = await sb.from("profiles").select("id, display_name").in("id", ids);
-    const nameById = new Map((profs||[]).map(p=>[p.id, p.display_name]));
-
-    const me = await getUserIdOrGuest();
-    UL.innerHTML = top.map(([uid,cnt],i)=>{
-      const label = nameById.get(uid) || (uid===me ? "You" : "Guest");
-      return `<li>${i+1}. <b>${label}</b> — ${cnt} session${cnt>1?"s":""}</li>`;
-    }).join("");
-  }catch(e){
-    UL.innerHTML = `<li class="muted">Leaderboard unavailable</li>`;
-  }
-}
-
-async function postAnalysis(result, meta){
-  await saveSessionToSupabase({ goal: meta?.goal, duration_sec: meta?.duration_sec, result });
-}
-
-/* --------- Feedback modal --------- */
-const fbBg = document.getElementById("fbBg");
-const fbName = document.getElementById("fbName");
-const fbEmail= document.getElementById("fbEmail");
-const fbMsg  = document.getElementById("fbMsg");
-const fbSubmit = document.getElementById("fbSubmit");
-const fbCancel = document.getElementById("fbCancel");
-const starsEl = document.getElementById("stars");
-let fbRating = 5;
-
-starsEl.querySelectorAll(".star").forEach((el,idx)=>{
-  el.addEventListener("click", ()=>{
-    fbRating = idx+1;
-    starsEl.querySelectorAll(".star").forEach((s,i)=>s.classList.toggle("on", i<fbRating));
-  });
-});
-starsEl.querySelectorAll(".star").forEach((s,i)=>s.classList.toggle("on", i<fbRating));
-
-function openFeedback(){ fbBg.style.display="flex"; prefillFeedback(); }
-function closeFeedback(){ fbBg.style.display="none"; }
-
-async function prefillFeedback(){
-  const { data:{ session } } = await sb.auth.getSession();
-  if(session?.user){
-    const { user } = session;
-    const { data: prof } = await sb.from("profiles").select("*").eq("id", user.id).maybeSingle();
-    fbName.value = prof?.display_name || user.user_metadata?.name || "";
-    fbEmail.value = user.email || "";
-  }
-}
-
-fbCancel.onclick = closeFeedback;
-fbSubmit.onclick = async ()=>{
-  const { data:{ session } } = await sb.auth.getSession();
-  const user_id = session?.user?.id ?? null;
-  try{
-    await sb.from("feedback").insert({
-      user_id,
-      name: fbName.value.trim() || null,
-      email: fbEmail.value.trim() || null,
-      rating: fbRating,
-      message: fbMsg.value.trim() || null
-    }).throwOnError();
-    closeFeedback();
-  }catch(e){
-    alert("Could not submit feedback: "+e.message);
-  }
+  // require feedback before next session
+  openFeedbackModal();
 };
 
-/* --------- Boot --------- */
-document.addEventListener("DOMContentLoaded", async ()=>{
-  await refreshAuthUI();
-  sb.auth.onAuthStateChange(refreshAuthUI);
-  streakTxt.textContent   = localStorage.getItem(EC_STREAK)||"0";
-  sessionsTxt.textContent = localStorage.getItem(EC_SESSIONS_LOCAL)||"0";
-  fetchAndRenderLeaderboard();
+/* ---------- counters, streak, leaderboard ---------- */
+function todayKey(){ const d=new Date();return d.toISOString().slice(0,10); }
+function lsGet(k,def){ try{const v=localStorage.getItem(k);return v?JSON.parse(v):def}catch{ return def; } }
+function lsSet(k,v){ localStorage.setItem(k, JSON.stringify(v)); }
+
+async function addSession(sec, level){
+  // local counters
+  const sessions = (lsGet('ec_sessions',0)||0)+1; lsSet('ec_sessions', sessions);
+  sessionsEl.textContent = sessions;
+  // streak
+  const last = lsGet('ec_last_day', null);
+  const today = todayKey();
+  let streak = lsGet('ec_streak', 0);
+  if(last!==today){
+    const yest = new Date(); yest.setDate(yest.getDate()-1);
+    const yk = yest.toISOString().slice(0,10);
+    streak = (last===yk) ? streak+1 : 1;
+    lsSet('ec_streak', streak); lsSet('ec_last_day', today);
+  }
+  streakEl.textContent = streak;
+
+  // save to Supabase if logged in
+  const { data:{ session } } = await supabase.auth.getSession();
+  if(session?.user){
+    try{
+      await supabase.from('sessions').insert({
+        user_id: session.user.id,
+        duration_sec: sec,
+        level_label: level,
+        goal: currentGoal()
+      });
+      await refreshLeaderboard();
+    }catch(e){}
+  }else{
+    refreshLocalLeaderboard();
+  }
+}
+async function refreshLeaderboard(){
+  const { data:{ session } } = await supabase.auth.getSession();
+  leaderWrap.innerHTML='';
+  if(!session?.user){
+    refreshLocalLeaderboard();
+    return;
+  }
+  // top 10 by count
+  const { data, error } = await supabase.rpc('top_users_by_sessions'); // optional function
+  if(error){ refreshLocalLeaderboard(); return; }
+  (data||[]).slice(0,10).forEach((r,i)=>{
+    const row = document.createElement('div');
+    row.className='row'; row.style.justifyContent='space-between'; row.style.background='#1a1b21'; row.style.border='1px solid #2a2d35'; row.style.borderRadius='10px'; row.style.padding='8px 10px';
+    row.innerHTML=`<div class="small">${i+1}. ${escapeHtml(r.display || r.email || 'User')}</div><div class="small muted">${r.sessions} sessions</div>`;
+    leaderWrap.appendChild(row);
+  });
+}
+function refreshLocalLeaderboard(){
+  leaderWrap.innerHTML='';
+  const you = lsGet('ec_sessions',0)||0;
+  const row = document.createElement('div');
+  row.className='row'; row.style.justifyContent='space-between'; row.style.background='#1a1b21'; row.style.border='1px solid #2a2d35'; row.style.borderRadius='10px'; row.style.padding='8px 10px';
+  row.innerHTML=`<div class="small">You</div><div class="small muted">${you} sessions</div>`;
+  leaderWrap.appendChild(row);
+}
+refreshLocalLeaderboard();
+
+/* ---------- feedback modal ---------- */
+const modal = document.getElementById('modal');
+const fbName = document.getElementById('fb-name');
+const fbEmail= document.getElementById('fb-email');
+const fbText = document.getElementById('fb-text');
+const starsEl= document.getElementById('stars');
+let fbRating = 0;
+[...starsEl.querySelectorAll('.star')].forEach((s,idx)=>{
+  s.onclick = ()=>{ fbRating = idx+1; [...starsEl.children].forEach((c,i)=> c.classList.toggle('active',i<fbRating)); };
 });
+document.getElementById('fb-cancel').onclick = ()=> { /* feedback is required */ };
+document.getElementById('fb-submit').onclick = submitFeedback;
+
+function openFeedbackModal(){
+  feedbackRequired = true;
+  modal.classList.add('open');
+  btnStart.disabled = true; // block next use
+  btnStop.disabled = true;
+  btnRandom.disabled = false;
+}
+async function submitFeedback(){
+  const name = fbName.value.trim(); const email = fbEmail.value.trim(); const text = fbText.value.trim();
+  if(!fbRating || !text){ return alert('Please pick a rating and add a comment.'); }
+  // try supabase, else store locally
+  const { data:{ session } } = await supabase.auth.getSession();
+  try{
+    if(session?.user){
+      await supabase.from('feedback').insert({
+        user_id: session.user.id,
+        name, email, rating: fbRating, text
+      });
+    }else{
+      const curr = lsGet('ec_feedback', []); curr.push({ name, email, rating: fbRating, text, t: Date.now() }); lsSet('ec_feedback', curr);
+    }
+  }catch(e){}
+  modal.classList.remove('open'); feedbackRequired=false;
+  btnStart.disabled = false; // allow new recording
+  // reset fields for next time
+  fbText.value=''; fbRating=0; [...starsEl.children].forEach(c=>c.classList.remove('active'));
+}
+
+/* ---------- tiny utils ---------- */
+function escapeHtml(s){ return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[m]); }
+
+/* ---------- guard: cannot start while feedback required ---------- */
+btnStart.addEventListener('click', (e)=>{ if(feedbackRequired){ e.preventDefault(); openFeedbackModal(); }});
 </script>
 </body>
 </html>
