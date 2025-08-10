@@ -8,35 +8,28 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
   :root{
-    --bg:#191919;
-    --panel:#1f1f1f;
-    --sunken:#1a1a1a;
-    --text:#e9e9e9;
-    --muted:#9aa0a6;
-    --chip:#2a2a2a;
+    --bg:#191919; --panel:#1f1f1f; --sunken:#1a1a1a;
+    --text:#e9e9e9; --muted:#9aa0a6; --chip:#2a2a2a;
     --ring: rgba(78,10,122,.35);
-    --primary:#4E0A7A;
-    --primary-2:#7f2dd1;
-    --ok:#22c55e;
-    --warn:#f59e0b;
-    --err:#ef4444;
+    --primary:#4E0A7A; --primary-2:#7f2dd1;
+    --ok:#22c55e; --send:#f59e0b; --err:#ef4444;
     --shadow: 0 10px 30px rgba(0,0,0,.35);
     --radius:18px;
   }
   *{box-sizing:border-box}
   html,body{height:100%}
   body{
-    margin:0;
-    background: radial-gradient(1000px 600px at 30% -10%, rgba(127,45,209,.18), transparent 60%),
-                radial-gradient(800px 400px at 90% -10%, rgba(78,10,122,.18), transparent 60%),
-                var(--bg);
-    color:var(--text);
-    font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Apple Color Emoji","Segoe UI Emoji";
+    margin:0;color:var(--text);background:
+      radial-gradient(1000px 600px at 30% -10%, rgba(127,45,209,.18), transparent 60%),
+      radial-gradient(800px 400px at 90% -10%, rgba(78,10,122,.18), transparent 60%),
+      var(--bg);
+    font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
   }
   .wrap{max-width:1200px;margin:28px auto;padding:0 16px}
   header{display:flex;align-items:center;gap:16px;margin-bottom:20px}
   header h1{margin:0;font-weight:800;letter-spacing:.2px}
-  .badge{display:inline-flex;align-items:center;gap:10px;padding:8px 12px;background:linear-gradient(135deg,var(--primary),var(--primary-2));border-radius:999px;font-weight:700}
+  .badge{display:inline-flex;gap:10px;padding:8px 12px;background:linear-gradient(135deg,var(--primary),var(--primary-2));
+    border-radius:999px;font-weight:700}
   .layout{display:grid;grid-template-columns:360px 1fr;gap:24px}
   @media (max-width:980px){.layout{grid-template-columns:1fr}}
   .card{background:var(--panel);border-radius:var(--radius);box-shadow:var(--shadow)}
@@ -49,34 +42,30 @@
   .goal{border:none;background:#262626;color:#e8e8e8;padding:14px 18px;border-radius:14px;font-weight:700;cursor:pointer;transition:.18s transform}
   .goal:hover{transform:translateY(-1px)}
   .goal.active{background:linear-gradient(135deg,var(--primary),var(--primary-2));box-shadow:0 0 0 6px var(--ring)}
-  .controls{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:10px 0 12px}
+  .controls{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:6px 0 12px}
   .btn{border:none;border-radius:14px;padding:16px 18px;font-weight:800;cursor:pointer}
   .btn-primary{background:linear-gradient(135deg,var(--primary),var(--primary-2));color:white}
   .btn-ghost{background:#2a2a2a;color:#eee}
   .btn:disabled{opacity:.6;cursor:not-allowed}
-  .timer-row{display:flex;align-items:center;gap:14px;margin:6px 0 14px}
+  .timer-row{display:flex;align-items:center;gap:14px;margin:6px 0 6px}
   .timer{font-weight:900;font-size:22px;letter-spacing:.5px;background:#232323;border-radius:12px;padding:10px 14px;min-width:100px;text-align:center}
   .bar{flex:1;height:8px;background:#2a2a2a;border-radius:999px;overflow:hidden}
   .bar > span{display:block;height:100%;width:0;background:linear-gradient(90deg,#7f2dd1,var(--primary),#22c55e);transition:width .25s}
   .chip{display:inline-flex;align-items:center;gap:10px;background:#242424;border-radius:999px;padding:8px 12px;font-weight:800}
   .chip .led{width:8px;height:8px;border-radius:50%;background:#7a7a7a;box-shadow:0 0 0 4px rgba(122,122,122,.18)}
-  .chip.live .led{background:#ef4444;box-shadow:0 0 0 6px rgba(239,68,68,.22)}
-  .grid{display:grid;gap:14px}
-  .row-2{grid-template-columns:1fr 1fr}
-  @media (max-width:980px){.row-2{grid-template-columns:1fr}}
+  .chip.ready .led{background:var(--ok);box-shadow:0 0 0 6px rgba(34,197,94,.22)}
+  .chip.sending .led{background:var(--send);box-shadow:0 0 0 6px rgba(245,158,11,.22)}
+  .chip.recording .led{background:var(--err);box-shadow:0 0 0 6px rgba(239,68,68,.22)}
   .pill{display:inline-flex;align-items:center;gap:8px;background:#242424;border-radius:999px;padding:8px 12px;font-weight:800}
-  .slot{background:#222;border:1px solid #2b2b2b;border-radius:14px;padding:16px 18px}
-  .slot p{margin:0}
-  .list{display:grid;gap:10px}
-  .issue{background:#222;border:1px solid #2c2c2c;border-radius:12px;padding:12px 14px;line-height:1.5}
   .muted{color:var(--muted)}
-  .kbd{display:inline-flex;align-items:center;gap:8px;padding:8px 12px;background:#222;border-radius:999px}
-  footer{display:flex;justify-content:center;margin:26px 0 14px;color:#a9a3b8;font-size:13px;gap:6px}
-  footer a{color:#c1b7ff;text-decoration:none}
-  .row-split{display:grid;grid-template-columns:1fr;gap:14px;margin-top:12px}
-  .row-split .btn-primary{width:100%}
+  .slot{background:#222;border:1px solid #2b2b2b;border-radius:14px;padding:16px 18px}
+  .list{display:grid;gap:10px}
+  .issue{background:#222;border:1px solid #2c2c2c;border-radius:12px;padding:12px 14px;line-height:1.5;white-space:pre-wrap}
   .rand{display:flex;align-items:center;gap:10px;margin-top:10px}
-  .rand .btn-ghost{padding:10px 12px;border-radius:999px}
+  footer{display:flex;justify-content:center;margin:26px 0 14px;color:#a9a3b8;font-size:13px;gap:6px;flex-wrap:wrap}
+  footer a{color:#c1b7ff;text-decoration:none}
+  .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:24px;background:#262626;border:1px solid #2f2f2f;color:#fff;padding:10px 14px;border-radius:12px;box-shadow:var(--shadow);display:none}
+  .gap-top{margin-top:10px}
 </style>
 </head>
 <body>
@@ -87,9 +76,9 @@
     </header>
 
     <div class="layout">
-      <!-- LEFT: controls -->
-      <section class="card pad" aria-labelledby="controlsTitle">
-        <h2 id="controlsTitle" class="title">Record for<br>60–90 seconds.</h2>
+      <!-- LEFT -->
+      <section class="card pad">
+        <h2 class="title">Record for<br>60–90 seconds.</h2>
         <p class="subtitle">We’ll analyze fluency & correctness, then show key corrections and a next prompt.</p>
 
         <h3 class="section-title">Goal</h3>
@@ -101,7 +90,7 @@
           <button class="goal" data-goal="Presentation">Presentation</button>
         </div>
 
-        <!-- Controls block looks visually separate -->
+        <!-- separate controls block -->
         <div class="card pad" style="background:var(--sunken);margin:10px 0 14px;">
           <div class="controls">
             <button id="btnStart" class="btn btn-primary">▶️ Start recording</button>
@@ -113,9 +102,9 @@
             <div class="bar"><span id="barFill"></span></div>
           </div>
 
-          <div class="row-split">
-            <button id="btnSend" class="btn btn-primary" disabled>Send & Analyze</button>
-          </div>
+          <button id="btnSend" class="btn btn-primary gap-top" style="width:100%" disabled>
+            Send & Analyze
+          </button>
         </div>
 
         <h3 class="section-title">What to say to start</h3>
@@ -128,39 +117,34 @@
         </div>
       </section>
 
-      <!-- RIGHT: results -->
+      <!-- RIGHT -->
       <section class="card pad" aria-live="polite">
         <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:6px">
-          <span id="liveChip" class="chip"><span class="led"></span> Live</span>
+          <span id="liveChip" class="chip ready"><span class="led"></span> Live</span>
           <span class="pill">Level: <span id="lvl">–</span></span>
           <span class="pill">Fillers: <span id="fillers">0</span></span>
-          <span class="pill muted" id="sessionsPill" title="Completed analyses on this device">Sessions: 0</span>
+          <span class="pill muted" id="sessionsPill" title="Analyses on this device">Sessions: 0</span>
+          <span class="pill" id="streakPill" title="Daily streak">Streak: 🔥0</span>
         </div>
 
-        <div class="grid">
-          <div>
-            <h3 class="section-title">What to fix now</h3>
-            <div class="slot" id="fixNow">–</div>
-          </div>
+        <div>
+          <h3 class="section-title">What to fix now</h3>
+          <div class="slot" id="fixNow">–</div>
+        </div>
 
-          <div>
-            <h3 class="section-title">Grammar</h3>
-            <div id="grammar" class="list">
-              <div class="issue muted">–</div>
-            </div>
-          </div>
+        <div style="margin-top:14px">
+          <h3 class="section-title">Grammar</h3>
+          <div id="grammar" class="list"><div class="issue muted">–</div></div>
+        </div>
 
-          <div>
-            <h3 class="section-title">Pronunciation</h3>
-            <div id="pron" class="list">
-              <div class="issue muted">–</div>
-            </div>
-          </div>
+        <div style="margin-top:14px">
+          <h3 class="section-title">Pronunciation</h3>
+          <div id="pron" class="list"><div class="issue muted">–</div></div>
+        </div>
 
-          <div>
-            <h3 class="section-title">Next prompt (30–45s)</h3>
-            <div class="slot" id="nextPrompt">–</div>
-          </div>
+        <div style="margin-top:14px">
+          <h3 class="section-title">Next prompt (30–45s)</h3>
+          <div class="slot" id="nextPrompt">–</div>
         </div>
       </section>
     </div>
@@ -168,21 +152,25 @@
     <footer>
       <span>© 2025&nbsp;Simpleia — Built by <a href="https://aosama.net" target="_blank" rel="noopener">Abdo Osama</a></span>
       <span>&nbsp;·&nbsp;</span>
-      <span id="ver">v1.2</span>
+      <span id="ver">v1.3</span>
       <span>&nbsp;·&nbsp;</span>
       <span class="muted">Free beta: features and availability may change.</span>
     </footer>
   </div>
 
+  <div id="toast" class="toast"></div>
+
 <script>
 /* ===== Config ===== */
-const APP_VERSION = "v1.2";
-const API_URL = "https://english-coach-endpoint.vercel.app/api/analyze"; // <- change if needed
-const MIN_SEND_MS = 4000;  // enable “Send” after 4s so people can test quickly
-const IDEAL_MS = 90000;    // 90s target
+const APP_VERSION = "v1.3";
+const API_URL = "https://english-coach-endpoint.vercel.app/api/analyze"; // change if needed
+const MIN_SEND_MS = 4000;
+const IDEAL_MS = 90000;
 const STORAGE = {
   sessions: "ec_sessions_v1",
-  goal: "ec_goal_v1"
+  goal: "ec_goal_v1",
+  streak: "ec_streak_v1",
+  streakDate: "ec_streak_date_v1"
 };
 
 /* ===== State ===== */
@@ -206,9 +194,11 @@ const fillers  = document.getElementById("fillers");
 const nextPrompt = document.getElementById("nextPrompt");
 const liveChip = document.getElementById("liveChip");
 const sessionsPill = document.getElementById("sessionsPill");
+const streakPill = document.getElementById("streakPill");
 const promptBox = document.getElementById("promptBox");
+const toastEl = document.getElementById("toast");
 
-/* Version badge */
+/* Version */
 document.getElementById("ver").textContent = APP_VERSION;
 
 /* Goals */
@@ -223,7 +213,7 @@ document.querySelectorAll(".goal").forEach(b=>{
   });
 });
 
-/* Randomize prompt */
+/* Random prompts */
 const PROMPTS = {
   "Work English":[
     "Describe a recent challenge you faced at work and how you handled it.",
@@ -251,43 +241,73 @@ const PROMPTS = {
     "Explain a chart or set of numbers from a recent report."
   ]
 };
-function seedPrompt(goal){ promptBox.textContent = PROMPTS[goal][0]; }
+function seedPrompt(goal){ promptBox.textContent = (PROMPTS[goal]||PROMPTS["Work English"])[0]; }
 seedPrompt(currentGoal);
-
 document.getElementById("btnRand").addEventListener("click", ()=>{
   const list = PROMPTS[currentGoal] || PROMPTS["Work English"];
-  const pick = list[Math.floor(Math.random()*list.length)];
-  promptBox.textContent = pick;
+  promptBox.textContent = list[Math.floor(Math.random()*list.length)];
 });
+
+/* Gamification (local) */
+sessionsPill.textContent = `Sessions: ${parseInt(localStorage.getItem(STORAGE.sessions)||"0",10) || 0}`;
+updateStreakBadge();
+function updateStreakBadge(){
+  const today = new Date().toISOString().slice(0,10);
+  const last = localStorage.getItem(STORAGE.streakDate);
+  let streak = parseInt(localStorage.getItem(STORAGE.streak)||"0",10) || 0;
+  if(!last){ /* first run */ }
+  streakPill.textContent = `Streak: 🔥${streak}`;
+}
+function bumpStreak(){
+  const today = new Date().toISOString().slice(0,10);
+  const last = localStorage.getItem(STORAGE.streakDate);
+  let streak = parseInt(localStorage.getItem(STORAGE.streak)||"0",10) || 0;
+  if(!last){ streak = 1; }
+  else{
+    const diff = (new Date(today) - new Date(last)) / 86400000;
+    if(diff===1) streak += 1;
+    else if(diff>1) streak = 1; // missed a day
+  }
+  localStorage.setItem(STORAGE.streak, String(streak));
+  localStorage.setItem(STORAGE.streakDate, today);
+  streakPill.textContent = `Streak: 🔥${streak}`;
+}
+
+/* Live chip helpers */
+function setReady(){ liveChip.classList.remove("sending","recording"); liveChip.classList.add("ready"); }
+function setSending(){ liveChip.classList.remove("ready","recording"); liveChip.classList.add("sending"); }
+function setRecording(){ liveChip.classList.remove("ready","sending"); liveChip.classList.add("recording"); }
+setReady();
 
 /* Recording */
 btnStart.addEventListener("click", async ()=>{
   try{
     const stream = await navigator.mediaDevices.getUserMedia({audio:true});
     chunks = [];
-    mediaRecorder = new MediaRecorder(stream, {mimeType: 'audio/webm'});
+    mediaRecorder = new MediaRecorder(stream, {mimeType:'audio/webm'});
     mediaRecorder.ondataavailable = e => { if(e.data.size>0) chunks.push(e.data); };
     mediaRecorder.start(250);
     recStart = Date.now();
     setRecordingUI(true);
     timerInt = setInterval(updateTimer, 200);
-  }catch(e){
-    alert("Microphone permission is required.");
-  }
+  }catch(e){ alert("Microphone permission is required."); }
 });
 
-btnStop.addEventListener("click", ()=>{
+btnStop.addEventListener("click", stopRecording);
+
+function stopRecording(){
   if(mediaRecorder && mediaRecorder.state !== "inactive"){
     mediaRecorder.stop();
     mediaRecorder.stream.getTracks().forEach(t=>t.stop());
   }
   setRecordingUI(false);
   clearInterval(timerInt);
-  updateTimer(); // final tick
-});
+  updateTimer();
+}
 
 function setRecordingUI(on){
-  liveChip.classList.toggle("live", on);
+  if(on){ setRecording(); }
+  else { setReady(); }
   btnStart.disabled = on;
   btnStop.disabled = !on;
   btnSend.disabled = on || elapsedMs()<MIN_SEND_MS;
@@ -305,20 +325,21 @@ function updateTimer(){
   timerEl.textContent = fmt(ms);
   const pct = Math.min(100, Math.round((ms/IDEAL_MS)*100));
   barFill.style.width = pct + "%";
-  if(ms >= MIN_SEND_MS) btnSend.disabled = liveChip.classList.contains("live");
+  if(ms >= MIN_SEND_MS) btnSend.disabled = liveChip.classList.contains("recording");
 }
 
-/* Send & analyze */
+/* Send */
 btnSend.addEventListener("click", async ()=>{
   if(elapsedMs()<MIN_SEND_MS){ alert("Please record a few seconds first."); return; }
-
-  // freeze UI
+  stopRecording();
+  setSending();
   btnSend.disabled = true; btnSend.textContent = "Sending…";
+
   const blob = new Blob(chunks, {type:'audio/webm'});
   const file = new File([blob], 'audio.webm', {type:blob.type});
   const fd = new FormData();
   fd.append('files[]', file);
-  fd.append('duration_sec', Math.round(elapsedMs()/1000));
+  fd.append('duration_sec', Math.round((recStart?elapsedMs():0)/1000));
   fd.append('goal', currentGoal);
 
   try{
@@ -328,73 +349,36 @@ btnSend.addEventListener("click", async ()=>{
     try{ json = JSON.parse(raw); }catch{ throw new Error("Invalid JSON from analyzer."); }
 
     renderResult(json);
-    // sessions count (gamification seed)
+    // sessions & streak
     const n = (parseInt(localStorage.getItem(STORAGE.sessions)||"0",10) || 0) + 1;
     localStorage.setItem(STORAGE.sessions, String(n));
     sessionsPill.textContent = `Sessions: ${n}`;
+    bumpStreak();
+    if(n % 5 === 0) showToast(`Nice! You’ve completed ${n} analyses 🔥`);
+
   }catch(e){
     renderError(e.message || "Request failed.");
   }finally{
     btnSend.disabled = false; btnSend.textContent = "Send & Analyze";
+    resetForNewTake();
+    setReady();
   }
 });
 
-sessionsPill.textContent = `Sessions: ${parseInt(localStorage.getItem(STORAGE.sessions)||"0",10) || 0}`;
+/* Reset UI after analyze */
+function resetForNewTake(){
+  chunks = [];
+  recStart = 0;
+  clearInterval(timerInt);
+  timerEl.textContent = "00:00";
+  barFill.style.width = "0%";
+  btnStart.disabled = false;
+  btnStop.disabled = true;
+  btnSend.disabled = true;
+}
 
 /* Rendering */
 function clearList(node){ while(node.firstChild) node.removeChild(node.firstChild); }
-
-function renderResult(j){
-  // fallback (short or silent)
-  if(j && j.fallback){
-    lvl.textContent = "—";
-    fillers.textContent = "0";
-    fixNow.textContent = "Speak for at least 30–60 seconds in full sentences.";
-    setList(grammar, [
-      "Try to extend ideas into full sentences.",
-      "Use simple connectors (and, but, because) to link clauses.",
-      "Keep going for 60–90 seconds."
-    ]);
-    setList(pron, ["—"]);
-    nextPrompt.textContent = "Describe your last weekend in 45 seconds.";
-    return;
-  }
-
-  lvl.textContent = j?.cefr_estimate || mapFriendlyLevel(j?.cefr_estimate);
-  const f = (j?.fluency?.fillers ?? 0);
-  fillers.textContent = String(f);
-  fixNow.textContent = j?.one_thing_to_fix || j?.rationale || "—";
-  nextPrompt.textContent = j?.next_prompt || "—";
-
-  // Grammar
-  const g = Array.isArray(j?.grammar_issues) ? j.grammar_issues : [];
-  if(g.length===0){
-    setList(grammar, ["No clear grammar issues were detected in this short clip."]);
-  }else{
-    setList(grammar, g.map(x=>formatGrammar(x)));
-  }
-
-  // Pronunciation
-  const p = Array.isArray(j?.pronunciation) ? j.pronunciation : [];
-  if(p.length===0){
-    setList(pron, [
-      "We couldn’t confidently assess pronunciation in this sample. " +
-      "Try 45–90 seconds with clear nouns/verbs and steady pace."
-    ]);
-  }else{
-    setList(pron, p.map(x=>formatPron(x)));
-  }
-}
-
-function renderError(msg){
-  lvl.textContent = "—";
-  fillers.textContent = "0";
-  fixNow.textContent = msg || "Error.";
-  setList(grammar, ["—"]);
-  setList(pron, ["—"]);
-  nextPrompt.textContent = "—";
-}
-
 function setList(node, items){
   clearList(node);
   items.forEach(t=>{
@@ -404,7 +388,6 @@ function setList(node, items){
     node.appendChild(d);
   });
 }
-
 function formatGrammar(it){
   const e  = it?.error ? `→ ${it.error}` : null;
   const fx = it?.fix   ? `Try: ${it.fix}` : null;
@@ -418,11 +401,73 @@ function formatPron(it){
   return `${w} ${i}${mp ? "\n" + mp : ""}`;
 }
 
-function mapFriendlyLevel(code){
-  // If backend returns A1..C2 we can map to friendly labels;
-  // keep original for now since you prefer Elementary/Intermediate/Fluent style via backend.
-  return code || "—";
+function friendlyLevelFrom(j){
+  const raw = (j?.cefr_estimate || "").toUpperCase().trim();
+  // Already-friendly? return it
+  const knownFriendly = ["BEGINNER","AVERAGE","ADVANCED","FLUENT","NATIVE","ELEMENTARY","INTERMEDIATE","UPPER-INTERMEDIATE"];
+  if(knownFriendly.includes(raw)) return toTitle(raw);
+
+  // Map CEFR → friendly
+  const map = {
+    "A1":"Beginner","A2":"Beginner",
+    "B1":"Average","B2":"Advanced",
+    "C1":"Fluent","C2":"Native"
+  };
+  return map[raw] || (j?.cefr_estimate ? toTitle(j.cefr_estimate) : "—");
 }
+function toTitle(s){ return String(s).replace(/[-_]/g,' ').replace(/\b\w/g,m=>m.toUpperCase()); }
+
+function renderResult(j){
+  if(j && j.fallback){
+    lvl.textContent = "Beginner";
+    fillers.textContent = "0";
+    fixNow.textContent = "Speak for at least 30–60 seconds in full sentences.";
+    setList(grammar, [
+      "Try to extend ideas into full sentences.",
+      "Use simple connectors (and, but, because) to link clauses.",
+      "Keep going for 60–90 seconds."
+    ]);
+    setList(pron, [
+      "We couldn’t confidently assess pronunciation in this short sample."
+    ]);
+    nextPrompt.textContent = "Describe your last weekend in 45 seconds.";
+    return;
+  }
+
+  lvl.textContent = friendlyLevelFrom(j);
+  fillers.textContent = String(j?.fluency?.fillers ?? 0);
+  fixNow.textContent = j?.one_thing_to_fix || j?.rationale || "—";
+  nextPrompt.textContent = j?.next_prompt || "—";
+
+  const g = Array.isArray(j?.grammar_issues) ? j.grammar_issues : [];
+  setList(grammar, g.length ? g.map(formatGrammar) : ["No clear grammar issues detected."]);
+
+  const p = Array.isArray(j?.pronunciation) ? j.pronunciation : [];
+  setList(pron, p.length ? p.map(formatPron) : [
+    "We couldn’t confidently assess pronunciation in this sample. Try 45–90 seconds with steady pace."
+  ]);
+}
+
+function renderError(msg){
+  lvl.textContent = "—";
+  fillers.textContent = "0";
+  fixNow.textContent = msg || "Error.";
+  setList(grammar, ["—"]);
+  setList(pron, ["—"]);
+  nextPrompt.textContent = "—";
+}
+
+/* Toast */
+let toastTimer=null;
+function showToast(text){
+  toastEl.textContent = text;
+  toastEl.style.display = "block";
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>toastEl.style.display="none", 3000);
+}
+
+/* Seed prompt on load */
+seedPrompt(currentGoal);
 </script>
 </body>
 </html>
