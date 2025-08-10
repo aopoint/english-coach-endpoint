@@ -1,87 +1,151 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>English Coach — Instant English Feedback</title>
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<style>
-  :root{
-    --bg:#191919; --panel:#1f1f1f; --sunken:#1a1a1a;
-    --text:#e9e9e9; --muted:#9aa0a6; --chip:#2a2a2a;
-    --ring: rgba(78,10,122,.35);
-    --primary:#4E0A7A; --primary-2:#7f2dd1;
-    --ok:#22c55e; --send:#f59e0b; --err:#ef4444;
-    --shadow: 0 10px 30px rgba(0,0,0,.35);
-    --radius:18px;
-  }
-  *{box-sizing:border-box}
-  html,body{height:100%}
-  body{
-    margin:0;color:var(--text);background:
-      radial-gradient(1000px 600px at 30% -10%, rgba(127,45,209,.18), transparent 60%),
-      radial-gradient(800px 400px at 90% -10%, rgba(78,10,122,.18), transparent 60%),
-      var(--bg);
-    font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
-  }
-  .wrap{max-width:1200px;margin:28px auto;padding:0 16px}
-  header{display:flex;align-items:center;gap:16px;margin-bottom:20px}
-  header h1{margin:0;font-weight:800;letter-spacing:.2px}
-  .badge{display:inline-flex;gap:10px;padding:8px 12px;background:linear-gradient(135deg,var(--primary),var(--primary-2));
-    border-radius:999px;font-weight:700}
-  .layout{display:grid;grid-template-columns:360px 1fr;gap:24px}
-  @media (max-width:980px){.layout{grid-template-columns:1fr}}
-  .card{background:var(--panel);border-radius:var(--radius);box-shadow:var(--shadow)}
-  .card.pad{padding:22px}
-  .title{font-weight:800;margin:0 0 8px;font-size:40px;line-height:1.1}
-  .subtitle{margin:0 0 22px;color:var(--muted)}
-  .section-title{font-weight:800;margin:0 0 10px}
-  .hint{color:var(--muted);font-size:13px}
-  .goals{display:flex;flex-wrap:wrap;gap:12px;margin:6px 0 16px}
-  .goal{border:none;background:#262626;color:#e8e8e8;padding:14px 18px;border-radius:14px;font-weight:700;cursor:pointer;transition:.18s transform}
-  .goal:hover{transform:translateY(-1px)}
-  .goal.active{background:linear-gradient(135deg,var(--primary),var(--primary-2));box-shadow:0 0 0 6px var(--ring)}
-  .controls{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:6px 0 12px}
-  .btn{border:none;border-radius:14px;padding:16px 18px;font-weight:800;cursor:pointer}
-  .btn-primary{background:linear-gradient(135deg,var(--primary),var(--primary-2));color:white}
-  .btn-ghost{background:#2a2a2a;color:#eee}
-  .btn:disabled{opacity:.6;cursor:not-allowed}
-  .timer-row{display:flex;align-items:center;gap:14px;margin:6px 0 6px}
-  .timer{font-weight:900;font-size:22px;letter-spacing:.5px;background:#232323;border-radius:12px;padding:10px 14px;min-width:100px;text-align:center}
-  .bar{flex:1;height:8px;background:#2a2a2a;border-radius:999px;overflow:hidden}
-  .bar > span{display:block;height:100%;width:0;background:linear-gradient(90deg,#7f2dd1,var(--primary),#22c55e);transition:width .25s}
-  .chip{display:inline-flex;align-items:center;gap:10px;background:#242424;border-radius:999px;padding:8px 12px;font-weight:800}
-  .chip .led{width:8px;height:8px;border-radius:50%;background:#7a7a7a;box-shadow:0 0 0 4px rgba(122,122,122,.18)}
-  .chip.ready .led{background:var(--ok);box-shadow:0 0 0 6px rgba(34,197,94,.22)}
-  .chip.sending .led{background:var(--send);box-shadow:0 0 0 6px rgba(245,158,11,.22)}
-  .chip.recording .led{background:var(--err);box-shadow:0 0 0 6px rgba(239,68,68,.22)}
-  .pill{display:inline-flex;align-items:center;gap:8px;background:#242424;border-radius:999px;padding:8px 12px;font-weight:800}
-  .muted{color:var(--muted)}
-  .slot{background:#222;border:1px solid #2b2b2b;border-radius:14px;padding:16px 18px}
-  .list{display:grid;gap:10px}
-  .issue{background:#222;border:1px solid #2c2c2c;border-radius:12px;padding:12px 14px;line-height:1.5;white-space:pre-wrap}
-  .rand{display:flex;align-items:center;gap:10px;margin-top:10px}
-  footer{display:flex;justify-content:center;margin:26px 0 14px;color:#a9a3b8;font-size:13px;gap:6px;flex-wrap:wrap}
-  footer a{color:#c1b7ff;text-decoration:none}
-  .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:24px;background:#262626;border:1px solid #2f2f2f;color:#fff;padding:10px 14px;border-radius:12px;box-shadow:var(--shadow);display:none}
-  .gap-top{margin-top:10px}
-</style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>English Coach — Instant English Feedback</title>
+  <meta name="color-scheme" content="dark light" />
+  <style>
+    :root{
+      --bg:#141216;
+      --panel:#1b1920;
+      --muted:#a7a7b0;
+      --text:#f5f5f7;
+      --chip:#26242c;
+      --ok:#67f5b4;
+      --warn:#f7c948;
+      --err:#ff6b6b;
+      --ring: rgba(157,78,221, .45);
+      --primary1:#8b5cf6; /* purple 500 */
+      --primary2:#7c3aed; /* purple 600 */
+      --primary3:#6d28d9; /* purple 700 */
+      --cardShadow: 0 10px 30px rgba(0,0,0,.35);
+      --radius: 16px;
+      --radius-sm: 12px;
+      --radius-lg: 20px;
+      --gap: 18px;
+      --gap-sm: 12px;
+      --gap-lg: 24px;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      --sans: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0; background: radial-gradient(1000px 600px at 30% -10%, rgba(125,60,200,.18), transparent 60%) ,
+                 radial-gradient(900px 500px at 90% -20%, rgba(90,70,200,.16), transparent 60%),
+                 var(--bg);
+      color:var(--text); font-family:var(--sans);
+      line-height:1.35; -webkit-font-smoothing:antialiased;
+    }
+
+    header{
+      display:flex; align-items:center; justify-content:space-between;
+      gap:12px; padding:18px 22px 8px;
+    }
+    .brand{display:flex; align-items:center; gap:10px; font-weight:800; font-size:26px; letter-spacing:.2px}
+    .pill{background:#221f28; border:1px solid #2a2733; color:#d7caff; padding:6px 10px; border-radius:999px; font-size:13px}
+    .wrap{
+      max-width:1200px; margin:0 auto; padding:18px 22px 28px;
+      display:grid; grid-template-columns: 360px 1fr; gap:24px;
+    }
+    @media (max-width:980px){
+      .wrap{grid-template-columns:1fr}
+    }
+
+    .panel{
+      background:var(--panel); border:1px solid #26232e; border-radius:var(--radius);
+      box-shadow:var(--cardShadow);
+    }
+    .pad{padding:22px}
+    .h1{font-size:34px; font-weight:900; letter-spacing:.2px; margin:.25rem 0}
+    .muted{color:var(--muted)}
+    .hint{color:#c7c7d0; font-size:14px}
+
+    .goals{
+      display:flex; flex-wrap:wrap; gap:10px; margin:14px 0 4px;
+    }
+    .goal{
+      background:var(--chip); border:1px solid #2a2733; color:#e8e6ff; padding:10px 14px;
+      border-radius:12px; cursor:pointer; transition:.15s transform;
+      box-shadow: inset 0 0 0 1px rgba(0,0,0,.08);
+    }
+    .goal:active{transform:scale(.98)}
+    .goal.active{
+      background: linear-gradient(135deg,var(--primary2),var(--primary1));
+      border-color: transparent; color:white; font-weight:700;
+      box-shadow: 0 0 0 6px var(--ring);
+    }
+
+    .row{display:flex; gap:12px; align-items:center; flex-wrap:wrap}
+    .btn{
+      background: linear-gradient(135deg,var(--primary1),var(--primary3));
+      color:white; border:none; border-radius:16px; padding:14px 20px; font-weight:800;
+      letter-spacing:.2px; cursor:pointer; transition: transform .08s ease, filter .2s ease;
+      box-shadow: 0 8px 20px rgba(125,60,200,.35);
+    }
+    .btn.secondary{background:#2a2733; color:#f0f0f2; box-shadow:none}
+    .btn:disabled{opacity:.55; cursor:not-allowed; filter:saturate(.6)}
+    .btn:active{transform:translateY(1px)}
+    .btn.full{width:100%}
+
+    .timerCard{
+      background:#21202a; border:1px solid #2a2733; border-radius:14px; padding:12px 16px; font-size:28px; font-weight:900; min-width:140px; text-align:center;
+    }
+
+    .meter{
+      position:relative; height:8px; background:#2a2733; border-radius:999px; overflow:hidden;
+      border:1px solid #2f2b39;
+    }
+    .meter > i{display:block; height:100%; width:0%; background: linear-gradient(90deg,#ff7a7a,#f6c343,#62f6b5); transition:width .25s ease}
+    .smallPills{display:flex; gap:10px; align-items:center; flex-wrap:wrap}
+    .pillStat{
+      background:#22202a; border:1px solid #2a2733; border-radius:999px; padding:6px 10px; font-size:13px; color:#e8e6ff;
+    }
+
+    .liveDot{width:10px;height:10px;border-radius:50%; background:#666}
+    .liveDot.on{background:var(--ok); box-shadow:0 0 0 6px rgba(103,245,180,.15)}
+
+    .card{background:#1f1d26; border:1px solid #2a2733; border-radius:16px; padding:14px; }
+    .card h4{margin:0 0 8px; font-size:14px; text-transform:uppercase; letter-spacing:.12em; color:#cfcde7}
+    .big{padding:16px 14px}
+    .slot{min-height:48px; display:flex; align-items:center}
+    .mono{font-family:var(--mono)}
+
+    .list{display:flex; flex-direction:column; gap:10px}
+    .item{background:#1e1c24; border:1px solid #302c3a; border-radius:12px; padding:10px 12px; color:#ebe9fd}
+
+    .rightGrid{display:flex; flex-direction:column; gap:16px}
+    .topline{display:flex; gap:12px; align-items:center; justify-content:space-between; flex-wrap:wrap}
+    .badge{background:#2c2936; color:#eae3ff; border:1px solid #373244; padding:8px 12px; border-radius:999px; font-weight:700}
+    .barGroup{display:grid; grid-template-columns: 120px 1fr; gap:10px; align-items:center}
+    @media (max-width:600px){ .barGroup{grid-template-columns: 1fr} }
+
+    footer{padding:24px; text-align:center; color:#c5c1d6}
+    footer a{color:#d9ccff; text-decoration:none}
+    footer a:hover{text-decoration:underline}
+
+    .toast{
+      position:fixed; left:50%; transform:translateX(-50%); bottom:16px;
+      background:#1e1c24; border:1px solid #343046; color:#eae3ff; padding:12px 16px; border-radius:12px; box-shadow:var(--cardShadow);
+      display:none; z-index:50
+    }
+  </style>
 </head>
 <body>
-  <div class="wrap">
-    <header>
-      <h1 style="font-size:34px;">English Coach</h1>
-      <span class="badge">Instant English Feedback</span>
-    </header>
+  <header>
+    <div class="brand">English Coach</div>
+    <div class="pill">Instant English Feedback</div>
+  </header>
 
-    <div class="layout">
-      <!-- LEFT -->
-      <section class="card pad">
-        <h2 class="title">Record for<br>60–90 seconds.</h2>
-        <p class="subtitle">We’ll analyze fluency & correctness, then show key corrections and a next prompt.</p>
+  <main class="wrap">
+    <!-- LEFT: controls -->
+    <section class="panel pad" id="leftPanel">
+      <h1 class="h1">Record for<br/>60–90 seconds.</h1>
+      <p class="muted">We’ll analyze fluency & correctness, then show key corrections and a next prompt.</p>
 
-        <h3 class="section-title">Goal</h3>
+      <div style="margin-top:8px">
+        <div class="hint" style="margin-bottom:8px;font-weight:700">Goal</div>
         <div class="goals" id="goals">
           <button class="goal active" data-goal="Work English">Work English</button>
           <button class="goal" data-goal="Daily Life">Daily Life</button>
@@ -89,385 +153,349 @@
           <button class="goal" data-goal="Travel">Travel</button>
           <button class="goal" data-goal="Presentation">Presentation</button>
         </div>
+      </div>
 
-        <!-- separate controls block -->
-        <div class="card pad" style="background:var(--sunken);margin:10px 0 14px;">
-          <div class="controls">
-            <button id="btnStart" class="btn btn-primary">▶️ Start recording</button>
-            <button id="btnStop" class="btn btn-ghost" disabled>⏹️ Stop</button>
-          </div>
+      <div class="row" style="margin-top:8px">
+        <button class="btn" id="btnStart">▶️ Start recording</button>
+        <button class="btn secondary" id="btnStop" disabled>⏹ Stop</button>
+      </div>
 
-          <div class="timer-row">
-            <div class="timer" id="timer">00:00</div>
-            <div class="bar"><span id="barFill"></span></div>
-          </div>
-
-          <button id="btnSend" class="btn btn-primary gap-top" style="width:100%" disabled>
-            Send & Analyze
-          </button>
+      <div class="row" style="margin-top:10px;align-items:center">
+        <div class="timerCard mono" id="timer">00:00</div>
+        <div style="flex:1">
+          <div class="meter"><i id="timeFill"></i></div>
         </div>
+      </div>
 
-        <h3 class="section-title">What to say to start</h3>
-        <div class="slot">
-          <p id="promptBox">Describe a recent project you led and one lesson you learned.</p>
-          <div class="rand">
-            <button id="btnRand" class="btn btn-ghost">🎲 Randomize prompt</button>
-            <span class="hint">We don’t store your audio; it’s sent to the analyzer and immediately discarded.</span>
-          </div>
+      <div style="margin-top:12px">
+        <button class="btn full" id="btnSend" disabled>Send & Analyze</button>
+      </div>
+
+      <div class="card big" style="margin-top:14px">
+        <h4>What to say to start</h4>
+        <textarea id="promptBox" rows="3" class="slot" style="width:100%; background:#17151c; color:#edeafc; border:1px solid #2d2936; border-radius:12px; padding:10px; resize:vertical">Describe a recent project you led and one lesson you learned.</textarea>
+        <div class="row" style="margin-top:10px; justify-content:space-between">
+          <button class="btn secondary" id="btnRandom">🎲 Randomize prompt</button>
+          <button class="btn secondary" id="btnCopy">Copy</button>
         </div>
-      </section>
+        <p class="hint" style="margin-top:10px">We don’t store your audio; it’s sent to the analyzer and immediately discarded.</p>
+      </div>
+    </section>
 
-      <!-- RIGHT -->
-      <section class="card pad" aria-live="polite">
-        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:6px">
-          <span id="liveChip" class="chip ready"><span class="led"></span> Live</span>
-          <span class="pill">Level: <span id="lvl">–</span></span>
-          <span class="pill">Fillers: <span id="fillers">0</span></span>
-          <span class="pill muted" id="sessionsPill" title="Analyses on this device">Sessions: 0</span>
-          <span class="pill" id="streakPill" title="Daily streak">Streak: 🔥0</span>
+    <!-- RIGHT: results -->
+    <section class="panel pad rightGrid">
+      <div class="topline">
+        <div class="smallPills">
+          <span class="liveDot" id="liveDot"></span>
+          <span class="pillStat">Live</span>
+          <span class="pillStat">Level: <b id="friendlyLevel">—</b></span>
+          <span class="pillStat">Fillers: <b id="fillers">0</b></span>
+          <span class="pillStat">WPM: <b id="wpm">0</b></span>
+          <span class="pillStat">🔥 Streak: <b id="streak">0</b> day(s)</span>
+          <span class="pillStat">Sessions: <b id="sessions">0</b></span>
         </div>
+      </div>
 
-        <div>
-          <h3 class="section-title">What to fix now</h3>
-          <div class="slot" id="fixNow">–</div>
-        </div>
+      <div class="barGroup">
+        <div class="hint">Level meter</div>
+        <div class="meter"><i id="levelFill"></i></div>
+      </div>
+      <div class="barGroup">
+        <div class="hint">Relevance</div>
+        <div class="meter"><i id="relFill"></i></div>
+      </div>
+      <div class="hint" id="relNote" style="margin-top:-6px;color:#dacfff"></div>
 
-        <div style="margin-top:14px">
-          <h3 class="section-title">Grammar</h3>
-          <div id="grammar" class="list"><div class="issue muted">–</div></div>
-        </div>
+      <div class="card">
+        <h4>What to fix now</h4>
+        <div class="slot" id="fixNow">-</div>
+      </div>
 
-        <div style="margin-top:14px">
-          <h3 class="section-title">Pronunciation</h3>
-          <div id="pron" class="list"><div class="issue muted">–</div></div>
-        </div>
+      <div class="card">
+        <h4>Grammar</h4>
+        <div class="list" id="grammarList"><div class="item">–</div></div>
+      </div>
 
-        <div style="margin-top:14px">
-          <h3 class="section-title">Next prompt (30–45s)</h3>
-          <div class="slot" id="nextPrompt">–</div>
-        </div>
-      </section>
-    </div>
+      <div class="card">
+        <h4>Pronunciation</h4>
+        <div class="list" id="pronList"><div class="item">–</div></div>
+      </div>
 
-    <footer>
-      <span>© 2025&nbsp;Simpleia — Built by <a href="https://aosama.net" target="_blank" rel="noopener">Abdo Osama</a></span>
-      <span>&nbsp;·&nbsp;</span>
-      <span id="ver">v1.3</span>
-      <span>&nbsp;·&nbsp;</span>
-      <span class="muted">Free beta: features and availability may change.</span>
-    </footer>
-  </div>
+      <div class="card">
+        <h4>Next prompt (30–45s)</h4>
+        <div class="slot" id="nextPrompt">-</div>
+      </div>
+    </section>
+  </main>
 
-  <div id="toast" class="toast"></div>
+  <footer>
+    © 2025 <a href="https://simpleia.com" target="_blank" rel="noopener">Simpleia</a> — Built by <a href="https://aosama.net" target="_blank" rel="noopener">Abdo Osama</a> — <span id="ver">v1.3</span>
+  </footer>
+
+  <div class="toast" id="toast"></div>
 
 <script>
-/* ===== Config ===== */
-const APP_VERSION = "v1.3";
-const API_URL = "https://english-coach-endpoint.vercel.app/api/analyze"; // change if needed
-const MIN_SEND_MS = 4000;
-const IDEAL_MS = 90000;
-const STORAGE = {
-  sessions: "ec_sessions_v1",
-  goal: "ec_goal_v1",
-  streak: "ec_streak_v1",
-  streakDate: "ec_streak_date_v1"
-};
+/* ====== SETTINGS ====== */
+const API_URL = "https://english-coach-endpoint.vercel.app/api/analyze"; // <- change if needed
+const VERSION = "v1.3"; // footer version
+const KEY_SESSIONS = "ec_sessions";
+const KEY_STREAK = "ec_streak";
+const KEY_STREAK_DATE = "ec_streak_date";
 
-/* ===== State ===== */
+/* ====== ELEMENTS ====== */
+const goalsEl = document.getElementById('goals');
+const btnStart = document.getElementById('btnStart');
+const btnStop  = document.getElementById('btnStop');
+const btnSend  = document.getElementById('btnSend');
+const timerEl  = document.getElementById('timer');
+const timeFill = document.getElementById('timeFill');
+const liveDot  = document.getElementById('liveDot');
+
+const fixNow   = document.getElementById('fixNow');
+const grammarList = document.getElementById('grammarList');
+const pronList  = document.getElementById('pronList');
+const nextPrompt = document.getElementById('nextPrompt');
+const friendlyLevel = document.getElementById('friendlyLevel');
+const wpmEl = document.getElementById('wpm');
+const fillersEl = document.getElementById('fillers');
+const levelFill = document.getElementById('levelFill');
+const relFill   = document.getElementById('relFill');
+const relNote   = document.getElementById('relNote');
+
+const streakEl = document.getElementById('streak');
+const sessionsEl = document.getElementById('sessions');
+
+const promptBox = document.getElementById('promptBox');
+const btnRandom = document.getElementById('btnRandom');
+const btnCopy = document.getElementById('btnCopy');
+const toastEl = document.getElementById('toast');
+document.getElementById('ver').textContent = VERSION;
+
+/* ====== STATE ====== */
 let mediaRecorder;
 let chunks = [];
-let recStart = 0;
-let timerInt = null;
-let currentGoal = localStorage.getItem(STORAGE.goal) || "Work English";
+let recording = false;
+let startTs = 0;
+let timerId;
+let currentGoal = "Work English";
 
-/* ===== UI refs ===== */
-const btnStart = document.getElementById("btnStart");
-const btnStop  = document.getElementById("btnStop");
-const btnSend  = document.getElementById("btnSend");
-const timerEl  = document.getElementById("timer");
-const barFill  = document.getElementById("barFill");
-const fixNow   = document.getElementById("fixNow");
-const grammar  = document.getElementById("grammar");
-const pron     = document.getElementById("pron");
-const lvl      = document.getElementById("lvl");
-const fillers  = document.getElementById("fillers");
-const nextPrompt = document.getElementById("nextPrompt");
-const liveChip = document.getElementById("liveChip");
-const sessionsPill = document.getElementById("sessionsPill");
-const streakPill = document.getElementById("streakPill");
-const promptBox = document.getElementById("promptBox");
-const toastEl = document.getElementById("toast");
-
-/* Version */
-document.getElementById("ver").textContent = APP_VERSION;
-
-/* Goals */
-document.querySelectorAll(".goal").forEach(b=>{
-  if(b.dataset.goal===currentGoal) b.classList.add("active");
-  b.addEventListener("click", ()=>{
-    document.querySelectorAll(".goal").forEach(x=>x.classList.remove("active"));
-    b.classList.add("active");
-    currentGoal = b.dataset.goal;
-    localStorage.setItem(STORAGE.goal,currentGoal);
-    seedPrompt(currentGoal);
-  });
+/* ====== GOALS ====== */
+goalsEl.addEventListener('click', (e)=>{
+  const b = e.target.closest('.goal'); if(!b) return;
+  document.querySelectorAll('.goal').forEach(x=>x.classList.remove('active'));
+  b.classList.add('active');
+  currentGoal = b.dataset.goal || b.textContent.trim();
 });
 
-/* Random prompts */
-const PROMPTS = {
-  "Work English":[
-    "Describe a recent challenge you faced at work and how you handled it.",
-    "Explain a decision you made that improved your team’s workflow.",
-    "Tell me about a project you’re proud of and why."
-  ],
-  "Daily Life":[
-    "Describe your morning routine and how it affects your day.",
-    "Tell me about a hobby you enjoy and what you’ve learned from it.",
-    "Talk about a place you like to visit and why."
-  ],
-  "Interview Prep":[
-    "What is one mistake you made at work and what did you learn from it?",
-    "Describe a time you led a team through a difficult situation.",
-    "Explain a complex idea from your field as if to a non-expert."
-  ],
-  "Travel":[
-    "Describe a memorable trip and what made it special.",
-    "If you could visit any country next month, where and why?",
-    "Share a travel issue you faced and how you solved it."
-  ],
-  "Presentation":[
-    "Summarize a topic you could teach in 60–90 seconds.",
-    "Pitch your product or idea to a non-technical audience.",
-    "Explain a chart or set of numbers from a recent report."
-  ]
-};
-function seedPrompt(goal){ promptBox.textContent = (PROMPTS[goal]||PROMPTS["Work English"])[0]; }
-seedPrompt(currentGoal);
-document.getElementById("btnRand").addEventListener("click", ()=>{
-  const list = PROMPTS[currentGoal] || PROMPTS["Work English"];
-  promptBox.textContent = list[Math.floor(Math.random()*list.length)];
-});
+/* ====== TIMER ====== */
+function fmt(n){return String(n).padStart(2,'0')}
+function tick(){
+  const sec = Math.max(0, Math.floor((Date.now()-startTs)/1000));
+  const m = Math.floor(sec/60), s = sec%60;
+  timerEl.textContent = `${fmt(m)}:${fmt(s)}`;
 
-/* Gamification (local) */
-sessionsPill.textContent = `Sessions: ${parseInt(localStorage.getItem(STORAGE.sessions)||"0",10) || 0}`;
-updateStreakBadge();
-function updateStreakBadge(){
-  const today = new Date().toISOString().slice(0,10);
-  const last = localStorage.getItem(STORAGE.streakDate);
-  let streak = parseInt(localStorage.getItem(STORAGE.streak)||"0",10) || 0;
-  if(!last){ /* first run */ }
-  streakPill.textContent = `Streak: 🔥${streak}`;
-}
-function bumpStreak(){
-  const today = new Date().toISOString().slice(0,10);
-  const last = localStorage.getItem(STORAGE.streakDate);
-  let streak = parseInt(localStorage.getItem(STORAGE.streak)||"0",10) || 0;
-  if(!last){ streak = 1; }
-  else{
-    const diff = (new Date(today) - new Date(last)) / 86400000;
-    if(diff===1) streak += 1;
-    else if(diff>1) streak = 1; // missed a day
-  }
-  localStorage.setItem(STORAGE.streak, String(streak));
-  localStorage.setItem(STORAGE.streakDate, today);
-  streakPill.textContent = `Streak: 🔥${streak}`;
+  // progress to 90s
+  const p = Math.min(1, sec/90);
+  timeFill.style.width = (p*100)+'%';
+  // color: <45s => orange; >=45 => green
+  timeFill.style.background = sec < 45
+     ? 'linear-gradient(90deg,#f7c948,#ffd86b)'
+     : 'linear-gradient(90deg,#62f6b5,#34d399)';
 }
 
-/* Live chip helpers */
-function setReady(){ liveChip.classList.remove("sending","recording"); liveChip.classList.add("ready"); }
-function setSending(){ liveChip.classList.remove("ready","recording"); liveChip.classList.add("sending"); }
-function setRecording(){ liveChip.classList.remove("ready","sending"); liveChip.classList.add("recording"); }
-setReady();
-
-/* Recording */
-btnStart.addEventListener("click", async ()=>{
+/* ====== MEDIA RECORDER ====== */
+async function startRec(){
   try{
     const stream = await navigator.mediaDevices.getUserMedia({audio:true});
     chunks = [];
-    mediaRecorder = new MediaRecorder(stream, {mimeType:'audio/webm'});
-    mediaRecorder.ondataavailable = e => { if(e.data.size>0) chunks.push(e.data); };
-    mediaRecorder.start(250);
-    recStart = Date.now();
-    setRecordingUI(true);
-    timerInt = setInterval(updateTimer, 200);
-  }catch(e){ alert("Microphone permission is required."); }
-});
-
-btnStop.addEventListener("click", stopRecording);
-
-function stopRecording(){
-  if(mediaRecorder && mediaRecorder.state !== "inactive"){
-    mediaRecorder.stop();
-    mediaRecorder.stream.getTracks().forEach(t=>t.stop());
+    mediaRecorder = new MediaRecorder(stream, {mimeType: 'audio/webm'});
+    mediaRecorder.ondataavailable = (e)=> { if(e.data.size>0) chunks.push(e.data) }
+    mediaRecorder.onstop = ()=> stream.getTracks().forEach(t=>t.stop());
+    mediaRecorder.start();
+    startTs = Date.now();
+    timerId = setInterval(tick, 200);
+    btnStart.disabled = true;
+    btnStop.disabled = false;
+    btnSend.disabled = true;
+    liveDot.classList.add('on');
+    recording = true;
+  }catch(err){
+    toast('Could not access microphone.');
+    console.error(err);
   }
-  setRecordingUI(false);
-  clearInterval(timerInt);
-  updateTimer();
 }
 
-function setRecordingUI(on){
-  if(on){ setRecording(); }
-  else { setReady(); }
-  btnStart.disabled = on;
-  btnStop.disabled = !on;
-  btnSend.disabled = on || elapsedMs()<MIN_SEND_MS;
+function stopRec(){
+  if(mediaRecorder && recording){
+    mediaRecorder.stop();
+    clearInterval(timerId);
+    tick(); // one last update
+    btnStop.disabled = true;
+    btnStart.disabled = false;
+    btnSend.disabled = chunks.length===0;
+    liveDot.classList.remove('on');
+    recording = false;
+  }
 }
 
-function elapsedMs(){ return recStart ? (Date.now() - recStart) : 0; }
-function fmt(ms){
-  const s = Math.floor(ms/1000);
-  const m = Math.floor(s/60).toString().padStart(2,'0');
-  const ss = (s%60).toString().padStart(2,'0');
-  return `${m}:${ss}`;
-}
-function updateTimer(){
-  const ms = elapsedMs();
-  timerEl.textContent = fmt(ms);
-  const pct = Math.min(100, Math.round((ms/IDEAL_MS)*100));
-  barFill.style.width = pct + "%";
-  if(ms >= MIN_SEND_MS) btnSend.disabled = liveChip.classList.contains("recording");
-}
+btnStart.addEventListener('click', startRec);
+btnStop.addEventListener('click', stopRec);
 
-/* Send */
-btnSend.addEventListener("click", async ()=>{
-  if(elapsedMs()<MIN_SEND_MS){ alert("Please record a few seconds first."); return; }
-  stopRecording();
-  setSending();
-  btnSend.disabled = true; btnSend.textContent = "Sending…";
+/* ====== SEND ====== */
+btnSend.addEventListener('click', async ()=>{
+  if(chunks.length===0){ toast('Please record something first.'); return; }
 
-  const blob = new Blob(chunks, {type:'audio/webm'});
-  const file = new File([blob], 'audio.webm', {type:blob.type});
-  const fd = new FormData();
-  fd.append('files[]', file);
-  fd.append('duration_sec', Math.round((recStart?elapsedMs():0)/1000));
-  fd.append('goal', currentGoal);
-
+  btnSend.disabled = true;
+  btnSend.textContent = 'Analyzing…';
   try{
+    const blob = new Blob(chunks, {type:'audio/webm'});
+    const durSec = Math.round((Date.now()-startTs)/1000);
+    const fd = new FormData();
+    fd.append('files[]', blob, 'audio.webm');
+    fd.append('duration_sec', String(durSec));
+    fd.append('goal', currentGoal);
+    fd.append('prompt_text', promptBox.value || '');
+
     const res = await fetch(API_URL, {method:'POST', body:fd});
-    const raw = await res.text();
-    let json={};
-    try{ json = JSON.parse(raw); }catch{ throw new Error("Invalid JSON from analyzer."); }
+    const json = await res.json();
+
+    // Always reset timer for next session
+    resetTimer();
 
     renderResult(json);
-    // sessions & streak
-    const n = (parseInt(localStorage.getItem(STORAGE.sessions)||"0",10) || 0) + 1;
-    localStorage.setItem(STORAGE.sessions, String(n));
-    sessionsPill.textContent = `Sessions: ${n}`;
-    bumpStreak();
-    if(n % 5 === 0) showToast(`Nice! You’ve completed ${n} analyses 🔥`);
-
+    bumpSessionsAndStreak();
   }catch(e){
-    renderError(e.message || "Request failed.");
+    console.error(e);
+    toast('Request failed. Please try again.');
   }finally{
-    btnSend.disabled = false; btnSend.textContent = "Send & Analyze";
-    resetForNewTake();
-    setReady();
+    btnSend.disabled = false;
+    btnSend.textContent = 'Send & Analyze';
   }
 });
 
-/* Reset UI after analyze */
-function resetForNewTake(){
+function resetTimer(){
+  clearInterval(timerId);
+  timerEl.textContent = '00:00';
+  timeFill.style.width='0%';
+  timeFill.style.background='linear-gradient(90deg,#f7c948,#ffd86b)';
   chunks = [];
-  recStart = 0;
-  clearInterval(timerInt);
-  timerEl.textContent = "00:00";
-  barFill.style.width = "0%";
-  btnStart.disabled = false;
-  btnStop.disabled = true;
   btnSend.disabled = true;
 }
 
-/* Rendering */
-function clearList(node){ while(node.firstChild) node.removeChild(node.firstChild); }
-function setList(node, items){
-  clearList(node);
-  items.forEach(t=>{
-    const d = document.createElement("div");
-    d.className = "issue";
-    d.textContent = t;
-    node.appendChild(d);
-  });
-}
-function formatGrammar(it){
-  const e  = it?.error ? `→ ${it.error}` : null;
-  const fx = it?.fix   ? `Try: ${it.fix}` : null;
-  const w  = it?.why   ? `Why: ${it.why}` : null;
-  return [e,fx,w].filter(Boolean).join("\n");
-}
-function formatPron(it){
-  const w  = it?.sound_or_word || it?.word || "—";
-  const i  = it?.issue ? `— ${it.issue}` : "";
-  const mp = it?.minimal_pair ? `Try: ${it.minimal_pair}` : "";
-  return `${w} ${i}${mp ? "\n" + mp : ""}`;
-}
-
-function friendlyLevelFrom(j){
-  const raw = (j?.cefr_estimate || "").toUpperCase().trim();
-  // Already-friendly? return it
-  const knownFriendly = ["BEGINNER","AVERAGE","ADVANCED","FLUENT","NATIVE","ELEMENTARY","INTERMEDIATE","UPPER-INTERMEDIATE"];
-  if(knownFriendly.includes(raw)) return toTitle(raw);
-
-  // Map CEFR → friendly
-  const map = {
-    "A1":"Beginner","A2":"Beginner",
-    "B1":"Average","B2":"Advanced",
-    "C1":"Fluent","C2":"Native"
-  };
-  return map[raw] || (j?.cefr_estimate ? toTitle(j.cefr_estimate) : "—");
-}
-function toTitle(s){ return String(s).replace(/[-_]/g,' ').replace(/\b\w/g,m=>m.toUpperCase()); }
-
-function renderResult(j){
-  if(j && j.fallback){
-    lvl.textContent = "Beginner";
-    fillers.textContent = "0";
-    fixNow.textContent = "Speak for at least 30–60 seconds in full sentences.";
-    setList(grammar, [
-      "Try to extend ideas into full sentences.",
-      "Use simple connectors (and, but, because) to link clauses.",
-      "Keep going for 60–90 seconds."
-    ]);
-    setList(pron, [
-      "We couldn’t confidently assess pronunciation in this short sample."
-    ]);
-    nextPrompt.textContent = "Describe your last weekend in 45 seconds.";
+/* ====== RENDER ====== */
+function renderResult(r){
+  // Fallback
+  if(r.fallback){
+    friendlyLevel.textContent = 'Beginner';
+    levelFill.style.width = '20%';
+    relFill.style.width = '40%';
+    relNote.textContent = "Say a bit more next time to get deeper feedback.";
+    wpmEl.textContent = r.fluency?.wpm ?? 0;
+    fillersEl.textContent = r.fluency?.fillers ?? 0;
+    fixNow.textContent = r.one_thing_to_fix || 'Speak longer in full sentences.';
+    setList(grammarList, []);
+    setList(pronList, []);
+    nextPrompt.textContent = r.next_prompt || 'Describe your last weekend in ~45 seconds.';
     return;
   }
 
-  lvl.textContent = friendlyLevelFrom(j);
-  fillers.textContent = String(j?.fluency?.fillers ?? 0);
-  fixNow.textContent = j?.one_thing_to_fix || j?.rationale || "—";
-  nextPrompt.textContent = j?.next_prompt || "—";
+  friendlyLevel.textContent = r.friendly_level || r.cefr_estimate || '—';
+  const lvl = clampNum(r.level_score,0,100);
+  levelFill.style.width = lvl+'%';
 
-  const g = Array.isArray(j?.grammar_issues) ? j.grammar_issues : [];
-  setList(grammar, g.length ? g.map(formatGrammar) : ["No clear grammar issues detected."]);
+  const rel = clampNum(r.relevance?.score ?? 50, 0, 100);
+  relFill.style.width = rel+'%';
+  relNote.textContent = r.relevance?.note ? `Relevance: ${r.relevance.note}` : '';
 
-  const p = Array.isArray(j?.pronunciation) ? j.pronunciation : [];
-  setList(pron, p.length ? p.map(formatPron) : [
-    "We couldn’t confidently assess pronunciation in this sample. Try 45–90 seconds with steady pace."
-  ]);
+  wpmEl.textContent = r.fluency?.wpm ?? 0;
+  fillersEl.textContent = r.fluency?.fillers ?? 0;
+
+  fixNow.textContent = r.one_thing_to_fix || r.rationale || '—';
+
+  setList(grammarList, Array.isArray(r.grammar_issues) ? r.grammar_issues.map(g =>
+    `→ ${g.error || ''}\nTry: ${g.fix || ''}\nWhy: ${g.why || ''}`) : []);
+
+  setList(pronList, Array.isArray(r.pronunciation) ? r.pronunciation.map(p =>
+    `${p.sound_or_word || ''} — ${p.issue || ''}${p.minimal_pair ? `\nTry: ${p.minimal_pair}`:''}`) : []);
+
+  nextPrompt.textContent = r.next_prompt || '—';
 }
 
-function renderError(msg){
-  lvl.textContent = "—";
-  fillers.textContent = "0";
-  fixNow.textContent = msg || "Error.";
-  setList(grammar, ["—"]);
-  setList(pron, ["—"]);
-  nextPrompt.textContent = "—";
+function setList(container, arr){
+  container.innerHTML = '';
+  if(!arr || arr.length===0){
+    container.innerHTML = '<div class="item">–</div>';
+    return;
+  }
+  for(const line of arr){
+    const d = document.createElement('div');
+    d.className='item';
+    d.textContent = line;
+    container.appendChild(d);
+  }
 }
 
-/* Toast */
-let toastTimer=null;
-function showToast(text){
-  toastEl.textContent = text;
-  toastEl.style.display = "block";
-  clearTimeout(toastTimer);
-  toastTimer = setTimeout(()=>toastEl.style.display="none", 3000);
+function clampNum(n,min,max){
+  n = Number(n); if(!Number.isFinite(n)) return min;
+  return Math.max(min, Math.min(max, Math.round(n)));
 }
 
-/* Seed prompt on load */
-seedPrompt(currentGoal);
+/* ====== RANDOM / COPY ====== */
+const seeds = [
+  "Describe one problem your team faced and how you solved it.",
+  "Talk about a time you had to learn a new skill quickly.",
+  "Explain a challenge you faced in school and what you learned.",
+  "Describe a situation where something wasn’t working as expected and how you fixed it.",
+  "Tell me about your last weekend in detail."
+];
+btnRandom.addEventListener('click', ()=>{
+  promptBox.value = seeds[Math.floor(Math.random()*seeds.length)];
+});
+btnCopy.addEventListener('click', async ()=>{
+  try{ await navigator.clipboard.writeText(promptBox.value); toast('Prompt copied.')}
+  catch{ toast('Could not copy.'); }
+});
+
+/* ====== TOAST ====== */
+let toastTm;
+function toast(msg){
+  toastEl.textContent = msg;
+  toastEl.style.display='block';
+  clearTimeout(toastTm);
+  toastTm = setTimeout(()=> toastEl.style.display='none', 2000);
+}
+
+/* ====== SESSIONS + STREAK ====== */
+function bumpSessionsAndStreak(){
+  const s = parseInt(localStorage.getItem(KEY_SESSIONS)||'0',10)+1;
+  localStorage.setItem(KEY_SESSIONS, String(s));
+  sessionsEl.textContent = s;
+
+  const today = new Date(); today.setHours(0,0,0,0);
+  const lastStr = localStorage.getItem(KEY_STREAK_DATE)||'';
+  const last = lastStr ? new Date(lastStr) : null;
+  let streak = parseInt(localStorage.getItem(KEY_STREAK)||'0',10);
+
+  if(!last || daysBetween(last,today) >= 1){
+    // new day ⇒ +1 streak (reset if gap >1)
+    if(last && daysBetween(last,today) > 1) streak = 0;
+    streak += 1;
+    localStorage.setItem(KEY_STREAK, String(streak));
+    localStorage.setItem(KEY_STREAK_DATE, today.toISOString());
+  }
+  streakEl.textContent = streak;
+}
+function daysBetween(a,b){
+  const ms = Math.abs(b - a);
+  return Math.floor(ms / (1000*60*60*24));
+}
+function loadSessionUI(){
+  sessionsEl.textContent = localStorage.getItem(KEY_SESSIONS)||'0';
+  streakEl.textContent = localStorage.getItem(KEY_STREAK)||'0';
+}
+loadSessionUI();
+
+/* ====== INIT ====== */
 </script>
 </body>
 </html>
