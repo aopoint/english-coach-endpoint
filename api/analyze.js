@@ -7,7 +7,7 @@
 // ENV: set OPENAI_API_KEY in Vercel (Project → Settings → Environment Variables)
 
 const { readFile } = require('fs/promises');
-const formidable = require('formidable');
+const { IncomingForm } = require('formidable');
 const OpenAI = require('openai');
 
 function cors(res) {
@@ -19,10 +19,13 @@ function cors(res) {
 module.exports = async (req, res) => {
   cors(res);
 
+  // Preflight
   if (req.method === 'OPTIONS') return res.status(200).end();
 
   if (req.method === 'GET') {
-    return res.status(200).json({ ok: true, message: 'Analyzer is alive. POST audio here.' });
+    return res
+      .status(200)
+      .json({ ok: true, message: 'Analyzer is alive. POST audio here.' });
   }
 
   if (req.method !== 'POST') {
@@ -31,34 +34,63 @@ module.exports = async (req, res) => {
 
   try {
     // ---- 1) Parse multipart form
+    const form = new IncomingForm({ multiples: true, keepExtensions: true });
+
     const { fields, files } = await new Promise((resolve, reject) => {
-      const form = formidable({ multiples: true, keepExtensions: false });
-      form.parse(req, (err, fields, files) => (err ? reject(err) : resolve({ fields, files })));
+      form.parse(req, (err, flds, fls) => (err ? reject(err) : resolve({ fields: flds, files: fls })));
     });
 
-    // Accept either files[] or audio/file
-    const pick = (obj, keys) => keys.map(k => obj?.[k]).find(Boolean);
-    const fileEntry =
-      pick(files, ['files[]', 'file', 'audio']) ||
-      (Array.isArray(files) && files.length ? files[0] : null);
-
-    const f =
-      (Array.isArray(fileEntry) ? fileEntry[0] : fileEntry) || {};
-
-    if (!f.filepath) {
-      return res.status(400).json({ ok: false, error: 'No audio file found (expected files[]).' });
+    // ---- pick first file regardless of field name (files[], file, audio, etc.)
+    let f = null;
+    if (files) {
+      const values = Object.values(files);
+      if (values.length) {
+        const first = values[0];
+        f = Array.isArray(first) ? first[0] : first;
+      }
     }
 
-    const filename = f.originalFilename || 'audio.webm';
-    const mimetype = f.mimetype || 'audio/webm';
-    const buffer = await readFile(f.filepath);
+    if (!f || !(f.filepath || f.path)) {
+      return res
+        .status(400)
+        .json({ ok: false, error: 'No audio file found (expected files[]/file/audio).' });
+    }
 
-    const durationSec = parseFloat(fields.duration_sec || fields.duration || '0') || 0;
-    const goal = (fields.goal || '').toString().trim() || 'General English';
+    const filePath = f.filepath || f.path;
+    const filename =
+      f.originalFilename || f.newFilename || f.name || 'audio.webm';
+    const mimetype = f.mimetype || f.type || 'audio/webm';
+
+    const buffer = await readFile(filePath);
+
+    // normalize fields possibly coming as arrays
+    const fieldVal = (obj, key, fallback = '') => {
+      const v = obj?.[key];
+      return Array.isArray(v) ? (v[0] ?? fallback) : (v ?? fallback);
+    };
+
+    const durationSec =
+      parseFloat(fieldVal(fields, 'duration_sec', fieldVal(fields, 'duration', '0'))) || 0;
+    const goal =
+      (fieldVal(fields, 'goal', 'General English') || 'General English').toString().trim();
 
     // ---- 2) Transcribe with Whisper
     const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-    const fileForOpenAI = await openai.files.toFile(buffer, filename, { type: mimetype });
+
+    // Prefer SDK helper if available, otherwise fall back to uploads helper
+    let fileForOpenAI;
+    if (openai.files && typeof openai.files.toFile === 'function') {
+      fileForOpenAI = await openai.files.toFile(buffer, filename, { type: mimetype });
+    } else {
+      // fallback (older/newer SDKs)
+      try {
+        const { toFile } = require('openai/uploads');
+        fileForOpenAI = await toFile(buffer, filename, { type: mimetype });
+      } catch {
+        const { Blob } = require('buffer');
+        fileForOpenAI = new Blob([buffer], { type: mimetype });
+      }
+    }
 
     const tr = await openai.audio.transcriptions.create({
       file: fileForOpenAI,
@@ -104,14 +136,20 @@ No markdown, no code fences, no extra text.
 
     // Validate it's JSON
     let json;
-    try { json = JSON.parse(raw); } catch {
-      return res.status(500).json({ ok: false, error: 'Model did not return JSON', raw });
+    try {
+      json = JSON.parse(raw);
+    } catch {
+      return res
+        .status(500)
+        .json({ ok: false, error: 'Model did not return JSON', raw });
     }
 
     // ---- 4) Return feedback JSON
     return res.status(200).json(json);
   } catch (err) {
     console.error('analyze error:', err);
-    return res.status(500).json({ ok: false, error: err.message || 'Server error' });
+    return res
+      .status(500)
+      .json({ ok: false, error: err.message || 'Server error' });
   }
 };
