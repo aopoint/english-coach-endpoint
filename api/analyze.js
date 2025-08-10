@@ -7,7 +7,6 @@
 // ENV: set OPENAI_API_KEY in Vercel (Project → Settings → Environment Variables)
 
 const { readFile } = require('fs/promises');
-const { IncomingForm } = require('formidable');
 const OpenAI = require('openai');
 
 function cors(res) {
@@ -19,7 +18,6 @@ function cors(res) {
 module.exports = async (req, res) => {
   cors(res);
 
-  // Preflight
   if (req.method === 'OPTIONS') return res.status(200).end();
 
   if (req.method === 'GET') {
@@ -33,64 +31,42 @@ module.exports = async (req, res) => {
   }
 
   try {
-    // ---- 1) Parse multipart form
-    const form = new IncomingForm({ multiples: true, keepExtensions: true });
+    // ---- 1) Parse multipart/form-data with formidable (ESM-safe)
+    const mod = await import('formidable'); // ESM default
+    const formidable = mod.formidable || mod.default || mod; // handle both shapes
+    const form = formidable({
+      multiples: true,
+      keepExtensions: true,
+      // accept only audio parts (optional)
+      filter: part => (part.mimetype || '').startsWith('audio/')
+    });
 
     const { fields, files } = await new Promise((resolve, reject) => {
       form.parse(req, (err, flds, fls) => (err ? reject(err) : resolve({ fields: flds, files: fls })));
     });
 
-    // ---- pick first file regardless of field name (files[], file, audio, etc.)
-    let f = null;
-    if (files) {
-      const values = Object.values(files);
-      if (values.length) {
-        const first = values[0];
-        f = Array.isArray(first) ? first[0] : first;
-      }
-    }
+    // Accept either files[] or audio/file, array or single
+    const pick = (obj, keys) => keys.map(k => obj?.[k]).find(Boolean);
+    let f =
+      pick(files, ['files[]', 'file', 'audio']) ||
+      (Array.isArray(files) && files.length ? files[0] : null);
 
-    if (!f || !(f.filepath || f.path)) {
-      return res
-        .status(400)
-        .json({ ok: false, error: 'No audio file found (expected files[]/file/audio).' });
-    }
+    if (Array.isArray(f)) f = f[0];
+    if (!f) return res.status(400).json({ ok: false, error: 'No audio file found (expected files[]/audio/file).' });
 
-    const filePath = f.filepath || f.path;
-    const filename =
-      f.originalFilename || f.newFilename || f.name || 'audio.webm';
+    const filepath = f.filepath || f.file?.filepath || f.tempFilePath;
+    if (!filepath) return res.status(400).json({ ok: false, error: 'Upload missing filepath.' });
+
+    const filename = f.originalFilename || f.newFilename || f.name || 'audio.webm';
     const mimetype = f.mimetype || f.type || 'audio/webm';
+    const buffer = await readFile(filepath);
 
-    const buffer = await readFile(filePath);
-
-    // normalize fields possibly coming as arrays
-    const fieldVal = (obj, key, fallback = '') => {
-      const v = obj?.[key];
-      return Array.isArray(v) ? (v[0] ?? fallback) : (v ?? fallback);
-    };
-
-    const durationSec =
-      parseFloat(fieldVal(fields, 'duration_sec', fieldVal(fields, 'duration', '0'))) || 0;
-    const goal =
-      (fieldVal(fields, 'goal', 'General English') || 'General English').toString().trim();
+    const durationSec = parseFloat(fields?.duration_sec || fields?.duration || '0') || 0;
+    const goal = (fields?.goal || '').toString().trim() || 'General English';
 
     // ---- 2) Transcribe with Whisper
     const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-
-    // Prefer SDK helper if available, otherwise fall back to uploads helper
-    let fileForOpenAI;
-    if (openai.files && typeof openai.files.toFile === 'function') {
-      fileForOpenAI = await openai.files.toFile(buffer, filename, { type: mimetype });
-    } else {
-      // fallback (older/newer SDKs)
-      try {
-        const { toFile } = require('openai/uploads');
-        fileForOpenAI = await toFile(buffer, filename, { type: mimetype });
-      } catch {
-        const { Blob } = require('buffer');
-        fileForOpenAI = new Blob([buffer], { type: mimetype });
-      }
-    }
+    const fileForOpenAI = await openai.files.toFile(buffer, filename, { type: mimetype });
 
     const tr = await openai.audio.transcriptions.create({
       file: fileForOpenAI,
@@ -129,27 +105,20 @@ No markdown, no code fences, no extra text.
         { role: 'system', content: system },
         { role: 'user', content: user },
       ],
-      temperature: 0.3,
+      temperature: 0.25,
     });
 
-    const raw = completion.choices?.[0]?.message?.content || '{}';
-
-    // Validate it's JSON
     let json;
     try {
-      json = JSON.parse(raw);
+      json = JSON.parse(completion.choices?.[0]?.message?.content || '{}');
     } catch {
-      return res
-        .status(500)
-        .json({ ok: false, error: 'Model did not return JSON', raw });
+      return res.status(500).json({ ok: false, error: 'Model did not return JSON' });
     }
 
     // ---- 4) Return feedback JSON
     return res.status(200).json(json);
   } catch (err) {
     console.error('analyze error:', err);
-    return res
-      .status(500)
-      .json({ ok: false, error: err.message || 'Server error' });
+    return res.status(500).json({ ok: false, error: err.message || 'Server error' });
   }
 };
