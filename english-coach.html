@@ -1,406 +1,386 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>English Coach</title>
-
-  <!-- Favicon: tiny gradient square -->
-  <link rel="icon" href='data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop stop-color="%238b5cf6"/><stop offset="1" stop-color="%237c3aed"/></linearGradient></defs><rect rx="14" ry="14" width="64" height="64" fill="url(%23g)"/></svg>' />
-
-  <style>
-    :root{
-      --bg:#0f0f13; --panel:#15161c; --panel-2:#191a22; --muted:#a5a7b1;
-      --text:#e9e9f2; --chip:#232433; --ring:#434469; --ok:#22c55e; --warn:#f59e0b; --err:#ef4444;
-      --brand-1:#8b5cf6; --brand-2:#7c3aed;
-      --radius:16px;
-    }
-    *{box-sizing:border-box}
-    html,body{height:100%}
-    body{
-      margin:0; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Inter, Arial, sans-serif;
-      background: radial-gradient(900px 600px at 30% -10%, #1a1b24 0%, transparent 55%), var(--bg);
-      color:var(--text);
-    }
-    .wrap{max-width:1100px;margin:28px auto;padding:0 16px}
-    header{display:flex;align-items:center;gap:12px;margin-bottom:18px}
-    .logo{width:18px;height:18px;border-radius:6px;background:linear-gradient(135deg,var(--brand-1),var(--brand-2));box-shadow:0 0 20px rgba(124,58,237,.25)}
-    h1{font-size:26px;margin:0}
-    .grid{display:grid;grid-template-columns:320px 1fr;gap:18px}
-    @media (max-width:900px){.grid{grid-template-columns:1fr}}
-    .card{background:var(--panel);border:1px solid #1d2030;border-radius:var(--radius);box-shadow:0 0 0 1px rgba(67,68,105,.06) inset}
-    .card .head{padding:18px 18px 8px;font-weight:700;letter-spacing:.02em}
-    .card .body{padding:12px 18px 18px}
-    .muted{color:var(--muted)}
-    .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
-    .btn{
-      background:var(--chip);border:1px solid #26283a;color:var(--text);
-      padding:12px 16px;border-radius:14px;cursor:pointer;font-weight:700
-    }
-    .btn:disabled{opacity:.6;cursor:not-allowed}
-    .btn-ghost{background:var(--chip)}
-    .btn-primary{
-      background:linear-gradient(135deg,var(--brand-1),var(--brand-2));
-      border:0; box-shadow:0 10px 30px rgba(124,58,237,.25), inset 0 0 0 1px rgba(255,255,255,.05)
-    }
-    .chips{display:flex;gap:10px;flex-wrap:wrap}
-    .chip{
-      padding:10px 14px;border-radius:12px;background:var(--chip);border:1px solid #26283a;color:var(--text);cursor:pointer;font-weight:700
-    }
-    .chip.active{outline:2px solid var(--ring);background:linear-gradient(135deg,var(--brand-1),var(--brand-2))}
-    .timerBox{
-      background:var(--panel-2);border:1px solid #1f2130;border-radius:16px;padding:16px 18px;font-size:28px;font-weight:800;letter-spacing:.04em
-    }
-    .bar{
-      height:10px;border-radius:999px;background:#292b3d;border:1px solid #222433; position:relative; overflow:hidden
-    }
-    .bar>i{
-      position:absolute;left:0;top:0;bottom:0;width:0%;border-radius:999px;background:linear-gradient(90deg,#ef4444,#f59e0b,#22c55e)
-    }
-    .kpi{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
-    .pill{background:#232433;border:1px solid #2a2c3f;border-radius:999px;padding:8px 12px;font-size:12px}
-    .dot{width:8px;height:8px;border-radius:999px;background:#374151;border:1px solid #222}
-    .dot.live{background:var(--ok)}
-    .sec{padding:14px 16px;border-top:1px solid #222436}
-    .list{display:flex;flex-direction:column;gap:10px}
-    .item{background:#1a1b24;border:1px solid #222436;border-radius:12px;padding:12px 12px}
-    .titleRow{display:flex;justify-content:space-between;align-items:center;gap:12px}
-    footer{margin:24px 0 40px;color:#9aa; font-size:12px;text-align:center}
-    .hide{display:none}
-    .rightOf{margin-left:auto}
-  </style>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>English Coach</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='96' height='96'%3E%3Crect rx='16' width='96' height='96' fill='%238a2be2'/%3E%3C/svg%3E">
+<style>
+  :root{
+    --bg:#0f0f12;--panel:#16161a;--chip:#202028;--text:#e9e9ee;--muted:#9a9aa6;--accent1:#7b2cf1;--accent2:#5c2df5;--ok:#27d1a0;--warn:#f0c032;--danger:#f06464;
+  }
+  *{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--text);font:16px/1.5 Inter,system-ui,Segoe UI,Roboto,Helvetica,Arial}
+  .wrap{max-width:1180px;margin:32px auto;padding:0 16px}
+  header{display:flex;align-items:center;gap:14px;margin-bottom:18px}
+  .logo{width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,var(--accent1),var(--accent2));box-shadow:0 0 0 2px #0006 inset}
+  h1{margin:0;font-weight:800;font-size:24px}
+  .grid{display:grid;grid-template-columns:320px 1fr;gap:18px}
+  @media (max-width:950px){.grid{grid-template-columns:1fr}}
+  .card{background:var(--panel);border-radius:14px;box-shadow:0 8px 24px rgba(0,0,0,.25);padding:16px}
+  .section-title{font-weight:700;margin:0 0 8px 0;letter-spacing:.2px}
+  .chip-row{display:flex;flex-wrap:wrap;gap:10px;margin:6px 0 12px}
+  .chip{background:var(--chip);color:var(--text);border-radius:12px;padding:10px 14px;font-weight:700}
+  .chip.active{background:linear-gradient(135deg,var(--accent1),var(--accent2));box-shadow:0 10px 18px rgba(124,45,240,.25)}
+  .btn{display:inline-flex;align-items:center;gap:10px;border:0;border-radius:16px;padding:14px 18px;font-weight:800;cursor:pointer;color:#fff;background:linear-gradient(135deg,var(--accent1),var(--accent2))}
+  .btn.secondary{background:var(--chip);color:var(--text)}
+  .btn:disabled{opacity:.5;cursor:not-allowed}
+  .row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+  .timer{font-weight:900;font-size:34px;background:#111218;border-radius:14px;padding:10px 14px;min-width:150px;text-align:center}
+  .bar{height:10px;border-radius:8px;background:#2a2a33;flex:1;position:relative;overflow:hidden}
+  .bar>i{position:absolute;left:0;top:0;bottom:0;width:0;border-radius:8px;background:var(--danger);transition:width .3s ease,background .3s ease}
+  .list{list-style:none;margin:6px 0 0;padding:0;display:grid;gap:8px}
+  .item{background:#1a1a20;border-radius:12px;padding:12px}
+  .muted{color:var(--muted)}
+  footer{display:flex;justify-content:center;margin:20px 0 40px;color:var(--muted);gap:8px;font-size:13px}
+  .badge{background:#1b1b23;padding:3px 8px;border-radius:10px}
+  .km{display:flex;gap:8px;flex-wrap:wrap}
+  .k{background:#1b1b23;border-radius:12px;padding:8px 10px;font-weight:700}
+  .ok{color:var(--ok)} .warn{color:var(--warn)} .danger{color:var(--danger)}
+</style>
 </head>
 <body>
-  <div class="wrap">
-    <header>
-      <div class="logo"></div>
-      <h1>English Coach</h1>
-      <div class="rightOf muted">v1.2.13</div>
-    </header>
+<div class="wrap">
+  <header>
+    <div class="logo" aria-hidden="true"></div>
+    <h1>English Coach</h1>
+  </header>
 
-    <div class="grid">
-      <!-- LEFT: controls -->
-      <div class="card">
-        <div class="head">Goal</div>
-        <div class="body">
-          <div class="chips" id="goalChips"></div>
-        </div>
-
-        <div class="head">Recording</div>
-        <div class="body">
-          <div class="row">
-            <button class="btn btn-primary" id="btnStart">▶ Start recording</button>
-            <button class="btn btn-ghost" id="btnStop" disabled>◼ Stop</button>
-          </div>
-          <div class="row" style="margin-top:12px; align-items:center">
-            <div class="timerBox" id="timer">00:00</div>
-            <div class="bar" style="flex:1; margin-left:12px"><i id="progress"></i></div>
-          </div>
-          <div class="row" style="margin-top:12px">
-            <button class="btn btn-primary" id="btnSend" disabled>Send &amp; Analyze</button>
-          </div>
-        </div>
-
-        <div class="head">What to say to start</div>
-        <div class="body">
-          <div class="item" id="promptBox" style="min-height:64px"></div>
-          <div class="row" style="margin-top:10px">
-            <button class="btn" id="btnRand">🎲 Randomize prompt</button>
-            <span class="muted">We don’t store your audio; it’s sent to the analyzer and immediately discarded.</span>
-          </div>
-        </div>
+  <div class="grid">
+    <!-- Left column -->
+    <aside class="card">
+      <h2 class="section-title">Goal</h2>
+      <div id="goalRow" class="chip-row">
+        <button class="chip active" data-goal="Work English">Work English</button>
+        <button class="chip" data-goal="Daily Life">Daily Life</button>
+        <button class="chip" data-goal="Interview Prep">Interview Prep</button>
+        <button class="chip" data-goal="Travel">Travel</button>
+        <button class="chip" data-goal="Presentation">Presentation</button>
       </div>
 
-      <!-- RIGHT: Results -->
-      <div class="card" id="resultCard">
-        <div class="sec kpi">
-          <span class="dot" id="liveDot"></span><span class="muted">Live</span>
-          <span class="pill">Level: <b id="levelText">–</b></span>
-          <span class="pill">Fillers: <b id="fillers">0</b></span>
-          <span class="pill">Sessions: <b id="sessions">0</b></span>
-        </div>
-
-        <div class="sec">
-          <div class="row" style="gap:18px; align-items:center">
-            <div style="min-width:160px">
-              <div class="muted" style="font-size:12px;margin-bottom:6px">Level meter</div>
-              <div class="bar" style="width:180px"><i id="levelBar"></i></div>
-            </div>
-            <div id="relWrap" class="hide" style="min-width:160px">
-              <div class="muted" style="font-size:12px;margin-bottom:6px">Relevancy</div>
-              <div class="bar" style="width:180px"><i id="relBar"></i></div>
-            </div>
-          </div>
-        </div>
-
-        <div class="sec">
-          <div class="head" style="padding:0 0 8px">Pronunciation</div>
-          <div class="list" id="pronList"><div class="muted">–</div></div>
-        </div>
-
-        <div class="sec">
-          <div class="head" style="padding:0 0 8px">Grammar</div>
-          <div class="list" id="gramList"><div class="muted">–</div></div>
-        </div>
-
-        <div class="sec">
-          <div class="head" style="padding:0 0 8px">What to fix now</div>
-          <div class="item" id="fixNow">–</div>
-        </div>
-
-        <div class="sec">
-          <div class="head" style="padding:0 0 8px">Next prompt (30–45s)</div>
-          <div class="item" id="nextPrompt">–</div>
-        </div>
+      <div class="section-title" style="margin-top:12px">Recording</div>
+      <div class="row">
+        <button id="btnStart" class="btn"><span>▶</span> Start recording</button>
+        <button id="btnStop" class="btn secondary">■ Stop</button>
       </div>
-    </div>
+      <div class="row" style="margin-top:8px">
+        <div id="timer" class="timer">00:00</div>
+        <div class="bar"><i id="timeFill"></i></div>
+      </div>
+      <button id="btnSend" class="btn" style="width:100%;margin-top:12px" disabled>Send & Analyze</button>
 
-    <footer>
-      © 2025 <a href="https://simpleia.com" target="_blank" style="color:#bbb;text-decoration:none">Simpleia</a> —
-      Built by <a href="https://aosama.net" target="_blank" style="color:#bbb;text-decoration:none">Abdo Osama</a>
-    </footer>
+      <div class="section-title" style="margin-top:16px">What to say to start</div>
+      <div class="item" id="promptBox">Describe a recent project you led and one lesson you learned.</div>
+      <div class="row" style="margin-top:8px">
+        <button id="btnRandom" class="btn secondary">🎲 Randomize prompt</button>
+        <span class="muted" style="margin-left:auto">We don’t store your audio; it’s sent to the analyzer and immediately discarded.</span>
+      </div>
+    </aside>
+
+    <!-- Right column -->
+    <main class="card">
+      <div class="km" style="margin-bottom:12px">
+        <span id="liveDot" class="k">● <span class="muted">Live</span></span>
+        <span class="k">Level: <b id="lvlTxt">–</b></span>
+        <span class="k">Fillers: <b id="fillersTxt">0</b></span>
+        <span class="k">Streak: <b id="streakTxt">0</b></span>
+        <span class="k">Sessions: <b id="sessionsTxt">0</b></span>
+      </div>
+
+      <div class="km" style="margin-bottom:8px">
+        <span class="k" style="min-width:240px">Level meter
+          <span class="bar" style="width:140px;margin-left:8px"><i id="levelFill" style="width:0;background:var(--warn)"></i></span>
+          <span id="levelPct" class="muted" style="margin-left:6px">0%</span>
+        </span>
+        <span class="k" style="min-width:240px">Relevancy
+          <span class="bar" style="width:140px;margin-left:8px"><i id="relFill" style="width:0;background:var(--warn)"></i></span>
+          <span id="relPct" class="muted" style="margin-left:6px">0%</span>
+        </span>
+      </div>
+
+      <section>
+        <h3 class="section-title">Pronunciation</h3>
+        <ul id="pronList" class="list"></ul>
+      </section>
+
+      <section style="margin-top:8px">
+        <h3 class="section-title">Grammar</h3>
+        <ul id="gramList" class="list"></ul>
+      </section>
+
+      <section style="margin-top:8px">
+        <h3 class="section-title">What to fix now</h3>
+        <div id="fixNow" class="item muted">–</div>
+      </section>
+
+      <section style="margin-top:8px">
+        <h3 class="section-title">Next prompt (30–45s)</h3>
+        <div id="nextPrompt" class="item muted">–</div>
+      </section>
+
+      <section style="margin-top:8px">
+        <h3 class="section-title">Leaderboard</h3>
+        <ul id="leaderboard-list" class="list"><li class="muted">Loading…</li></ul>
+      </section>
+    </main>
   </div>
 
-  <script>
-    /* ====== SETTINGS ====== */
-    const ANALYZER_URL = "https://english-coach-endpoint.vercel.app/api/analyze"; // <- your API
-    const MAX_REC_SEC  = 90;           // auto-stop limit
-    const SHOW_RELEVANCE = false;      // turn on/off the relevancy meter
+  <footer>
+    <span>© 2025 <a href="https://simpleia.com" target="_blank" rel="noopener" class="muted" style="text-decoration:none;color:inherit">Simpleia</a> — Built by <a href="https://aosama.net" target="_blank" rel="noopener" class="muted" style="text-decoration:none;color:inherit">Abdo Osama</a></span>
+    <span class="badge">v1.2.12</span>
+  </footer>
+</div>
 
-    const GOALS = ["Work English","Daily Life","Interview Prep","Travel","Presentation"];
-    const PROMPTS = {
-      "Work English":[
-        "Describe a recent challenge you faced at work and how you handled it.",
-        "Explain one problem your team faced and how you solved it.",
-        "Tell me about a project you’re working on and your role."
-      ],
-      "Daily Life":[
-        "Describe your morning routine in detail.",
-        "What did you do last weekend? Share for ~45 seconds.",
-        "Tell me about your favorite hobby and why you enjoy it."
-      ],
-      "Interview Prep":[
-        "Tell me about yourself (as in a job interview).",
-        "What’s a tough decision you made at work?",
-        "Describe a time you improved a process."
-      ],
-      "Travel":[
-        "Describe your favorite trip. Where did you go and what did you do?",
-        "Plan a weekend in a new city for a friend.",
-        "Explain how to apply for a visa step by step."
-      ],
-      "Presentation":[
-        "Summarize a product idea and its main benefits.",
-        "Pitch a proposal to reduce team bottlenecks.",
-        "Explain a complex topic to a non-expert in 45 seconds."
-      ]
+<!-- Supabase client -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+/* === CONFIG === */
+const API_URL = "https://english-coach-endpoint-git-main-abelrahman-osamas-projects.vercel.app/api/analyze";    // <- change to your analyzer endpoint
+// Supabase: paste from Supabase → Settings → API (Client Keys)
+const SUPABASE_URL = "https://cstwbjtbwwnxrsvpxqro.supabase.co";             // <- CHANGE
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNzdHdianRid3dueHJzdnB4cXJvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ4NDg1OTgsImV4cCI6MjA3MDQyNDU5OH0.D-P8NWdJoro_pzSk6qoi5_Hl6Ohz_hiTZr4-fqmyXkM";                    // <- CHANGE
+
+/* === Supabase client & basic session logging === */
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const EC_USER_KEY = "ec_user_id";
+const EC_SESSIONS_LOCAL = "ec_sessions_count";
+const EC_STREAK = "ec_streak_days";
+const EC_LAST_DAY = "ec_last_day";
+
+function getLocalUserId(){
+  let id = localStorage.getItem(EC_USER_KEY);
+  if(!id){ id = crypto.randomUUID(); localStorage.setItem(EC_USER_KEY, id); }
+  return id;
+}
+
+async function saveSessionToSupabase({ goal, duration_sec, result }){
+  try{
+    const user_id = getLocalUserId();
+    const payload = {
+      user_id,
+      goal,
+      duration_sec: Math.round(duration_sec||0),
+      wpm: result?.fluency?.wpm ?? null,
+      fillers: result?.fluency?.fillers ?? null,
+      level_score: result?.level_score ?? null,
+      relevance_score: result?.relevance?.score ?? null,
     };
+    await sb.from("sessions").insert(payload).throwOnError();
+  }catch(e){ console.warn("Supabase insert:", e.message); }
+}
 
-    /* ====== ELEMENTS ====== */
-    const goalChips = document.getElementById('goalChips');
-    const btnStart  = document.getElementById('btnStart');
-    const btnStop   = document.getElementById('btnStop');
-    const btnSend   = document.getElementById('btnSend');
-    const btnRand   = document.getElementById('btnRand');
-    const timerEl   = document.getElementById('timer');
-    const progressI = document.getElementById('progress');
-    const promptBox = document.getElementById('promptBox');
+async function fetchAndRenderLeaderboard(){
+  const UL = document.getElementById("leaderboard-list");
+  try{
+    const { data } = await sb.from("sessions").select("user_id, created_at");
+    const counts = new Map();
+    (data||[]).forEach(row => counts.set(row.user_id, (counts.get(row.user_id)||0)+1));
+    const sorted = [...counts.entries()].sort((a,b)=>b[1]-a[1]).slice(0,10);
+    if(!sorted.length){ UL.innerHTML = `<li class="muted">No sessions yet.</li>`; return; }
+    const me = getLocalUserId();
+    UL.innerHTML = sorted.map(([uid,cnt],i)=>(
+      `<li>${i+1}. <span class="${uid===me?'ok':''}">${uid.slice(0,6)}…</span> — <b>${cnt}</b> sessions</li>`
+    )).join("");
+  }catch(e){
+    UL.innerHTML = `<li class="muted">Leaderboard unavailable</li>`;
+  }
+}
 
-    const liveDot   = document.getElementById('liveDot');
-    const levelText = document.getElementById('levelText');
-    const fillersEl = document.getElementById('fillers');
-    const sessionsEl= document.getElementById('sessions');
-    const levelBar  = document.getElementById('levelBar');
-    const relWrap   = document.getElementById('relWrap');
-    const relBar    = document.getElementById('relBar');
+/* === UI / Recorder === */
+const btnStart = document.getElementById("btnStart");
+const btnStop  = document.getElementById("btnStop");
+const btnSend  = document.getElementById("btnSend");
+const btnRandom= document.getElementById("btnRandom");
+const promptBox= document.getElementById("promptBox");
+const timerEl  = document.getElementById("timer");
+const timeFill = document.getElementById("timeFill");
 
-    const pronList  = document.getElementById('pronList');
-    const gramList  = document.getElementById('gramList');
-    const fixNow    = document.getElementById('fixNow');
-    const nextPrompt= document.getElementById('nextPrompt');
+const lvlTxt    = document.getElementById("lvlTxt");
+const fillersTxt= document.getElementById("fillersTxt");
+const streakTxt = document.getElementById("streakTxt");
+const sessionsTxt = document.getElementById("sessionsTxt");
+const levelFill = document.getElementById("levelFill");
+const levelPct  = document.getElementById("levelPct");
+const relFill   = document.getElementById("relFill");
+const relPct    = document.getElementById("relPct");
+const pronList  = document.getElementById("pronList");
+const gramList  = document.getElementById("gramList");
+const fixNowEl  = document.getElementById("fixNow");
+const nextPromptEl = document.getElementById("nextPrompt");
+const liveDot   = document.getElementById("liveDot");
 
-    /* ====== STATE ====== */
-    let mediaRecorder = null;
-    let chunks = [];
-    let recStart = 0;
-    let timer = null;
-    let sec = 0;
-    let goal = GOALS[0];
-    let sessions = Number(localStorage.getItem('ec_sessions')||'0');
+const MAX_SEC = 95;
+let media, rec, chunks = [];
+let sec = 0, timerInt = null;
+let currentGoal = "Work English";
+let lastResult = null;
 
-    sessionsEl.textContent = sessions;
+document.getElementById("goalRow").addEventListener("click", (e)=>{
+  const b = e.target.closest("[data-goal]");
+  if(!b) return;
+  document.querySelectorAll("#goalRow .chip").forEach(c=>c.classList.remove("active"));
+  b.classList.add("active");
+  currentGoal = b.dataset.goal;
+});
 
-    // Build goals UI
-    function renderGoals(){
-      goalChips.innerHTML = '';
-      GOALS.forEach(g=>{
-        const el = document.createElement('button');
-        el.className = 'chip' + (g===goal?' active':'');
-        el.textContent = g;
-        el.onclick = ()=>{
-          goal = g;
-          renderGoals();
-          setPrompt(randomPrompt());
-        };
-        goalChips.appendChild(el);
-      });
-    }
+btnStart.onclick = async () => {
+  try{
+    btnStart.disabled = true;
+    btnStop.disabled = false;
+    btnSend.disabled = true;
+    btnRandom.disabled = true;
+    liveDot.innerHTML = "● <span class='muted'>Live</span>";
+    media = await navigator.mediaDevices.getUserMedia({ audio:true });
+    rec = new MediaRecorder(media, { mimeType:"audio/webm" });
+    chunks = [];
+    rec.ondataavailable = e => e.data.size && chunks.push(e.data);
+    rec.onstop = () => media.getTracks().forEach(t=>t.stop());
+    rec.start(250);
 
-    function randomPrompt(){
-      const arr = PROMPTS[goal] || PROMPTS[GOALS[0]];
-      return arr[Math.floor(Math.random()*arr.length)];
-    }
-    function setPrompt(t){ promptBox.textContent = t; }
+    // timer
+    sec = 0; paintTimer();
+    clearInterval(timerInt);
+    timerInt = setInterval(()=>{
+      sec++; paintTimer();
+      if(sec>=MAX_SEC) btnStop.click();
+    }, 1000);
+  }catch(e){
+    alert("Mic permission error: "+e.message);
+    btnStart.disabled = false;
+  }
+};
 
-    // Timer / progress
-    function fmt(n){ return (n<10?'0':'') + n; }
-    function setTimer(s){
-      sec = s;
-      timerEl.textContent = fmt(Math.floor(sec/60)) + ':' + fmt(sec%60);
-      const pct = Math.min(100, Math.round((sec / MAX_REC_SEC) * 100));
-      progressI.style.width = pct + '%';
-    }
-    function tick(){
-      setTimer(sec+1);
-      // color “phases”: red <45, amber <60, green >=60
-      const pct = (sec / MAX_REC_SEC);
-      if (pct >= 1) stopRec(true);
-      liveDot.classList.add('live');
-    }
+btnStop.onclick = () => {
+  if(rec && rec.state!=="inactive") rec.stop();
+  clearInterval(timerInt);
+  btnSend.disabled = chunks.length===0;
+  btnRandom.disabled = false;
+  liveDot.innerHTML = "● <span class='muted'>Idle</span>";
+};
 
-    // Recording
-    async function startRec(){
-      if (mediaRecorder && mediaRecorder.state === 'recording') return;
-      try{
-        const stream = await navigator.mediaDevices.getUserMedia({audio:true});
-        mediaRecorder = new MediaRecorder(stream);
-        chunks = [];
-        mediaRecorder.ondataavailable = e => { if (e.data.size>0) chunks.push(e.data); };
-        mediaRecorder.onstop = ()=>{};
-        mediaRecorder.start(250);
+btnSend.onclick = async () => {
+  if(!chunks.length) return;
+  btnSend.disabled = true;
 
-        recStart = Date.now();
-        setTimer(0);
-        timer = setInterval(tick, 1000);
+  const blob = new Blob(chunks, { type:"audio/webm" });
+  const fd = new FormData();
+  fd.append("files[]", blob, "audio.webm");
+  fd.append("duration_sec", String(sec));
+  fd.append("goal", currentGoal);
+  fd.append("prompt_text", promptBox.textContent.trim());
 
-        btnStart.disabled = true;
-        btnStop.disabled  = false;
-        btnSend.disabled  = true;
-        btnRand.disabled  = true; // disable randomize while recording
-        liveDot.classList.add('live');
-      }catch(e){
-        alert('Mic permission is required.');
-      }
-    }
+  const res = await fetch(API_URL, { method:"POST", body:fd });
+  const json = await res.json();
+  renderResult(json);
 
-    function stopRec(auto=false){
-      if (!mediaRecorder) return;
-      if (mediaRecorder.state !== 'inactive') mediaRecorder.stop();
-      clearInterval(timer); timer = null;
-      btnStart.disabled = false;
-      btnStop.disabled  = true;
-      btnSend.disabled  = chunks.length===0; // allow Send if we have audio
-      btnRand.disabled  = false;
-      if (auto) btnSend.focus();
-    }
+  // reset state for next try
+  chunks = [];
+  sec = 0; paintTimer();
+  liveDot.innerHTML = "● <span class='muted'>Idle</span>";
+  btnSend.disabled = true;
 
-    async function sendAnalyze(){
-      if (!chunks.length) return;
-      btnSend.disabled = true;
+  // Save session + refresh leaderboard
+  await postAnalysis(json, { goal: currentGoal, duration_sec: sec });
+  await fetchAndRenderLeaderboard();
 
-      // build form
-      const blob = new Blob(chunks, {type:'audio/webm'});
-      const file = new File([blob], 'audio.webm', {type:blob.type});
-      const fd = new FormData();
-      fd.append('files[]', file);
-      fd.append('duration_sec', Math.floor(sec));
-      fd.append('goal', goal);
-      fd.append('prompt_text', promptBox.textContent||'');
+  // local counters / streak
+  bumpLocalCounters();
+};
 
-      liveDot.classList.remove('live');
+btnRandom.onclick = () => {
+  if(btnStart.disabled && !btnSend.disabled) return; // extra guard
+  const options = [
+    "Describe a recent project you led and one lesson you learned.",
+    "Explain a challenge your team faced and how you solved it.",
+    "Talk about a time you disagreed and how you handled it.",
+    "Describe your typical day (~45s).",
+    "What is one skill you want to improve and why?"
+  ];
+  promptBox.textContent = options[Math.floor(Math.random()*options.length)];
+};
 
-      try{
-        const res = await fetch(ANALYZER_URL, {method:'POST', body:fd});
-        const json = await res.json();
-        renderResult(json);
+function paintTimer(){
+  const mm = String(Math.floor(sec/60)).padStart(2,"0");
+  const ss = String(sec%60).padStart(2,"0");
+  timerEl.textContent = `${mm}:${ss}`;
+  const pct = Math.min(100, Math.round((sec/MAX_SEC)*100));
+  timeFill.style.width = pct+"%";
+  // color ramp
+  timeFill.style.background = sec<30 ? "var(--danger)" : (sec<60 ? "var(--warn)" : "var(--ok)");
+}
 
-        // count sessions
-        localStorage.setItem('ec_sessions', String(++sessions));
-        sessionsEl.textContent = sessions;
+// — Render results
+function renderResult(r){
+  lastResult = r;
+  // Level text
+  const L = r.friendly_level || r.cefr_estimate || "–";
+  lvlTxt.textContent = L;
+  fillersTxt.textContent = r?.fluency?.fillers ?? 0;
 
-        // reset UI for fresh recording
-        chunks = [];
-        setTimer(0);
-        progressI.style.width = '0%';
-        btnSend.disabled = true;
-        btnStart.focus();
-      }catch(err){
-        alert('Request failed. Please try again.');
-      }
-    }
+  // meters
+  levelPct.textContent = (r.level_score||0)+"%";
+  levelFill.style.width = (r.level_score||0)+"%";
+  levelFill.style.background = (r.level_score||0) > 66 ? "var(--ok)" : (r.level_score||0) > 33 ? "var(--warn)" : "var(--danger)";
 
-    // Rendering results
-    function clearList(el){ el.innerHTML = '<div class="muted">–</div>'; }
-    function pushItem(el, title, sub){
-      if (el.firstElementChild && el.firstElementChild.classList.contains('muted')) el.innerHTML='';
-      const it = document.createElement('div');
-      it.className = 'item';
-      it.innerHTML = `<div class="titleRow"><b>${title}</b></div>${sub?`<div class="muted" style="margin-top:6px">${sub}</div>`:''}`;
-      el.appendChild(it);
-    }
+  const rel = r?.relevance?.score ?? 0;
+  relPct.textContent = rel+"%";
+  relFill.style.width = rel+"%";
+  relFill.style.background = rel>66 ? "var(--ok)" : rel>33 ? "var(--warn)" : "var(--danger)";
 
-    function renderResult(r){
-      const friendly = r.friendly_level || r.cefr_estimate || '–';
-      levelText.textContent = friendly;
-      fillersEl.textContent = (r.fluency && typeof r.fluency.fillers==='number')? r.fluency.fillers : 0;
+  // lists
+  pronList.innerHTML = (r.pronunciation||[]).map(p => `
+    <li class="item">
+      <b>${escapeHTML(p.sound_or_word||"-")}</b> — ${escapeHTML(p.issue||"-")}
+      <div class="muted">Try: ${escapeHTML(p.minimal_pair||"-")}</div>
+    </li>`).join("") || `<li class="muted">–</li>`;
 
-      // level meter
-      const lvl = Math.max(0, Math.min(100, Number(r.level_score||0)));
-      levelBar.style.width = lvl + '%';
+  gramList.innerHTML = (r.grammar_issues||[]).map(g => `
+    <li class="item">
+      → ${escapeHTML(g.error||"-")}
+      <div>Try: ${escapeHTML(g.fix||"-")}</div>
+      <div class="muted">Why: ${escapeHTML(g.why||"-")}</div>
+    </li>`).join("") || `<li class="muted">–</li>`;
 
-      // relevancy (optional)
-      if (SHOW_RELEVANCE && r.relevance && typeof r.relevance.score==='number'){
-        relWrap.classList.remove('hide');
-        relBar.style.width = Math.max(0,Math.min(100,Math.round(r.relevance.score))) + '%';
-      } else {
-        relWrap.classList.add('hide');
-      }
+  fixNowEl.textContent = r.one_thing_to_fix || "–";
+  nextPromptEl.textContent = r.next_prompt || "–";
+}
 
-      // pronunciation
-      clearList(pronList);
-      (r.pronunciation||[]).forEach(p=>{
-        const title = `${p.sound_or_word || '—'} — ${p.issue || ''}`.trim();
-        pushItem(pronList, title, p.minimal_pair?`Try: ${p.minimal_pair}`:'');
-      });
-      if ((r.pronunciation||[]).length===0) pronList.innerHTML = '<div class="muted">–</div>';
+function escapeHTML(s){ return String(s||"").replace(/[&<>"']/g, c=>({ "&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;" }[c])); }
 
-      // grammar
-      clearList(gramList);
-      (r.grammar_issues||[]).forEach(g=>{
-        const t = `→ ${g.error || ''}`;
-        const sub = [
-          g.fix?`Try: ${g.fix}`:'',
-          g.why?`Why: ${g.why}`:''
-        ].filter(Boolean).join('<br/>');
-        pushItem(gramList, t, sub);
-      });
-      if ((r.grammar_issues||[]).length===0) gramList.innerHTML = '<div class="muted">–</div>';
+/* === Sessions / streak counters === */
+function bumpLocalCounters(){
+  const today = new Date().toISOString().slice(0,10);
+  const last = localStorage.getItem(EC_LAST_DAY);
+  let streak = Number(localStorage.getItem(EC_STREAK)||0);
+  if(!last || last===today){
+    // same day, keep streak as is (counts once/day)
+  }else{
+    // if it's exactly next day -> +1 else reset
+    const d1 = new Date(last); const d2 = new Date(today);
+    const diff = (d2 - d1)/(1000*60*60*24);
+    streak = diff===1 ? streak+1 : 1;
+  }
+  localStorage.setItem(EC_LAST_DAY, today);
+  localStorage.setItem(EC_STREAK, String(streak||1));
 
-      // fix now & next prompt (next last)
-      fixNow.textContent = r.one_thing_to_fix || '–';
-      nextPrompt.textContent = r.next_prompt || '–';
-    }
+  // session count (local)
+  let localCount = Number(localStorage.getItem(EC_SESSIONS_LOCAL)||0) + 1;
+  localStorage.setItem(EC_SESSIONS_LOCAL, String(localCount));
 
-    // Wire up
-    btnStart.onclick = startRec;
-    btnStop.onclick  = ()=>stopRec(false);
-    btnSend.onclick  = sendAnalyze;
-    btnRand.onclick  = ()=>{ if (!btnRand.disabled) setPrompt(randomPrompt()); };
+  streakTxt.textContent = localStorage.getItem(EC_STREAK)||"0";
+  sessionsTxt.textContent = localStorage.getItem(EC_SESSIONS_LOCAL)||"0";
+}
 
-    // init
-    renderGoals();
-    setPrompt(randomPrompt());
-    setTimer(0);
-  </script>
+// Supabase hook called after analysis
+async function postAnalysis(result, meta){
+  await saveSessionToSupabase({ goal: meta?.goal, duration_sec: meta?.duration_sec, result });
+}
+
+document.addEventListener("DOMContentLoaded", ()=>{
+  // initial numbers
+  streakTxt.textContent   = localStorage.getItem(EC_STREAK)||"0";
+  sessionsTxt.textContent = localStorage.getItem(EC_SESSIONS_LOCAL)||"0";
+  fetchAndRenderLeaderboard();
+});
+</script>
 </body>
 </html>
