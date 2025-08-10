@@ -9,136 +9,91 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet"/>
 <style>
   :root{
-    --bg:#0f0f12;
-    --panel:#17171c;
-    --panel-2:#1d1d24;
-    --muted:#9aa0a6;
-    --text:#eaeaf0;
-    --ok:#1dd1a1;
-    --warn:#f5a524;
-    --err:#ff5771;
-    --chip:#272730;
-    --ring:rgba(130, 82, 255, .35);
-    --brand-1:#6b4cff;
-    --brand-2:#b84df8;
-    --brand-3:#8b5cf6;
+    --bg:#0f0f12; --panel:#17171c; --panel-2:#1d1d24; --muted:#9aa0a6; --text:#eaeaf0;
+    --ok:#1dd1a1; --warn:#f5a524; --err:#ff5771; --chip:#272730; --ring:rgba(130,82,255,.35);
+    --brand-1:#6b4cff; --brand-2:#b84df8;
   }
   *{box-sizing:border-box}
-  html,body{height:100%}
-  body{
-    margin:0;
-    background: radial-gradient(900px 600px at 75% -5%, rgba(130,82,255,.12), transparent 55%),
-                radial-gradient(700px 500px at -10% 110%, rgba(184,77,248,.12), transparent 55%),
-                var(--bg);
-    color:var(--text);
-    font-family:Inter,system-ui,Segoe UI,Roboto,Helvetica,Arial,Apple Color Emoji,Segoe UI Emoji;
-  }
+  html,body{height:100%} body{margin:0;background:
+    radial-gradient(900px 600px at 75% -5%, rgba(130,82,255,.12), transparent 55%),
+    radial-gradient(700px 500px at -10% 110%, rgba(184,77,248,.12), transparent 55%), var(--bg);
+    color:var(--text); font-family:Inter,system-ui,Segoe UI,Roboto,Helvetica,Arial,Apple Color Emoji,Segoe UI Emoji}
   a{color:#c3b5ff;text-decoration:none}
-  .wrap{max-width:1120px; margin:28px auto; padding:0 16px}
-  header{
-    display:flex; align-items:center; justify-content:space-between; gap:16px; margin-bottom:20px
-  }
-  header h1{font-size:28px; margin:0}
-  header .tag{background:linear-gradient(90deg,var(--brand-1),var(--brand-2));
-    color:#fff; padding:8px 14px; border-radius:999px; font-weight:700; box-shadow:0 8px 22px rgba(120,80,255,.25)}
-  .grid{display:grid; grid-template-columns:360px 1fr; gap:22px}
-  @media (max-width: 980px){ .grid{grid-template-columns:1fr} }
+  .wrap{max-width:1180px;margin:28px auto;padding:0 16px}
+  header{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:18px}
+  header h1{margin:0;font-size:28px} header .tag{background:linear-gradient(90deg,var(--brand-1),var(--brand-2));
+    color:#fff;padding:8px 14px;border-radius:999px;font-weight:800;box-shadow:0 10px 26px rgba(120,80,255,.25)}
+  .grid{display:grid;grid-template-columns:380px 1fr;gap:22px}
+  @media (max-width:980px){.grid{grid-template-columns:1fr}}
 
-  /* Panels */
-  .card{background:var(--panel); border-radius:18px; box-shadow:0 10px 26px rgba(0,0,0,.33); padding:20px}
-  .card h2{margin:0 0 8px; font-size:24px}
-  .sub{color:var(--muted); margin:0 0 18px; line-height:1.5}
+  .card{background:var(--panel);border-radius:18px;box-shadow:0 10px 26px rgba(0,0,0,.33);padding:18px}
+  .section{background:var(--panel-2);border:1px solid #2a2c38;border-radius:16px;padding:14px;margin-top:12px}
+  .title{font-weight:800;margin:0 0 6px;font-size:14px;text-transform:uppercase;letter-spacing:.05em;color:#cfd3dd}
+  .sub{color:var(--muted);margin:0;line-height:1.55}
 
-  /* Controls */
-  .label{font-weight:800; margin:22px 0 10px}
-  .goals{display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:12px}
-  @media (min-width: 680px){ .goals{grid-template-columns:repeat(3, minmax(0,1fr))} }
-  .chip{
-    background:var(--chip); border:1px solid #2a2a34; padding:14px 16px;
-    border-radius:14px; text-align:center; font-weight:700; color:#d7d7e6; cursor:pointer;
-  }
-  .chip.active{
-    color:#fff; background:linear-gradient(140deg, var(--brand-1), var(--brand-2));
-    box-shadow:0 10px 26px var(--ring), 0 1px 0 #000 inset;
-  }
-
-  .controls{display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin-top:12px}
-  .btn{
-    background:linear-gradient(140deg,var(--brand-1),var(--brand-2));
-    color:#fff; border:0; border-radius:18px; padding:18px 20px; font-weight:800; cursor:pointer;
-    box-shadow:0 10px 26px var(--ring), inset 0 1px 0 #000; min-width:220px;
-  }
-  .btn.stop{
-    background:#2a2a34; color:#e3e3ee; min-width:140px; border:1px solid #333645;
-  }
-  .btn.big{width:100%; margin-top:12px; padding:22px}
-  .btn[disabled]{opacity:.55; cursor:not-allowed; filter:saturate(.6)}
-  .btn.loading{position:relative; pointer-events:none}
-  .btn.loading::after{
-    content:""; position:absolute; inset:0; border-radius:18px;
+  /* left: goal + controls */
+  .goals{display:grid;gap:10px;grid-template-columns:repeat(2, minmax(0,1fr))}
+  @media(min-width:680px){.goals{grid-template-columns:repeat(3, minmax(0,1fr))}}
+  .chip{background:#24242e;border:1px solid #2f2f3c;color:#e8e8f6;border-radius:12px;padding:12px 14px;font-weight:800;cursor:pointer}
+  .chip.active{background:linear-gradient(140deg,var(--brand-1),var(--brand-2));color:#fff;box-shadow:0 8px 22px var(--ring)}
+  .controls{display:flex;gap:10px;flex-wrap:wrap}
+  .btn{background:linear-gradient(140deg,var(--brand-1),var(--brand-2));color:#fff;border:0;border-radius:14px;padding:16px 18px;
+       font-weight:800;cursor:pointer;box-shadow:0 8px 22px var(--ring), inset 0 1px 0 #000}
+  .btn.stop{background:#2b2c36;color:#e8e8f6;border:1px solid #34364a}
+  .btn.big{width:100%;padding:20px;margin-top:8px}
+  .btn[disabled]{opacity:.6;cursor:not-allowed}
+  .btn.loading{position:relative;pointer-events:none}
+  .btn.loading:after{content:"";position:absolute;inset:0;border-radius:inherit;
     background:repeating-linear-gradient(135deg, rgba(255,255,255,.18) 0 10px, rgba(255,255,255,.05) 10px 20px);
-    animation: sheen 1.1s linear infinite; mix-blend-mode:overlay
-  }
+    animation:sheen 1.1s linear infinite;mix-blend-mode:overlay}
   @keyframes sheen{to{background-position:200% 0}}
 
-  .timerRow{display:flex; align-items:center; justify-content:space-between; gap:14px; margin-top:8px}
-  .timer{
-    min-width:180px; background:#15151a; border-radius:18px; padding:18px 20px; font-weight:800; font-size:34px;
-    letter-spacing:1px; text-align:center; box-shadow: inset 0 1px 0 rgba(255,255,255,.03);
-  }
-  .meter{position:relative; flex:1; height:12px; border-radius:999px; background:#262732; overflow:hidden}
-  .meter .bar{
-    position:absolute; inset:2px; width:0%; border-radius:999px;
-    background:linear-gradient(90deg,#ff4757,#f7b733,#2ed573);
-    transition: width .2s ease;
-  }
+  .timerRow{display:flex;align-items:center;gap:10px}
+  .timer{min-width:160px;background:#14151b;border-radius:12px;padding:14px 16px;font-weight:900;font-size:34px;letter-spacing:1px;text-align:center}
+  .meter{position:relative;height:10px;border-radius:999px;background:#262838;flex:1}
+  .bar{position:absolute;inset:2px;border-radius:999px;width:0;background:#ff4757;transition:width .2s ease, background .2s ease}
 
-  .hint{margin-top:18px}
-  .hint textarea{
-    width:100%; background:var(--panel-2); border:1px dashed #2f2f3c; color:#e9e9f3; resize:vertical;
-    border-radius:14px; padding:16px; min-height:86px; font: 600 14px/1.55 Inter,system-ui;
-  }
-  .hint .row{display:flex; align-items:center; gap:10px; margin-top:10px}
-  .micro{color:var(--muted); font-size:13px; display:flex; align-items:center; gap:10px}
-  .micro .dot{width:8px; height:8px; border-radius:50%; background:#5c6073}
+  .note{color:var(--muted);font-size:13px;display:flex;gap:8px;align-items:center}
+  .dot{width:8px;height:8px;border-radius:50%;background:#5c6073}
+  .liveDot{width:10px;height:10px;border-radius:999px;background:#666a7a}
+  .liveDot.on{background:var(--ok);box-shadow:0 0 0 8px rgba(29,209,161,.08)}
 
-  /* Results area */
-  .rowHead{display:flex; align-items:center; gap:10px; margin-bottom:10px}
-  .liveDot{width:10px; height:10px; border-radius:999px; background:#666a7a; box-shadow:0 0 0 0 rgba(0,0,0,0)}
-  .liveDot.on{background:var(--ok); box-shadow:0 0 0 8px rgba(29,209,161,.08)}
-  .pills{display:flex; gap:10px; flex-wrap:wrap}
-  .pill{background:#22232b; padding:8px 12px; border-radius:999px; color:#e8e8f7; border:1px solid #2d2f3c; font-weight:800}
-  .pill .light{color:#cfd3dd; font-weight:700}
+  /* right: pills + meters */
+  .pills{display:flex;gap:10px;flex-wrap:wrap;margin:2px 0 8px}
+  .pill{background:#22232b;padding:8px 12px;border-radius:999px;color:#e8e8f7;border:1px solid #2d2f3c;font-weight:800}
+  .pill .light{color:#cfd3dd}
+  .gmeters{display:grid;gap:10px;grid-template-columns:repeat(2,minmax(0,1fr));margin-top:8px}
+  .g{background:#22232b;border:1px solid #2d2f3c;border-radius:12px;padding:10px}
+  .g label{display:flex;justify-content:space-between;margin-bottom:6px;color:#cfd3dd;font-size:12px;font-weight:800}
+  .g .gbar{height:10px;border-radius:999px;background:#2a2c38;overflow:hidden}
+  .g .gbar>span{display:block;height:100%;width:0;background:linear-gradient(90deg,#ff4757,#f7b733,#2ed573);transition:width .3s}
 
-  .slot{background:var(--panel-2); border:1px solid #2a2c38; border-radius:16px; padding:16px 16px; margin-top:14px}
-  .slot h4{margin:0 0 8px; font-size:14px; text-transform:uppercase; letter-spacing:.04em; color:#cfd3dd}
-  .slot .line{background:#20222c; padding:14px; border-radius:10px; color:#ececf8}
+  .slot{background:var(--panel-2);border:1px solid #2a2c38;border-radius:16px;padding:14px;margin-top:12px}
+  .slot h4{margin:0 0 8px;font-size:14px;text-transform:uppercase;letter-spacing:.05em;color:#cfd3dd}
+  .line{background:#20222c;padding:14px;border-radius:10px;color:#ececf8}
+  ul.clean{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+  ul.clean li{background:#20222c;padding:12px 14px;border-radius:10px}
+  ul.clean li .why{color:#c9cbe0;display:block;margin-top:6px;font-size:13px}
 
-  ul.clean{list-style:none; padding:0; margin:0; display:grid; gap:10px}
-  ul.clean li{background:#20222c; padding:12px 14px; border-radius:10px}
-  ul.clean li .why{color:#c9cbe0; display:block; margin-top:6px; font-size:13px}
-
-  .toaster{position:fixed; left:50%; transform:translateX(-50%); bottom:20px; background:#22242d; border:1px solid #303245; color:#f1f1fb; padding:12px 16px; border-radius:10px; box-shadow:0 10px 26px rgba(0,0,0,.33); display:none}
-  .toaster.show{display:block}
-  footer{color:#bfbfe0; text-align:center; margin:28px 0 18px}
-  footer .sep{opacity:.55; padding:0 6px}
+  /* leaderboard demo */
+  .lb .row{display:flex;justify-content:space-between;padding:8px 10px;border-radius:10px;background:#20222c;margin-top:8px}
+  .lb .row .name{font-weight:800}
+  footer{color:#bfbfe0;text-align:center;margin:22px 0 18px}
   footer small{color:#9da3af}
 </style>
 </head>
 <body>
-  <div class="wrap">
-    <header>
-      <h1>English Coach</h1>
-      <div class="tag">Instant English Feedback</div>
-    </header>
+<div class="wrap">
+  <header>
+    <h1>English Coach</h1>
+    <div class="tag">Instant English Feedback</div>
+  </header>
 
-    <div class="grid">
-      <!-- LEFT: controls -->
-      <section class="card" id="left">
-        <h2>Record for <b>60-90 seconds</b>.</h2>
-        <p class="sub">We’ll analyze fluency & correctness, then show key corrections and a next prompt.</p>
-
-        <div class="label">Goal</div>
+  <div class="grid">
+    <!-- LEFT -->
+    <section class="card">
+      <div class="section">
+        <div class="title">Goal</div>
         <div class="goals" id="goals">
           <button class="chip active" data-goal="Work English">Work English</button>
           <button class="chip" data-goal="Daily Life">Daily Life</button>
@@ -146,129 +101,151 @@
           <button class="chip" data-goal="Travel">Travel</button>
           <button class="chip" data-goal="Presentation">Presentation</button>
         </div>
+      </div>
 
+      <div class="section">
+        <div class="title">Recording</div>
         <div class="controls">
           <button class="btn" id="btnStart">▶️&nbsp; Start recording</button>
           <button class="btn stop" id="btnStop">⏹&nbsp; Stop</button>
         </div>
-
-        <div class="timerRow">
+        <div class="timerRow" style="margin-top:10px">
           <div class="timer" id="timer">00:00</div>
           <div class="meter"><div class="bar" id="meterBar"></div></div>
         </div>
-
         <button class="btn big" id="btnSend" disabled>Send & Analyze</button>
+      </div>
 
-        <div class="hint">
-          <div class="label">What to say to start</div>
-          <textarea id="promptBox">Describe a recent project you led and one lesson you learned.</textarea>
-          <div class="row">
-            <button class="chip" id="btnRoll">🎲&nbsp; Randomize prompt</button>
-            <div class="micro">
-              <span class="dot" id="liveDot"></span> We don’t store your audio; it’s sent to the analyzer and immediately discarded.
-            </div>
-          </div>
+      <div class="section">
+        <div class="title">What to say to start</div>
+        <textarea id="promptBox" style="width:100%;min-height:88px;background:#1e1f27;border:1px dashed #323447;border-radius:12px;color:#ececf5;padding:12px;font:600 14px/1.55 Inter">Describe a recent project you led and one lesson you learned.</textarea>
+        <div class="note" style="margin-top:10px">
+          <button class="chip" id="btnRoll">🎲&nbsp; Randomize prompt</button>
+          <span class="dot" id="liveDot"></span>
+          We don’t store your audio; it’s sent to the analyzer and immediately discarded.
         </div>
-      </section>
+      </div>
+    </section>
 
-      <!-- RIGHT: results -->
-      <section class="card" id="right">
-        <div class="rowHead">
-          <div class="liveDot" id="pulse"></div>
-          <div class="pills">
-            <div class="pill">Live</div>
-            <div class="pill">Level: <span class="light" id="lvl">–</span></div>
-            <div class="pill">Fillers: <span class="light" id="fillers">0</span></div>
-          </div>
+    <!-- RIGHT -->
+    <section class="card">
+      <div style="display:flex;align-items:center;gap:10px">
+        <div class="liveDot" id="pulse"></div>
+        <div class="pills">
+          <div class="pill">Live</div>
+          <div class="pill">Level: <span class="light" id="lvl">—</span></div>
+          <div class="pill">Fillers: <span class="light" id="fillers">0</span></div>
+          <div class="pill">🔥 Streak: <span class="light" id="streak">0</span></div>
+          <div class="pill">🎯 Sessions: <span class="light" id="sessions">0</span></div>
         </div>
+      </div>
 
-        <!-- Order: Pronunciation → Grammar → What to fix now → Next prompt -->
-        <div class="slot">
-          <h4>Pronunciation</h4>
-          <ul class="clean" id="pronList">
-            <li id="pronEmpty">–</li>
-          </ul>
+      <!-- Meters -->
+      <div class="gmeters">
+        <div class="g">
+          <label><span>Level meter</span><span id="lvlPct">0%</span></label>
+          <div class="gbar"><span id="lvlBar"></span></div>
         </div>
-
-        <div class="slot">
-          <h4>Grammar</h4>
-          <ul class="clean" id="gramList">
-            <li id="gramEmpty">–</li>
-          </ul>
+        <div class="g">
+          <label><span>Relevancy</span><span id="relPct">0%</span></label>
+          <div class="gbar"><span id="relBar"></span></div>
         </div>
+      </div>
 
-        <div class="slot">
-          <h4>What to fix now</h4>
-          <div class="line" id="fixNow">–</div>
-        </div>
+      <!-- Results order -->
+      <div class="slot">
+        <h4>PRONUNCIATION</h4>
+        <ul class="clean" id="pronList"><li id="pronEmpty">–</li></ul>
+      </div>
 
-        <div class="slot" style="margin-bottom:4px">
-          <h4>Next prompt (30-45s)</h4>
-          <div class="line" id="nextPrompt">–</div>
-        </div>
-      </section>
-    </div>
+      <div class="slot">
+        <h4>GRAMMAR</h4>
+        <ul class="clean" id="gramList"><li id="gramEmpty">–</li></ul>
+      </div>
 
-    <footer>
-      <small>© <span id="year"></span> <a href="https://simpleia.com" target="_blank" rel="noopener">Simpleia</a> — Built by <a href="https://aosama.net" target="_blank" rel="noopener">Abdo Osama</a>
-      <span class="sep">•</span> <span id="ver">v1.2.11</span></small>
-    </footer>
+      <div class="slot">
+        <h4>WHAT TO FIX NOW</h4>
+        <div class="line" id="fixNow">–</div>
+      </div>
+
+      <div class="slot">
+        <h4>NEXT PROMPT (30–45S)</h4>
+        <div class="line" id="nextPrompt">–</div>
+      </div>
+
+      <!-- Leaderboard demo (local) -->
+      <div class="slot lb">
+        <h4>LEADERBOARD (demo)</h4>
+        <div class="line" style="margin-bottom:8px">Public leaderboard requires sign-in (Supabase). This shows your local totals.</div>
+        <div class="row"><span class="name">You</span><span id="lbYou">0 sessions</span></div>
+      </div>
+    </section>
   </div>
 
-  <div class="toaster" id="toast"></div>
+  <footer>
+    <small>© <span id="year"></span> <a href="https://simpleia.com" target="_blank" rel="noopener">Simpleia</a> — Built by <a href="https://aosama.net" target="_blank" rel="noopener">Abdo Osama</a> • <span id="ver">v1.3.0</span></small>
+  </footer>
+</div>
+
+<div id="toast" style="position:fixed;left:50%;transform:translateX(-50%);bottom:20px;background:#22242d;border:1px solid #303245;color:#f1f1fb;padding:12px 16px;border-radius:10px;box-shadow:0 10px 26px rgba(0,0,0,.33);display:none"></div>
 
 <script>
 /* ========================
    CONFIG
 ======================== */
-const API_URL  = "https://english-coach-endpoint.vercel.app/api/analyze";
-const VERSION  = "v1.2.11"; // bump here each build
-document.getElementById('ver').textContent = VERSION;
-document.getElementById('year').textContent = new Date().getFullYear();
+const API_URL="https://english-coach-endpoint.vercel.app/api/analyze";
+const VERSION="v1.3.0";
+document.getElementById('year').textContent=new Date().getFullYear();
+document.getElementById('ver').textContent=VERSION;
 
-/* ========================
-   ELEMENTS
-======================== */
-const goalsEl   = document.getElementById('goals');
-const btnStart  = document.getElementById('btnStart');
-const btnStop   = document.getElementById('btnStop');
-const btnSend   = document.getElementById('btnSend');
-const btnRoll   = document.getElementById('btnRoll');
-const timerEl   = document.getElementById('timer');
-const barEl     = document.getElementById('meterBar');
-const liveDot   = document.getElementById('liveDot');
-const pulse     = document.getElementById('pulse');
+/* Elements */
+const goalsEl = document.getElementById('goals');
+const btnStart= document.getElementById('btnStart');
+const btnStop = document.getElementById('btnStop');
+const btnSend = document.getElementById('btnSend');
+const btnRoll = document.getElementById('btnRoll');
+const timerEl = document.getElementById('timer');
+const barEl   = document.getElementById('meterBar');
+const liveDot = document.getElementById('liveDot');
+const pulse   = document.getElementById('pulse');
 
-const pronList  = document.getElementById('pronList');
-const gramList  = document.getElementById('gramList');
-const pronEmpty = document.getElementById('pronEmpty');
-const gramEmpty = document.getElementById('gramEmpty');
-const fixNowEl  = document.getElementById('fixNow');
-const nextEl    = document.getElementById('nextPrompt');
-const lvlEl     = document.getElementById('lvl');
-const fillersEl = document.getElementById('fillers');
-const promptBox = document.getElementById('promptBox');
-const toastEl   = document.getElementById('toast');
+const pronList= document.getElementById('pronList');
+const gramList= document.getElementById('gramList');
+const pronEmpty=document.getElementById('pronEmpty');
+const gramEmpty=document.getElementById('gramEmpty');
+const fixNowEl = document.getElementById('fixNow');
+const nextEl   = document.getElementById('nextPrompt');
 
-/* ========================
-   GOAL SELECTION
-======================== */
-let goalText = "Work English";
+const lvlEl  = document.getElementById('lvl');
+const fillersEl=document.getElementById('fillers');
+const promptBox=document.getElementById('promptBox');
+
+const lvlBar = document.getElementById('lvlBar');
+const lvlPct = document.getElementById('lvlPct');
+const relBar = document.getElementById('relBar');
+const relPct = document.getElementById('relPct');
+
+const streakEl=document.getElementById('streak');
+const sessionsEl=document.getElementById('sessions');
+const lbYou   =document.getElementById('lbYou');
+const toastEl =document.getElementById('toast');
+
+/* Goals */
+let goalText="Work English";
 goalsEl.addEventListener('click',(e)=>{
-  const b = e.target.closest('.chip'); if(!b) return;
+  const b=e.target.closest('.chip'); if(!b) return;
   goalsEl.querySelectorAll('.chip').forEach(x=>x.classList.remove('active'));
-  b.classList.add('active');
-  goalText = b.dataset.goal;
+  b.classList.add('active'); goalText=b.dataset.goal;
 });
 
-/* Random prompts per goal */
-const PROMPTS = {
-  "Work English": [
+/* Random prompts */
+const PROMPTS={
+  "Work English":[
     "Describe a recent challenge at work and how you handled it.",
     "Talk about your team's biggest win this month.",
     "Explain one project you led and one lesson you learned."
   ],
-  "Daily Life": [
+  "Daily Life":[
     "Walk me through your typical weekday.",
     "Tell me about a hobby you enjoy and why.",
     "Describe a small problem you solved recently."
@@ -289,138 +266,102 @@ const PROMPTS = {
     "Summarize a book, article, or video you like."
   ]
 };
-btnRoll.addEventListener('click', ()=>{
-  const arr = PROMPTS[goalText] || PROMPTS["Work English"];
-  promptBox.value = arr[Math.floor(Math.random()*arr.length)];
+btnRoll.addEventListener('click',()=>{
+  const arr=PROMPTS[goalText]||PROMPTS["Work English"];
+  promptBox.value=arr[Math.floor(Math.random()*arr.length)];
 });
 
-/* ========================
-   RECORDING
-======================== */
+/* Recording */
 let mediaRecorder, chunks=[], recording=false, startTs=0, timerId=null;
-
-function pickMimeType(){
-  const list = [
-    'audio/webm;codecs=opus',
-    'audio/webm',
-    'audio/ogg;codecs=opus',
-    'audio/mp4', // Safari
-    'audio/mpeg'
-  ];
+function pickMime(){
+  const list=['audio/webm;codecs=opus','audio/webm','audio/ogg;codecs=opus','audio/mp4','audio/mpeg'];
   if(!window.MediaRecorder) return '';
-  for(const t of list){
-    try{ if(MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported(t)) return t; }catch{}
-  }
+  for(const t of list){ try{ if(MediaRecorder.isTypeSupported(t)) return t }catch{} }
   return '';
 }
-const REC_MIME = pickMimeType();
-function extFor(m){
-  if(!m) return 'webm';
-  if(m.includes('mp4'))  return 'm4a';
-  if(m.includes('mpeg')) return 'mp3';
-  if(m.includes('ogg'))  return 'ogg';
-  return 'webm';
-}
-
-function fmt(s){
-  const m = Math.floor(s/60), r = (s%60);
-  return `${String(m).padStart(2,'0')}:${String(r).padStart(2,'0')}`;
-}
-
-function meterColor(sec){
-  if(sec<30) return '#ff4757';      // red
-  if(sec<60) return '#f7b733';      // amber
-  return '#2ed573';                 // green
-}
-
-function tick(){
-  const s = Math.max(0, Math.floor((Date.now()-startTs)/1000));
-  timerEl.textContent = fmt(s);
-  const pct = Math.min(100, (s/90)*100);
-  barEl.style.width = `calc(${pct}% - 4px)`;
-  barEl.style.background = meterColor(s);
-}
+const REC_MIME=pickMime();
+function extFor(m){ if(!m) return 'webm'; if(m.includes('mp4')) return 'm4a'; if(m.includes('mpeg')) return 'mp3'; if(m.includes('ogg')) return 'ogg'; return 'webm'; }
+function fmt(s){const m=Math.floor(s/60),r=s%60;return `${String(m).padStart(2,'0')}:${String(r).padStart(2,'0')}`;}
+function meterColor(sec){ if(sec<30) return '#ff4757'; if(sec<60) return '#f7b733'; return '#2ed573'; }
+function tick(){ const s=Math.max(0,Math.floor((Date.now()-startTs)/1000)); timerEl.textContent=fmt(s);
+  const pct=Math.min(100,(s/90)*100); barEl.style.width=`calc(${pct}% - 4px)`; barEl.style.background=meterColor(s); }
 
 async function startRec(){
   if(recording) return;
   try{
-    const stream = await navigator.mediaDevices.getUserMedia({
-      audio:{ echoCancellation:true, noiseSuppression:true }
-    });
-    chunks = [];
+    const stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true}});
+    chunks=[];
     mediaRecorder = REC_MIME ? new MediaRecorder(stream,{mimeType:REC_MIME}) : new MediaRecorder(stream);
-    mediaRecorder.ondataavailable = e => { if(e.data && e.data.size>0) chunks.push(e.data); };
-    mediaRecorder.onstop = () => { try{stream.getTracks().forEach(t=>t.stop())}catch{}; pulse.classList.remove('on'); };
+    mediaRecorder.ondataavailable=e=>{ if(e.data&&e.data.size>0) chunks.push(e.data); };
+    mediaRecorder.onstop=()=>{ try{stream.getTracks().forEach(t=>t.stop())}catch{}; pulse.classList.remove('on'); };
     mediaRecorder.start(250);
-
-    // UI
-    recording = true;
-    startTs = Date.now();
-    timerEl.textContent = "00:00";
-    barEl.style.width = '0%';
-    barEl.style.background = meterColor(0); // red start
-    liveDot.style.background = '#ff4757';
-    pulse.classList.add('on');
-    btnSend.disabled = true;
-    clearInterval(timerId); timerId = setInterval(tick, 200);
-  }catch(err){
-    toast("Mic permission failed. Please allow microphone access.");
-    console.error(err);
-  }
+    recording=true; startTs=Date.now(); timerEl.textContent="00:00"; barEl.style.width='0%'; barEl.style.background=meterColor(0);
+    liveDot.style.background='#ff4757'; pulse.classList.add('on'); btnSend.disabled=true; clearInterval(timerId); timerId=setInterval(tick,200);
+  }catch(err){ toast("Mic permission failed. Please allow microphone access."); console.error(err); }
 }
-
 function stopRec(){
   if(!recording) return;
-  try{ mediaRecorder.stop(); }catch{}
-  recording = false;
-  clearInterval(timerId);
-  liveDot.style.background = '#5c6073';
-  btnSend.disabled = (chunks.length===0);
+  try{ mediaRecorder.stop(); }catch{} recording=false; clearInterval(timerId);
+  liveDot.style.background='#5c6073'; btnSend.disabled=(chunks.length===0);
+}
+btnStart.addEventListener('click',startRec);
+btnStop.addEventListener('click',stopRec);
+
+/* Analyze */
+function toast(m){ toastEl.textContent=m; toastEl.style.display='block'; setTimeout(()=>toastEl.style.display='none',1800); }
+function setLoading(b){ btnSend.classList.toggle('loading',b); btnSend.disabled=b; }
+
+/* Level mapping → label & % */
+function levelLabel(cefr=""){
+  const t=(cefr||"").toUpperCase();
+  if(t.startsWith("A1")) return {label:"Beginner", pct:10};
+  if(t.startsWith("A2")) return {label:"Elementary", pct:30};
+  if(t.startsWith("B1")) return {label:"Intermediate", pct:55};
+  if(t.startsWith("B2")) return {label:"Upper-Intermediate", pct:75};
+  if(t.startsWith("C1")) return {label:"Advanced", pct:90};
+  if(t.startsWith("C2")) return {label:"Near-Native", pct:100};
+  return {label:"—", pct:0};
+}
+/* Simple token overlap relevance */
+function relevancePercent(prompt, transcript){
+  if(!prompt || !transcript) return 0;
+  const tok = s => new Set((s.toLowerCase().match(/[a-z]{3,}/g)||[]));
+  const A=tok(prompt), B=tok(transcript); if(A.size===0||B.size===0) return 0;
+  let inter=0; for(const w of A){ if(B.has(w)) inter++; }
+  return Math.round((inter/Math.max(1, A.size))*100);
 }
 
-btnStart.addEventListener('click', startRec);
-btnStop .addEventListener('click', stopRec);
-
-/* ========================
-   ANALYZE
-======================== */
-function toast(msg){
-  toastEl.textContent = msg;
-  toastEl.classList.add('show');
-  setTimeout(()=>toastEl.classList.remove('show'), 2000);
+/* Streak + sessions (local) */
+function loadStats(){
+  const d=JSON.parse(localStorage.getItem('ec_stats')||'{"streak":0,"last":"" ,"sessions":0}');
+  return d;
 }
-
-function setLoading(b){
-  btnSend.classList.toggle('loading', b);
-  btnSend.disabled = b;
-}
-
-function renderList(ul, emptyLi, items, mapper){
-  ul.innerHTML = "";
-  if(!items || !items.length){ ul.appendChild(emptyLi.cloneNode(true)); return; }
-  for(const it of items){
-    const li = document.createElement('li');
-    li.innerHTML = mapper(it);
-    ul.appendChild(li);
+function saveStats(d){ localStorage.setItem('ec_stats', JSON.stringify(d)); }
+function bumpStats(){
+  const today = new Date().toISOString().slice(0,10);
+  const s = loadStats();
+  if(!s.last){ s.streak=1; s.last=today; }
+  else{
+    const y=new Date(s.last); const t=new Date(today);
+    const diff=(t - y)/(1000*60*60*24);
+    if(diff===1) s.streak+=1;
+    else if(diff>1) s.streak=1; // broke streak
+    s.last=today;
   }
+  s.sessions = (s.sessions||0)+1;
+  saveStats(s); renderStats();
 }
-
-function mapLevelLabel(cefr=""){
-  const t = (cefr||"").toUpperCase();
-  if(t.startsWith("A1")) return "Beginner";
-  if(t.startsWith("A2")) return "Elementary";
-  if(t.startsWith("B1")) return "Intermediate";
-  if(t.startsWith("B2")) return "Upper-Intermediate";
-  if(t.startsWith("C1")) return "Advanced";
-  if(t.startsWith("C2")) return "Near-Native";
-  return "—";
+function renderStats(){
+  const s=loadStats();
+  streakEl.textContent = s.streak||0;
+  sessionsEl.textContent = s.sessions||0;
+  lbYou.textContent = `${s.sessions||0} sessions`;
 }
 
 btnSend.addEventListener('click', async ()=>{
   if(recording){ toast("Stop recording before sending."); return; }
   if(chunks.length===0){ toast("No audio recorded."); return; }
 
-  // Build form
   const durSec = Math.max(1, Math.floor((Date.now()-startTs)/1000));
   const blob   = new Blob(chunks, {type: REC_MIME || 'audio/webm'});
   const file   = new File([blob], `audio.${extFor(REC_MIME)}`, {type: blob.type});
@@ -430,69 +371,67 @@ btnSend.addEventListener('click', async ()=>{
   fd.append('goal', goalText);
 
   setLoading(true);
-
   try{
     const res = await fetch(API_URL, { method:'POST', body: fd });
-    const raw = await res.text();
-    let data = {};
-    try{ data = JSON.parse(raw); }catch{ data = { ok:false, error:"Bad response", raw } }
+    const raw = await res.text(); let data={};
+    try{ data=JSON.parse(raw); }catch{ data={ok:false, error:"Bad response", raw} }
 
-    // Handle fallback (short/empty)
+    // Fallback
     if(data.fallback){
-      lvlEl.textContent    = "—";
-      fillersEl.textContent = "0";
-      renderList(pronList, pronEmpty, [], ()=>"");
-      renderList(gramList, gramEmpty, [], ()=>"");
-      fixNowEl.textContent = "Speak for at least 30–45s in complete sentences.";
-      nextEl.textContent   = PROMPTS[goalText]?.[0] || PROMPTS["Work English"][0];
+      lvlEl.textContent="—"; fillersEl.textContent="0";
+      lvlBar.style.width='0%'; lvlPct.textContent='0%';
+      relBar.style.width='0%'; relPct.textContent='0%';
+      pronList.innerHTML=""; pronList.appendChild(pronEmpty.cloneNode(true));
+      gramList.innerHTML=""; gramList.appendChild(gramEmpty.cloneNode(true));
+      fixNowEl.textContent="Speak for at least 30–45s in complete sentences.";
+      nextEl.textContent=(PROMPTS[goalText]||PROMPTS["Work English"])[0];
       toast("Try again with a longer answer 🙂");
     }else{
-      // Level label
-      lvlEl.textContent = mapLevelLabel(data.cefr_estimate || data.level);
-      // Fillers if provided
-      const fill = (data.fluency && typeof data.fluency.fillers==="number") ? data.fluency.fillers : 0;
-      fillersEl.textContent = String(fill);
+      // Level + meter
+      const L = levelLabel(data.cefr_estimate || data.level);
+      lvlEl.textContent = L.label;
+      lvlBar.style.width = `${L.pct}%`; lvlPct.textContent = `${L.pct}%`;
 
-      // Pronunciation and Grammar lists (show ALL items)
-      renderList(pronList, pronEmpty, data.pronunciation, (p)=>{
-        const w = p.sound_or_word || p.word || "—";
-        const issue = p.issue || p.note || "—";
-        const mp = p.minimal_pair ? ` <span class="why">Try: ${p.minimal_pair}</span>` : "";
-        return `<b>${w}</b> — ${issue}${mp}`;
+      // Pronunciation & Grammar lists (all items)
+      const renderList=(ul,empty,arr,map)=>{
+        ul.innerHTML="";
+        if(!arr||!arr.length){ ul.appendChild(empty.cloneNode(true)); return; }
+        for(const it of arr){ const li=document.createElement('li'); li.innerHTML=map(it); ul.appendChild(li); }
+      }
+      renderList(pronList, pronEmpty, data.pronunciation, p=>{
+        const w=p.sound_or_word||p.word||"—"; const issue=p.issue||p.note||"—";
+        const pair=p.minimal_pair?` <span class="why">Try: ${p.minimal_pair}</span>`:"";
+        return `<b>${w}</b> — ${issue}${pair}`;
       });
-
-      renderList(gramList, gramEmpty, data.grammar_issues, (g)=>{
-        const e = g.error || "—";
-        const f = g.fix   || g.suggest || "—";
-        const y = g.why   || "";
+      renderList(gramList, gramEmpty, data.grammar_issues, g=>{
+        const e=g.error||"—"; const f=g.fix||g.suggest||"—"; const y=g.why||"";
         return `→ ${e}<span class="why">Try: ${f}${y?`<br/>Why: ${y}`:""}</span>`;
       });
 
-      fixNowEl.textContent = data.one_thing_to_fix || data.fix_now || "—";
-      nextEl.textContent   = data.next_prompt || (PROMPTS[goalText]?.[1] || PROMPTS["Work English"][1]);
-    }
+      const fill = (data.fluency && typeof data.fluency.fillers==="number") ? data.fluency.fillers : 0;
+      fillersEl.textContent = String(fill);
+      fixNowEl.textContent  = data.one_thing_to_fix || data.fix_now || "—";
+      nextEl.textContent    = data.next_prompt || (PROMPTS[goalText]||PROMPTS["Work English"])[1];
 
+      // Relevancy meter (needs transcript in response)
+      const rel = relevancePercent(promptBox.value, data.transcript || "");
+      relBar.style.width = `${rel}%`; relPct.textContent = `${rel}%`;
+
+      // progress stats
+      bumpStats();
+    }
   }catch(err){
-    console.error(err);
-    toast("Request failed. Please try again.");
+    console.error(err); toast("Request failed. Please try again.");
   }finally{
     setLoading(false);
-    // Reset capture so a fresh session feels obvious
-    chunks = [];
-    timerEl.textContent = "00:00";
-    barEl.style.width = "0%";
-    barEl.style.background = meterColor(0);
-    btnSend.disabled = true;
+    // reset for fresh session
+    chunks=[]; timerEl.textContent="00:00"; barEl.style.width='0%'; barEl.style.background='#ff4757'; btnSend.disabled=true;
   }
 });
 
-/* ========================
-   INIT
-======================== */
-(function init(){
-  timerEl.textContent = "00:00";
-  barEl.style.width = "0%";
-  barEl.style.background = meterColor(0);
+/* INIT */
+(function(){
+  timerEl.textContent="00:00"; barEl.style.width="0%"; barEl.style.background='#ff4757'; renderStats();
 })();
 </script>
 </body>
