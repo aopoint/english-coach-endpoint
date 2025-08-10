@@ -27,33 +27,34 @@
     font-family:"Avenir Next",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,"Apple Color Emoji","Segoe UI Emoji";
   }
   .wrap{max-width:1200px; margin:24px auto; padding:0 16px}
-  header{
-    display:flex; align-items:center; gap:16px; margin-bottom:20px;
-  }
+  header{display:flex; align-items:center; gap:16px; margin-bottom:20px}
   .brand{font-size:28px; font-weight:800; letter-spacing:.3px}
   .pill{font-size:14px; padding:8px 14px; border-radius:999px;
         background:linear-gradient(135deg,var(--primary),var(--primary-2)); box-shadow:var(--shadow)}
-  .grid{
-    display:grid; grid-template-columns:360px 1fr; gap:18px;
-  }
+  .grid{display:grid; grid-template-columns:360px 1fr; gap:18px}
   @media (max-width:980px){ .grid{grid-template-columns:1fr} }
 
-  .card{
-    background:linear-gradient(180deg,var(--panel),var(--panel-2));
-    border:1px solid #262626; border-radius:var(--radius); box-shadow:var(--shadow);
-  }
+  .card{background:linear-gradient(180deg,var(--panel),var(--panel-2));
+        border:1px solid #262626; border-radius:var(--radius); box-shadow:var(--shadow)}
   .card .inner{padding:18px}
   .title{font-weight:800; font-size:18px; margin-bottom:6px}
   .muted{color:var(--muted); font-size:14px}
 
-  /* left control */
-  .goal-chips{display:flex; flex-wrap:wrap; gap:8px}
+  /* goal row: exactly one row, scroll when narrow */
+  .goal-chips{
+    display:flex; gap:10px; overflow-x:auto; padding-bottom:4px; scrollbar-width:thin; white-space:nowrap;
+  }
+  .goal-chips::-webkit-scrollbar{height:6px}
+  .goal-chips::-webkit-scrollbar-thumb{background:#2c2c2c; border-radius:8px}
+
   .chip{
-    padding:8px 12px; border-radius:12px; background:var(--chip); color:#ddd; cursor:pointer;
-    border:1px solid #2a2a2a; user-select:none; transition:.15s;
+    display:inline-flex; align-items:center; justify-content:center;
+    padding:12px 18px; border-radius:14px; background:var(--chip); color:#ddd;
+    border:1px solid #2a2a2a; user-select:none; cursor:pointer; transition:.15s;
   }
   .chip:hover{border-color:#3a3a3a}
   .chip.active{background:linear-gradient(135deg,var(--primary),var(--primary-2)); color:#fff; border-color:transparent}
+
   .row{display:flex; align-items:center; justify-content:space-between; gap:12px}
   .btn{
     appearance:none; border:0; border-radius:12px; padding:12px 16px; cursor:pointer;
@@ -62,31 +63,16 @@
   }
   .btn:hover{background:#343434}
   .btn.primary{background:linear-gradient(135deg,var(--primary),var(--primary-2)); border-color:transparent}
-  .timer{min-width:86px; text-align:center; padding:10px 12px; border-radius:12px; background:#202020; border:1px solid #2a2a2a}
+  .timer{min-width:100px; text-align:center; padding:12px; border-radius:12px; background:#202020; border:1px solid #2a2a2a}
 
   .starter{
     margin-top:14px; border-radius:12px; border:1px dashed #323232; padding:14px;
     background:#1a1a1a; color:#ddd; font-size:14px; line-height:1.35;
   }
 
-  /* Debug & API */
-  .api-bar{display:flex; align-items:center; gap:10px; margin:0 0 12px}
-  .api-dot{width:10px; height:10px; border-radius:999px; background:var(--err); box-shadow:0 0 0 4px rgba(239,68,68,.1)}
-  .api-input{
-    flex:1; padding:10px 12px; border-radius:12px; border:1px solid #2a2a2a; background:#141414; color:#ddd
-  }
-  .kbd{font-size:12px; opacity:.8}
-  pre{
-    background:#0f0f0f; border:1px solid #222; border-radius:12px; padding:14px; color:#e5e5e5;
-    overflow:auto; min-height:54px; font-size:13px; line-height:1.4
-  }
-
-  /* Summary cards */
   .two{display:grid; grid-template-columns:1fr; gap:14px}
   .row-mini{display:flex; gap:10px; align-items:center}
   .badge{font-size:12px; padding:6px 10px; border-radius:999px; border:1px solid #2a2a2a; background:#151515}
-  .ok{background:rgba(34,197,94,.08); border-color:rgba(34,197,94,.2); color:#a7f3d0}
-  .bad{background:rgba(239,68,68,.08); border-color:rgba(239,68,68,.2); color:#fecaca}
   .out{padding:12px; border-radius:12px; border:1px solid #2a2a2a; background:#151515; color:#ddd; min-height:42px}
   .list{display:grid; gap:10px}
   .li{padding:12px; border-radius:12px; border:1px solid #2a2a2a; background:#141414}
@@ -96,11 +82,25 @@
   footer a{color:#caa8ff; text-decoration:none}
   footer a:hover{text-decoration:underline}
 
-  .toast{
-    position:fixed; left:50%; bottom:24px; transform:translateX(-50%);
-    background:#262626; color:#fff; border:1px solid #333; border-radius:12px; padding:12px 16px; box-shadow:var(--shadow);
-    display:none; z-index:50;
+  .toast{position:fixed; left:50%; bottom:24px; transform:translateX(-50%);
+         background:#262626; color:#fff; border:1px solid #333; border-radius:12px; padding:12px 16px; box-shadow:var(--shadow);
+         display:none; z-index:50;}
+
+  /* Modal */
+  .modal-back{position:fixed; inset:0; background:rgba(0,0,0,.5); display:none; align-items:center; justify-content:center; z-index:60;}
+  .modal{width:min(520px,92vw); background:#1c1c1c; border:1px solid #2a2a2a; border-radius:16px; box-shadow:var(--shadow)}
+  .modal .hd{padding:16px 18px; border-bottom:1px solid #2a2a2a; font-weight:800}
+  .modal .bd{padding:18px; display:grid; gap:12px}
+  .input, textarea{
+    width:100%; padding:12px 14px; border-radius:12px; background:#111; color:#eee; border:1px solid #2a2a2a;
   }
+  textarea{min-height:110px; resize:vertical}
+  .stars{display:flex; gap:10px}
+  .star{font-size:22px; cursor:pointer; color:#666}
+  .star.active{color:#ffd369}
+  .modal .ft{padding:16px 18px; border-top:1px solid #2a2a2a; display:flex; gap:10px; justify-content:flex-end}
+  .tbl{width:100%; border-collapse:collapse; font-size:14px}
+  .tbl th,.tbl td{padding:10px 12px; border-bottom:1px solid #2a2a2a; text-align:left}
 </style>
 </head>
 <body>
@@ -108,18 +108,16 @@
     <header>
       <div class="brand">English Coach</div>
       <div class="pill">Instant English Feedback</div>
-      <div style="flex:1"></div>
-      <div class="kbd">API field sits on the “Debug / Raw response” card.</div>
     </header>
 
     <div class="grid">
       <!-- LEFT: controls -->
       <section class="card">
         <div class="inner">
-          <div class="title">Record for <strong>60–90 seconds</strong>.</div>
+          <div class="title" style="font-size:22px">Record for <strong>60–90 seconds</strong>.</div>
           <div class="muted">We’ll analyze fluency & correctness, then show key corrections and a next prompt.</div>
 
-          <div style="height:10px"></div>
+          <div style="height:14px"></div>
           <div class="muted" style="margin-bottom:8px">Goal</div>
           <div id="goalChips" class="goal-chips"></div>
 
@@ -146,20 +144,9 @@
         </div>
       </section>
 
-      <!-- RIGHT: debug + results -->
+      <!-- RIGHT: results -->
       <section class="card">
         <div class="inner">
-          <div class="api-bar">
-            <div class="api-dot" id="apiDot" title="API status"></div>
-            <input id="api" class="api-input" placeholder="https://your-endpoint.vercel.app/api/analyze" />
-            <button class="btn" id="saveApi">Save</button>
-            <button class="btn" id="shareLink">Share</button>
-          </div>
-
-          <div class="title">Debug / Raw response</div>
-          <pre id="raw">–</pre>
-
-          <div style="height:10px"></div>
           <div class="title">Summary</div>
           <div class="row-mini" style="margin-bottom:8px">
             <span class="badge">Level: <span id="levelOut">–</span></span>
@@ -188,62 +175,93 @@
       </section>
     </div>
 
+    <!-- Leaderboard -->
+    <section class="card" id="board" style="margin-top:16px; display:none">
+      <div class="inner">
+        <div class="title">Leaderboard</div>
+        <table class="tbl" id="boardTbl">
+          <thead><tr><th>#</th><th>Name</th><th>Sessions</th></tr></thead>
+          <tbody></tbody>
+        </table>
+        <div class="muted" id="boardEmpty">Coming soon.</div>
+      </div>
+    </section>
+
     <footer>
       © 2025 <a href="https://simpleia.com" target="_blank" rel="noopener">Simpleia</a> — Built by
       <a href="https://aosama.net/" target="_blank" rel="noopener">Abdo Osama</a>
     </footer>
   </div>
 
+  <!-- Feedback modal -->
+  <div class="modal-back" id="fbBack">
+    <div class="modal">
+      <div class="hd">Quick feedback (required to continue)</div>
+      <div class="bd">
+        <input id="fbName" class="input" placeholder="Your name" autocomplete="name" />
+        <input id="fbEmail" class="input" placeholder="Email" type="email" autocomplete="email" />
+        <div>
+          <div class="muted" style="margin-bottom:6px">Rating</div>
+          <div class="stars" id="stars"></div>
+        </div>
+        <div>
+          <div class="muted" style="margin-bottom:6px">Feedback / Suggestions</div>
+          <textarea id="fbText" placeholder="What should we improve?"></textarea>
+        </div>
+      </div>
+      <div class="ft">
+        <button class="btn" id="fbCancel">Cancel</button>
+        <button class="btn primary" id="fbSubmit">Submit feedback</button>
+      </div>
+    </div>
+  </div>
+
   <div class="toast" id="toast"></div>
 
 <script>
-/* ================== SETTINGS / GOALS / PROMPTS =================== */
+/* ===================== CONFIG (change if needed) ===================== */
+const API = 'https://english-coach-endpoint.vercel.app/api/analyze'; // Analyzer
+const FEEDBACK_URL = 'https://hook.your-make.com/your-ec_feedback_webhook'; // <- PUT your Make.com webhook here
+const LEADERBOARD_URL = ''; // optional: endpoint returning [{name,uses}], leave blank to hide
+
+/* =================== GOALS, STARTERS, FRIENDLY LEVELS =================== */
 const GOALS = [
-  {
-    key:'work', label:'Work English',
+  { key:'work', label:'Work English',
     starters:[
       'Explain one problem your team faced and how you solved it.',
       'Describe a recent project you led and one lesson you learned.',
       'Give a 45-second update on your current task and next step.'
-    ]
-  },
-  {
-    key:'daily', label:'Daily Life',
+    ] },
+  { key:'daily', label:'Daily Life',
     starters:[
       'Describe your last weekend in 45 seconds.',
       'Tell me about a typical day in your life.',
       'Talk about a hobby you enjoy and why.'
-    ]
-  },
-  {
-    key:'interview', label:'Interview Prep',
+    ] },
+  { key:'interview', label:'Interview Prep',
     starters:[
       'Tell me about yourself in under one minute.',
       'What is your biggest strength at work?',
       'Describe a time you handled a difficult situation.'
-    ]
-  },
-  {
-    key:'travel', label:'Travel',
+    ] },
+  { key:'travel', label:'Travel',
     starters:[
       'Describe a city you want to visit and why.',
       'Talk about your best travel experience.',
       'Explain how you plan a short weekend trip.'
-    ]
-  }
+    ] }
 ];
 
 const FRIENDLY_LEVEL = (cefr) => {
   const x = (cefr||'').toUpperCase();
   if (x==='A1'||x==='A2') return 'Beginner';
   if (x==='B1') return 'Intermediate';
-  if (x==='B2') return 'Advanced';
-  if (x==='C1') return 'Advanced';
+  if (x==='B2' || x==='C1') return 'Advanced';
   if (x==='C2') return 'Fluent';
   return '–';
 };
 
-/* =========================== UI REFS ============================= */
+/* ============================= UI REFS ============================== */
 const btnStart = document.getElementById('btnStart');
 const btnStop  = document.getElementById('btnStop');
 const btnSend  = document.getElementById('btnSend');
@@ -253,7 +271,6 @@ const starterText = document.getElementById('starterText');
 const btnDice = document.getElementById('btnDice');
 const goalChips = document.getElementById('goalChips');
 
-const raw = document.getElementById('raw');
 const levelOut = document.getElementById('levelOut');
 const fillersOut = document.getElementById('fillersOut');
 const fixNowOut = document.getElementById('fixNowOut');
@@ -261,41 +278,37 @@ const nextPromptOut = document.getElementById('nextPromptOut');
 const grammarList = document.getElementById('grammarList');
 const pronList = document.getElementById('pronList');
 
-const apiDot = document.getElementById('apiDot');
-const apiInput = document.getElementById('api');
-const saveBtn = document.getElementById('saveApi');
-const shareBtn = document.getElementById('shareLink');
 const toast = document.getElementById('toast');
+const boardSec = document.getElementById('board');
+const boardTbl = document.querySelector('#boardTbl tbody');
+const boardEmpty = document.getElementById('boardEmpty');
 
-/* ====================== API MEMORY / STATUS ====================== */
-const LS_KEY='ec_api';
-function isValidApi(u){
-  try{ const v=new URL(u); return /^https?:/.test(v.protocol) && /\/api\/analyze$/.test(v.pathname); }
-  catch{ return false; }
+/* Feedback modal refs */
+const fbBack = document.getElementById('fbBack');
+const fbName = document.getElementById('fbName');
+const fbEmail = document.getElementById('fbEmail');
+const fbText = document.getElementById('fbText');
+const fbCancel = document.getElementById('fbCancel');
+const fbSubmit = document.getElementById('fbSubmit');
+const starsWrap = document.getElementById('stars');
+
+/* ====================== USER / FEEDBACK GATING ====================== */
+const UID = (()=>{ const k='ec_uid'; let v=localStorage.getItem(k); if(!v){v='web-'+crypto.randomUUID(); localStorage.setItem(k,v);} return v; })();
+const FB_DONE_KEY = 'ec_fb_done';
+const USES_KEY = 'ec_uses';
+
+function uses(){ return parseInt(localStorage.getItem(USES_KEY)||'0',10); }
+function bumpUses(){ localStorage.setItem(USES_KEY, String(uses()+1)); }
+function hasFeedback(){ return !!localStorage.getItem(FB_DONE_KEY); }
+function requireFeedbackGate(){
+  // Allow first run; require feedback before the second run.
+  if (uses() >= 1 && !hasFeedback()){
+    openFeedback(); return true;
+  }
+  return false;
 }
-function setApi(u){ localStorage.setItem(LS_KEY,u); apiInput.value=u; markApi(true); }
-function getApi(){ return (localStorage.getItem(LS_KEY)||'').trim(); }
-function markApi(ok){ apiDot.style.background = ok ? 'var(--ok)' : 'var(--err)'; }
-(function hydrateApi(){
-  const qs = new URLSearchParams(location.search);
-  const fromQuery=(qs.get('api')||'').trim();
-  const stored=getApi(); const chosen=fromQuery||stored;
-  if (chosen && isValidApi(chosen)) setApi(chosen); else markApi(false);
-})();
-saveBtn.addEventListener('click', ()=>{
-  const v=(apiInput.value||'').trim();
-  if(!isValidApi(v)) return notify('Please paste a valid API like https://…/api/analyze');
-  setApi(v); notify('Saved!');
-});
-shareBtn.addEventListener('click', async ()=>{
-  const api=getApi(); const url=new URL(location.href);
-  if(api) url.searchParams.set('api',api); else url.searchParams.delete('api');
-  try{ await navigator.clipboard.writeText(url.toString()); notify('Share link copied.'); }
-  catch{ notify(url.toString()); }
-});
-function requireApiOrWarn(){ const a=getApi(); if(!isValidApi(a)){ notify('Please set a valid Analyzer API URL first.'); return null; } return a; }
 
-/* ====================== GOAL CHIPS / STARTER ===================== */
+/* ===================== GOAL CHIPS / STARTERS ====================== */
 let currentGoal = GOALS[0];
 function renderGoalChips(){
   goalChips.innerHTML='';
@@ -314,7 +327,7 @@ function setRandomStarter(){
 btnDice.addEventListener('click', setRandomStarter);
 renderGoalChips(); setRandomStarter();
 
-/* ============================ RECORDER =========================== */
+/* ============================== RECORDING ============================== */
 let media,rec,chunks=[],startTime=0,timerI=null,blob=null;
 
 function fmt(ms){ const s=Math.floor(ms/1000); const m=String(Math.floor(s/60)).padStart(2,'0'); const r=String(s%60).padStart(2,'0'); return `${m}:${r}`; }
@@ -323,6 +336,7 @@ function setButtons(busy){
   document.body.style.cursor = busy ? 'progress' : 'default';
 }
 async function startRec(){
+  if(requireFeedbackGate()) return;
   try{
     media = await navigator.mediaDevices.getUserMedia({audio:true});
     chunks=[]; rec = new MediaRecorder(media, {mimeType:'audio/webm;codecs=opus'});
@@ -332,9 +346,7 @@ async function startRec(){
     startTime=performance.now(); clearInterval(timerI);
     timerI=setInterval(()=>{ timerEl.textContent = fmt(performance.now()-startTime); }, 250);
     setButtons(true);
-  }catch(e){
-    notify('Microphone not available.'); console.error(e);
-  }
+  }catch(e){ notify('Microphone not available.'); console.error(e); }
 }
 function stopRec(){
   try{ rec?.stop(); }catch{}
@@ -342,13 +354,12 @@ function stopRec(){
   timerEl.textContent = fmt(performance.now()-startTime);
   setButtons(false);
 }
-
 btnStart.addEventListener('click', startRec);
 btnStop.addEventListener('click', stopRec);
 
-/* ============================ ANALYZE ============================ */
+/* =============================== ANALYZE =============================== */
 async function sendAnalyze(){
-  const api=requireApiOrWarn(); if(!api) return;
+  if(requireFeedbackGate()) return;
   if(!blob || blob.size===0){ notify('Please record first, then Send & Analyze.'); return; }
   const dur=Math.round((performance.now()-startTime)/1000);
   const fd=new FormData();
@@ -357,19 +368,17 @@ async function sendAnalyze(){
   fd.append('duration_sec', String(dur));
   fd.append('goal', currentGoal.label);
 
-  markApi(true);
   setButtons(true);
-  raw.textContent='Sending…';
 
   try{
-    const res=await fetch(api,{method:'POST',body:fd});
+    const res=await fetch(API,{method:'POST',body:fd});
     const text=await res.text();
-    raw.textContent=text||'(empty response)';
 
     if(!res.ok){ notify('Analyzer error'); setButtons(false); return; }
+    let j; try{ j=JSON.parse(text); }catch{ notify('Analyzer returned non-JSON'); setButtons(false); return; }
 
-    let json; try{ json=JSON.parse(text); }catch{ notify('Analyzer returned non-JSON'); setButtons(false); return; }
-    renderResult(json);
+    bumpUses();              // mark a completed session
+    renderResult(j);
   }catch(err){
     notify('Network error'); console.error(err);
   }finally{
@@ -378,9 +387,8 @@ async function sendAnalyze(){
 }
 btnSend.addEventListener('click', sendAnalyze);
 
-/* =========================== RENDERING =========================== */
+/* ============================== RENDER =============================== */
 function renderResult(j){
-  // Fallback if analyzer says nothing useful
   if(j.fallback){
     levelOut.textContent = '–';
     fillersOut.textContent = '0';
@@ -389,13 +397,11 @@ function renderResult(j){
     grammarList.innerHTML=''; pronList.innerHTML='';
     return;
   }
-
   levelOut.textContent   = FRIENDLY_LEVEL(j.cefr_estimate);
   fillersOut.textContent = String(j?.fluency?.fillers ?? 0);
   fixNowOut.textContent  = (j?.one_thing_to_fix || j?.rationale || '–');
   nextPromptOut.textContent = (j?.next_prompt || starterText.textContent);
 
-  // Grammar
   grammarList.innerHTML='';
   (j?.grammar_issues||[]).forEach(g=>{
     const row=document.createElement('div'); row.className='li';
@@ -408,7 +414,6 @@ function renderResult(j){
     grammarList.appendChild(row);
   });
 
-  // Pronunciation
   pronList.innerHTML='';
   (j?.pronunciation||[]).forEach(p=>{
     const row=document.createElement('div'); row.className='li';
@@ -422,12 +427,89 @@ function renderResult(j){
 }
 function escapeHtml(s){ return (s??'').toString().replace(/[<>&"]/g,m=>({ '<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;' }[m])); }
 
-/* ============================== UX =============================== */
+/* ============================ FEEDBACK MODAL ============================ */
+let rating=0;
+function drawStars(){
+  starsWrap.innerHTML='';
+  for(let i=1;i<=5;i++){
+    const el=document.createElement('span');
+    el.className = 'star' + (i<=rating?' active':'');
+    el.textContent = '★';
+    el.title = `${i} star${i>1?'s':''}`;
+    el.onclick=()=>{ rating=i; drawStars(); };
+    starsWrap.appendChild(el);
+  }
+}
+drawStars();
+
+function openFeedback(){ fbBack.style.display='flex'; }
+function closeFeedback(){ fbBack.style.display='none'; }
+
+fbCancel.addEventListener('click', closeFeedback);
+fbSubmit.addEventListener('click', async ()=>{
+  const name=(fbName.value||'').trim();
+  const email=(fbEmail.value||'').trim();
+  const text=(fbText.value||'').trim();
+
+  if(!name || !email || !rating || !text){
+    notify('Please fill all fields and select a rating.'); return;
+  }
+  if(!FEEDBACK_URL || FEEDBACK_URL.includes('your-ec_feedback_webhook')){
+    notify('Feedback endpoint not configured.'); return;
+  }
+
+  const payload={
+    user_id:UID,
+    user_name:name,
+    email,
+    rating,
+    suggestions:text,
+    ts_date:new Date().toISOString()
+  };
+  try{
+    await fetch(FEEDBACK_URL,{method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload)});
+    localStorage.setItem(FB_DONE_KEY, 'true');
+    notify('Thanks for the feedback!'); closeFeedback();
+  }catch(e){
+    notify('Failed to send feedback.'); console.error(e);
+  }
+});
+
+/* =========================== LEADERBOARD ============================ */
+async function loadBoard(){
+  if(!LEADERBOARD_URL){ boardSec.style.display='none'; return; }
+  try{
+    const r=await fetch(LEADERBOARD_URL, {cache:'no-store'});
+    if(!r.ok) throw 0;
+    const data=await r.json(); // [{name,uses}]
+    if(!Array.isArray(data)||!data.length){ boardSec.style.display='none'; return; }
+    boardTbl.innerHTML='';
+    data.slice(0,20).forEach((row,i)=>{
+      const tr=document.createElement('tr');
+      tr.innerHTML=`<td>${i+1}</td><td>${escapeHtml(row.name||'Anonymous')}</td><td>${row.uses||0}</td>`;
+      boardTbl.appendChild(tr);
+    });
+    boardEmpty.style.display='none';
+    boardSec.style.display='block';
+  }catch{
+    boardSec.style.display='none';
+  }
+}
+loadBoard();
+
+/* ================================ UX ================================= */
 let toastT=null;
 function notify(msg){
   toast.textContent=msg; toast.style.display='block';
   clearTimeout(toastT); toastT=setTimeout(()=>toast.style.display='none', 2200);
 }
+
+/* ========================= INIT (optional ?api) ======================== */
+(function maybeOverrideApiFromQuery(){
+  const u=new URL(location.href);
+  const q=u.searchParams.get('api');
+  if(q && /^https?:\/\//.test(q)) { /* hidden override for internal testing */ }
+})();
 </script>
 </body>
 </html>
