@@ -1,492 +1,406 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>English Coach — Instant Feedback</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>English Coach</title>
 
-<!-- Favicon (inline SVG) -->
-<link rel="icon" href='data:image/svg+xml;utf8,
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
-  <defs><linearGradient id="g" x1="0" x2="1" y1="0" y2="1">
-    <stop stop-color="%236b4cff"/><stop offset="1" stop-color="%23b84df8"/></linearGradient></defs>
-  <rect rx="22" width="128" height="128" fill="%230f0f12"/>
-  <g transform="translate(28,26)">
-    <rect x="22" y="0" width="28" height="58" rx="14" fill="url(%23g)"/>
-    <rect x="6" y="60" width="60" height="12" rx="6" fill="%23ffffff22"/>
-    <rect x="26" y="74" width="20" height="12" rx="6" fill="%23ffffff44"/>
-  </g>
-</svg>'>
+  <!-- Favicon: tiny gradient square -->
+  <link rel="icon" href='data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop stop-color="%238b5cf6"/><stop offset="1" stop-color="%237c3aed"/></linearGradient></defs><rect rx="14" ry="14" width="64" height="64" fill="url(%23g)"/></svg>' />
 
-<link rel="preconnect" href="https://fonts.googleapis.com"/>
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet"/>
-
-<style>
-  :root{
-    --bg:#0f0f12; --panel:#17171c; --panel-2:#1d1d24; --muted:#9aa0a6; --text:#eaeaf0;
-    --ok:#1dd1a1; --warn:#f5a524; --err:#ff5771; --chip:#272730; --ring:rgba(130,82,255,.35);
-    --brand-1:#6b4cff; --brand-2:#b84df8;
-  }
-  *{box-sizing:border-box}
-  body{margin:0;background:
-    radial-gradient(900px 600px at 75% -5%, rgba(130,82,255,.12), transparent 55%),
-    radial-gradient(700px 500px at -10% 110%, rgba(184,77,248,.12), transparent 55%), var(--bg);
-    color:var(--text); font-family:Inter,system-ui,Segoe UI,Roboto,Helvetica,Arial}
-  a{color:#c3b5ff;text-decoration:none}
-  .wrap{max-width:1180px;margin:28px auto;padding:0 16px}
-  header{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:18px}
-  .brand{display:flex;align-items:center;gap:10px}
-  .mark{width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,var(--brand-1),var(--brand-2))}
-  header h1{margin:0;font-size:26px}
-
-  .auth{display:flex;gap:8px;align-items:center}
-  .auth .btn{padding:10px 12px;border-radius:10px;cursor:pointer;border:1px solid #303245;background:#1f1f28;color:#e8e8f7}
-  .auth .user{display:flex;gap:10px;align-items:center;color:#cfd3dd}
-  .auth .avatar{width:28px;height:28px;border-radius:999px;background:#2a2c38}
-
-  .grid{display:grid;grid-template-columns:380px 1fr;gap:22px}
-  @media (max-width:980px){.grid{grid-template-columns:1fr}}
-
-  .card{background:var(--panel);border-radius:18px;box-shadow:0 10px 26px rgba(0,0,0,.33);padding:18px}
-  .section{background:var(--panel-2);border:1px solid #2a2c38;border-radius:16px;padding:14px;margin-top:12px}
-  .title{font-weight:800;margin:0 0 6px;font-size:14px;text-transform:uppercase;letter-spacing:.05em;color:#cfd3dd}
-  .sub{color:var(--muted);margin:0;line-height:1.55}
-
-  /* left column */
-  .goals{display:grid;gap:10px;grid-template-columns:repeat(2, minmax(0,1fr))}
-  @media(min-width:680px){.goals{grid-template-columns:repeat(3, minmax(0,1fr))}}
-  .chip{background:#24242e;border:1px solid #2f2f3c;color:#e8e8f6;border-radius:12px;padding:12px 14px;font-weight:800;cursor:pointer}
-  .chip.active{background:linear-gradient(140deg,var(--brand-1),var(--brand-2));color:#fff;box-shadow:0 8px 22px var(--ring)}
-  .controls{display:flex;gap:10px;flex-wrap:wrap}
-  .btnMain{background:linear-gradient(140deg,var(--brand-1),var(--brand-2));color:#fff;border:0;border-radius:14px;padding:16px 18px;
-       font-weight:800;cursor:pointer;box-shadow:0 8px 22px var(--ring), inset 0 1px 0 #000}
-  .btnStop{background:#2b2c36;color:#e8e8f6;border:1px solid #34364a}
-  .btnMain.big{width:100%;padding:20px;margin-top:8px}
-  .btnMain[disabled]{opacity:.6;cursor:not-allowed}
-  .btnMain.loading{position:relative;pointer-events:none}
-  .btnMain.loading:after{content:"";position:absolute;inset:0;border-radius:inherit;
-    background:repeating-linear-gradient(135deg, rgba(255,255,255,.18) 0 10px, rgba(255,255,255,.05) 10px 20px);
-    animation:sheen 1.1s linear infinite;mix-blend-mode:overlay}
-  @keyframes sheen{to{background-position:200% 0}}
-
-  .timerRow{display:flex;align-items:center;gap:10px}
-  .timer{min-width:160px;background:#14151b;border-radius:12px;padding:14px 16px;font-weight:900;font-size:34px;letter-spacing:1px;text-align:center}
-  .meter{position:relative;height:10px;border-radius:999px;background:#262838;flex:1}
-  .bar{position:absolute;inset:2px;border-radius:999px;width:0;background:#ff4757;transition:width .2s ease, background .2s ease}
-
-  .note{color:var(--muted);font-size:13px;display:flex;gap:8px;align-items:center}
-  .dot{width:8px;height:8px;border-radius:50%;background:#5c6073}
-
-  /* right column */
-  .pills{display:flex;gap:10px;flex-wrap:wrap;margin:2px 0 8px}
-  .pill{background:#22232b;padding:8px 12px;border-radius:999px;color:#e8e8f7;border:1px solid #2d2f3c;font-weight:800}
-  .pill .light{color:#cfd3dd}
-  .gmeters{display:grid;gap:10px;grid-template-columns:repeat(2,minmax(0,1fr));margin-top:8px}
-  .g{background:#22232b;border:1px solid #2d2f3c;border-radius:12px;padding:10px}
-  .g label{display:flex;justify-content:space-between;margin-bottom:6px;color:#cfd3dd;font-size:12px;font-weight:800}
-  .g .gbar{height:10px;border-radius:999px;background:#2a2c38;overflow:hidden}
-  .g .gbar>span{display:block;height:100%;width:0;background:linear-gradient(90deg,#ff4757,#f7b733,#2ed573);transition:width .3s}
-
-  .slot{background:var(--panel-2);border:1px solid #2a2c38;border-radius:16px;padding:14px;margin-top:12px}
-  .slot h4{margin:0 0 8px;font-size:14px;text-transform:uppercase;letter-spacing:.05em;color:#cfd3dd}
-  .line{background:#20222c;padding:14px;border-radius:10px;color:#ececf8}
-  ul.clean{list-style:none;margin:0;padding:0;display:grid;gap:10px}
-  ul.clean li{background:#20222c;padding:12px 14px;border-radius:10px}
-  ul.clean li .why{color:#c9cbe0;display:block;margin-top:6px;font-size:13px}
-
-  .lb .row{display:flex;justify-content:space-between;padding:8px 10px;border-radius:10px;background:#20222c;margin-top:8px}
-  .lb .row .name{font-weight:800}
-
-  footer{color:#bfbfe0;text-align:center;margin:22px 0 18px}
-  footer small{color:#9da3af}
-</style>
+  <style>
+    :root{
+      --bg:#0f0f13; --panel:#15161c; --panel-2:#191a22; --muted:#a5a7b1;
+      --text:#e9e9f2; --chip:#232433; --ring:#434469; --ok:#22c55e; --warn:#f59e0b; --err:#ef4444;
+      --brand-1:#8b5cf6; --brand-2:#7c3aed;
+      --radius:16px;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Inter, Arial, sans-serif;
+      background: radial-gradient(900px 600px at 30% -10%, #1a1b24 0%, transparent 55%), var(--bg);
+      color:var(--text);
+    }
+    .wrap{max-width:1100px;margin:28px auto;padding:0 16px}
+    header{display:flex;align-items:center;gap:12px;margin-bottom:18px}
+    .logo{width:18px;height:18px;border-radius:6px;background:linear-gradient(135deg,var(--brand-1),var(--brand-2));box-shadow:0 0 20px rgba(124,58,237,.25)}
+    h1{font-size:26px;margin:0}
+    .grid{display:grid;grid-template-columns:320px 1fr;gap:18px}
+    @media (max-width:900px){.grid{grid-template-columns:1fr}}
+    .card{background:var(--panel);border:1px solid #1d2030;border-radius:var(--radius);box-shadow:0 0 0 1px rgba(67,68,105,.06) inset}
+    .card .head{padding:18px 18px 8px;font-weight:700;letter-spacing:.02em}
+    .card .body{padding:12px 18px 18px}
+    .muted{color:var(--muted)}
+    .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+    .btn{
+      background:var(--chip);border:1px solid #26283a;color:var(--text);
+      padding:12px 16px;border-radius:14px;cursor:pointer;font-weight:700
+    }
+    .btn:disabled{opacity:.6;cursor:not-allowed}
+    .btn-ghost{background:var(--chip)}
+    .btn-primary{
+      background:linear-gradient(135deg,var(--brand-1),var(--brand-2));
+      border:0; box-shadow:0 10px 30px rgba(124,58,237,.25), inset 0 0 0 1px rgba(255,255,255,.05)
+    }
+    .chips{display:flex;gap:10px;flex-wrap:wrap}
+    .chip{
+      padding:10px 14px;border-radius:12px;background:var(--chip);border:1px solid #26283a;color:var(--text);cursor:pointer;font-weight:700
+    }
+    .chip.active{outline:2px solid var(--ring);background:linear-gradient(135deg,var(--brand-1),var(--brand-2))}
+    .timerBox{
+      background:var(--panel-2);border:1px solid #1f2130;border-radius:16px;padding:16px 18px;font-size:28px;font-weight:800;letter-spacing:.04em
+    }
+    .bar{
+      height:10px;border-radius:999px;background:#292b3d;border:1px solid #222433; position:relative; overflow:hidden
+    }
+    .bar>i{
+      position:absolute;left:0;top:0;bottom:0;width:0%;border-radius:999px;background:linear-gradient(90deg,#ef4444,#f59e0b,#22c55e)
+    }
+    .kpi{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+    .pill{background:#232433;border:1px solid #2a2c3f;border-radius:999px;padding:8px 12px;font-size:12px}
+    .dot{width:8px;height:8px;border-radius:999px;background:#374151;border:1px solid #222}
+    .dot.live{background:var(--ok)}
+    .sec{padding:14px 16px;border-top:1px solid #222436}
+    .list{display:flex;flex-direction:column;gap:10px}
+    .item{background:#1a1b24;border:1px solid #222436;border-radius:12px;padding:12px 12px}
+    .titleRow{display:flex;justify-content:space-between;align-items:center;gap:12px}
+    footer{margin:24px 0 40px;color:#9aa; font-size:12px;text-align:center}
+    .hide{display:none}
+    .rightOf{margin-left:auto}
+  </style>
 </head>
 <body>
-<div class="wrap">
-
-  <header>
-    <div class="brand">
-      <div class="mark"></div>
+  <div class="wrap">
+    <header>
+      <div class="logo"></div>
       <h1>English Coach</h1>
+      <div class="rightOf muted">v1.2.13</div>
+    </header>
+
+    <div class="grid">
+      <!-- LEFT: controls -->
+      <div class="card">
+        <div class="head">Goal</div>
+        <div class="body">
+          <div class="chips" id="goalChips"></div>
+        </div>
+
+        <div class="head">Recording</div>
+        <div class="body">
+          <div class="row">
+            <button class="btn btn-primary" id="btnStart">▶ Start recording</button>
+            <button class="btn btn-ghost" id="btnStop" disabled>◼ Stop</button>
+          </div>
+          <div class="row" style="margin-top:12px; align-items:center">
+            <div class="timerBox" id="timer">00:00</div>
+            <div class="bar" style="flex:1; margin-left:12px"><i id="progress"></i></div>
+          </div>
+          <div class="row" style="margin-top:12px">
+            <button class="btn btn-primary" id="btnSend" disabled>Send &amp; Analyze</button>
+          </div>
+        </div>
+
+        <div class="head">What to say to start</div>
+        <div class="body">
+          <div class="item" id="promptBox" style="min-height:64px"></div>
+          <div class="row" style="margin-top:10px">
+            <button class="btn" id="btnRand">🎲 Randomize prompt</button>
+            <span class="muted">We don’t store your audio; it’s sent to the analyzer and immediately discarded.</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT: Results -->
+      <div class="card" id="resultCard">
+        <div class="sec kpi">
+          <span class="dot" id="liveDot"></span><span class="muted">Live</span>
+          <span class="pill">Level: <b id="levelText">–</b></span>
+          <span class="pill">Fillers: <b id="fillers">0</b></span>
+          <span class="pill">Sessions: <b id="sessions">0</b></span>
+        </div>
+
+        <div class="sec">
+          <div class="row" style="gap:18px; align-items:center">
+            <div style="min-width:160px">
+              <div class="muted" style="font-size:12px;margin-bottom:6px">Level meter</div>
+              <div class="bar" style="width:180px"><i id="levelBar"></i></div>
+            </div>
+            <div id="relWrap" class="hide" style="min-width:160px">
+              <div class="muted" style="font-size:12px;margin-bottom:6px">Relevancy</div>
+              <div class="bar" style="width:180px"><i id="relBar"></i></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="sec">
+          <div class="head" style="padding:0 0 8px">Pronunciation</div>
+          <div class="list" id="pronList"><div class="muted">–</div></div>
+        </div>
+
+        <div class="sec">
+          <div class="head" style="padding:0 0 8px">Grammar</div>
+          <div class="list" id="gramList"><div class="muted">–</div></div>
+        </div>
+
+        <div class="sec">
+          <div class="head" style="padding:0 0 8px">What to fix now</div>
+          <div class="item" id="fixNow">–</div>
+        </div>
+
+        <div class="sec">
+          <div class="head" style="padding:0 0 8px">Next prompt (30–45s)</div>
+          <div class="item" id="nextPrompt">–</div>
+        </div>
+      </div>
     </div>
-    <div class="auth" id="authBox">
-      <!-- Filled by JS (sign-in / user / sign-out) -->
-    </div>
-  </header>
 
-  <div class="grid">
-    <!-- LEFT -->
-    <section class="card">
-      <div class="section">
-        <div class="title">Goal</div>
-        <div class="goals" id="goals">
-          <button class="chip active" data-goal="Work English">Work English</button>
-          <button class="chip" data-goal="Daily Life">Daily Life</button>
-          <button class="chip" data-goal="Interview Prep">Interview Prep</button>
-          <button class="chip" data-goal="Travel">Travel</button>
-          <button class="chip" data-goal="Presentation">Presentation</button>
-        </div>
-      </div>
-
-      <div class="section">
-        <div class="title">Recording</div>
-        <div class="controls">
-          <button class="btnMain" id="btnStart">▶️ Start recording</button>
-          <button class="btnMain btnStop" id="btnStop">⏹ Stop</button>
-        </div>
-        <div class="timerRow" style="margin-top:10px">
-          <div class="timer" id="timer">00:00</div>
-          <div class="meter"><div class="bar" id="meterBar"></div></div>
-        </div>
-        <button class="btnMain big" id="btnSend" disabled>Send & Analyze</button>
-      </div>
-
-      <div class="section">
-        <div class="title">What to say to start</div>
-        <textarea id="promptBox" style="width:100%;min-height:88px;background:#1e1f27;border:1px dashed #323447;border-radius:12px;color:#ececf5;padding:12px;font:600 14px/1.55 Inter">Describe a recent project you led and one lesson you learned.</textarea>
-        <div class="note" style="margin-top:10px">
-          <button class="chip" id="btnRoll">🎲 Randomize prompt</button>
-          <span class="dot" id="liveDot"></span>
-          We don’t store your audio; it’s sent to the analyzer and immediately discarded.
-        </div>
-      </div>
-    </section>
-
-    <!-- RIGHT -->
-    <section class="card">
-      <div class="pills">
-        <div class="pill">Live</div>
-        <div class="pill">Level: <span class="light" id="lvl">—</span></div>
-        <div class="pill">Fillers: <span class="light" id="fillers">0</span></div>
-        <div class="pill">🔥 Streak: <span class="light" id="streak">0</span></div>
-        <div class="pill">🎯 Sessions: <span class="light" id="sessions">0</span></div>
-      </div>
-
-      <!-- Meters -->
-      <div class="gmeters">
-        <div class="g">
-          <label><span>Level meter</span><span id="lvlPct">0%</span></label>
-          <div class="gbar"><span id="lvlBar"></span></div>
-        </div>
-        <div class="g">
-          <label><span>Relevancy</span><span id="relPct">0%</span></label>
-          <div class="gbar"><span id="relBar"></span></div>
-        </div>
-      </div>
-
-      <div class="slot">
-        <h4>PRONUNCIATION</h4>
-        <ul class="clean" id="pronList"><li id="pronEmpty">–</li></ul>
-      </div>
-
-      <div class="slot">
-        <h4>GRAMMAR</h4>
-        <ul class="clean" id="gramList"><li id="gramEmpty">–</li></ul>
-      </div>
-
-      <div class="slot">
-        <h4>WHAT TO FIX NOW</h4>
-        <div class="line" id="fixNow">–</div>
-      </div>
-
-      <div class="slot">
-        <h4>NEXT PROMPT (30–45S)</h4>
-        <div class="line" id="nextPrompt">–</div>
-      </div>
-
-      <div class="slot lb">
-        <h4>LEADERBOARD</h4>
-        <div class="line" id="lbInfo">Sign in to join the public leaderboard (Supabase). Without login, this shows your local total.</div>
-        <div id="lbRows"></div>
-      </div>
-    </section>
+    <footer>
+      © 2025 <a href="https://simpleia.com" target="_blank" style="color:#bbb;text-decoration:none">Simpleia</a> —
+      Built by <a href="https://aosama.net" target="_blank" style="color:#bbb;text-decoration:none">Abdo Osama</a>
+    </footer>
   </div>
 
-  <footer>
-    <small>© <span id="year"></span> <a href="https://simpleia.com" target="_blank" rel="noopener">Simpleia</a> — Built by <a href="https://aosama.net" target="_blank" rel="noopener">Abdo Osama</a> • <span id="ver">v1.2.12</span></small>
-  </footer>
-</div>
+  <script>
+    /* ====== SETTINGS ====== */
+    const ANALYZER_URL = "https://english-coach-endpoint.vercel.app/api/analyze"; // <- your API
+    const MAX_REC_SEC  = 90;           // auto-stop limit
+    const SHOW_RELEVANCE = false;      // turn on/off the relevancy meter
 
-<div id="toast" style="position:fixed;left:50%;transform:translateX(-50%);bottom:20px;background:#22242d;border:1px solid #303245;color:#f1f1fb;padding:12px 16px;border-radius:10px;box-shadow:0 10px 26px rgba(0,0,0,.33);display:none"></div>
-
-<!-- Optional Supabase (Auth + Leaderboard) -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
-<script>
-/* =======================================================
-   CONFIG
-======================================================= */
-const API_URL="https://english-coach-endpoint.vercel.app/api/analyze";
-const VERSION="v1.2.12";
-document.getElementById('year').textContent=new Date().getFullYear();
-document.getElementById('ver').textContent=VERSION;
-
-/* Supabase (optional) — fill to enable auth + cloud leaderboard */
-const SUPABASE_URL      = ""; // e.g. https://xxxx.supabase.co
-const SUPABASE_ANON_KEY = ""; // public anon key
-const sb = (SUPABASE_URL && SUPABASE_ANON_KEY) ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
-
-/* Elements */
-const goalsEl = document.getElementById('goals');
-const btnStart= document.getElementById('btnStart');
-const btnStop = document.getElementById('btnStop');
-const btnSend = document.getElementById('btnSend');
-const btnRoll = document.getElementById('btnRoll');
-const timerEl = document.getElementById('timer');
-const barEl   = document.getElementById('meterBar');
-const liveDot = document.getElementById('liveDot');
-
-const pronList= document.getElementById('pronList');
-const gramList= document.getElementById('gramList');
-const pronEmpty=document.getElementById('pronEmpty');
-const gramEmpty=document.getElementById('gramEmpty');
-const fixNowEl = document.getElementById('fixNow');
-const nextEl   = document.getElementById('nextPrompt');
-
-const lvlEl  = document.getElementById('lvl');
-const fillersEl=document.getElementById('fillers');
-const promptBox=document.getElementById('promptBox');
-
-const lvlBar = document.getElementById('lvlBar');
-const lvlPct = document.getElementById('lvlPct');
-const relBar = document.getElementById('relBar');
-const relPct = document.getElementById('relPct');
-
-const streakEl=document.getElementById('streak');
-const sessionsEl=document.getElementById('sessions');
-const toastEl =document.getElementById('toast');
-
-const authBox=document.getElementById('authBox');
-const lbInfo =document.getElementById('lbInfo');
-const lbRows =document.getElementById('lbRows');
-
-/* Goals */
-let goalText="Work English";
-goalsEl.addEventListener('click',(e)=>{
-  const b=e.target.closest('.chip'); if(!b) return;
-  goalsEl.querySelectorAll('.chip').forEach(x=>x.classList.remove('active'));
-  b.classList.add('active'); goalText=b.dataset.goal;
-});
-
-/* Random prompts */
-const PROMPTS={ "Work English":[
-    "Describe a recent challenge at work and how you handled it.",
-    "Talk about your team's biggest win this month.",
-    "Explain one project you led and one lesson you learned."
-  ], "Daily Life":[
-    "Walk me through your typical weekday.",
-    "Tell me about a hobby you enjoy and why.",
-    "Describe a small problem you solved recently."
-  ], "Interview Prep":[
-    "Introduce yourself as if you’re in an interview.",
-    "Explain a time you disagreed with a decision and what you did.",
-    "Describe a mistake you made and what you learned."
-  ], "Travel":[
-    "Describe your favorite trip and what made it memorable.",
-    "If you could visit any country next month, which and why?",
-    "Tell a short story about a travel mishap."
-  ], "Presentation":[
-    "Pitch an idea in 60 seconds.",
-    "Explain a complex topic to a non-expert.",
-    "Summarize a book, article, or video you like."
-  ]};
-btnRoll.addEventListener('click',()=>{
-  const arr=PROMPTS[goalText]||PROMPTS["Work English"];
-  promptBox.value=arr[Math.floor(Math.random()*arr.length)];
-});
-
-/* Recording */
-let mediaRecorder, chunks=[], recording=false, startTs=0, timerId=null;
-function pickMime(){
-  const list=['audio/webm;codecs=opus','audio/webm','audio/ogg;codecs=opus','audio/mp4','audio/mpeg'];
-  if(!window.MediaRecorder) return '';
-  for(const t of list){ try{ if(MediaRecorder.isTypeSupported(t)) return t }catch{} }
-  return '';
-}
-const REC_MIME=pickMime();
-function extFor(m){ if(!m) return 'webm'; if(m.includes('mp4')) return 'm4a'; if(m.includes('mpeg')) return 'mp3'; if(m.includes('ogg')) return 'ogg'; return 'webm'; }
-function fmt(s){const m=Math.floor(s/60),r=s%60;return `${String(m).padStart(2,'0')}:${String(r).padStart(2,'0')}`;}
-function meterColor(sec){ if(sec<30) return '#ff4757'; if(sec<60) return '#f7b733'; return '#2ed573'; }
-function tick(){ const s=Math.max(0,Math.floor((Date.now()-startTs)/1000)); timerEl.textContent=fmt(s);
-  const pct=Math.min(100,(s/90)*100); barEl.style.width=`calc(${pct}% - 4px)`; barEl.style.background=meterColor(s); }
-
-async function startRec(){
-  if(recording) return;
-  try{
-    const stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true}});
-    chunks=[];
-    mediaRecorder = REC_MIME ? new MediaRecorder(stream,{mimeType:REC_MIME}) : new MediaRecorder(stream);
-    mediaRecorder.ondataavailable=e=>{ if(e.data&&e.data.size>0) chunks.push(e.data); };
-    mediaRecorder.start(250);
-    recording=true; startTs=Date.now(); timerEl.textContent="00:00"; barEl.style.width='0%'; barEl.style.background=meterColor(0);
-    liveDot.style.background='#ff4757'; btnSend.disabled=true; clearInterval(timerId); timerId=setInterval(tick,200);
-  }catch(err){ toast("Mic permission failed."); console.error(err); }
-}
-function stopRec(){
-  if(!recording) return;
-  try{ mediaRecorder.stop(); mediaRecorder.stream.getTracks().forEach(t=>t.stop()); }catch{}
-  recording=false; clearInterval(timerId);
-  liveDot.style.background='#5c6073'; btnSend.disabled=(chunks.length===0);
-}
-btnStart.addEventListener('click',startRec);
-btnStop.addEventListener('click',stopRec);
-
-/* Analyze */
-function toast(m){ toastEl.textContent=m; toastEl.style.display='block'; setTimeout(()=>toastEl.style.display='none',1800); }
-function setLoading(b){ btnSend.classList.toggle('loading',b); btnSend.disabled=b; }
-
-/* Level mapping */
-function levelLabel(cefr=""){
-  const t=(cefr||"").toUpperCase();
-  if(t.startsWith("A1")) return {label:"Beginner", pct:10};
-  if(t.startsWith("A2")) return {label:"Elementary", pct:30};
-  if(t.startsWith("B1")) return {label:"Intermediate", pct:55};
-  if(t.startsWith("B2")) return {label:"Upper-Intermediate", pct:75};
-  if(t.startsWith("C1")) return {label:"Advanced", pct:90};
-  if(t.startsWith("C2")) return {label:"Near-Native", pct:100};
-  return {label:"—", pct:0};
-}
-function relevancePercent(prompt, transcript){
-  if(!prompt || !transcript) return 0;
-  const tok = s => new Set((s.toLowerCase().match(/[a-z]{3,}/g)||[]));
-  const A=tok(prompt), B=tok(transcript); if(A.size===0||B.size===0) return 0;
-  let inter=0; for(const w of A){ if(B.has(w)) inter++; }
-  return Math.round((inter/Math.max(1,A.size))*100);
-}
-
-/* Local streak & sessions */
-function loadStats(){ return JSON.parse(localStorage.getItem('ec_stats')||'{"streak":0,"last":"","sessions":0}'); }
-function saveStats(d){ localStorage.setItem('ec_stats', JSON.stringify(d)); }
-function bumpStats(){
-  const today = new Date().toISOString().slice(0,10);
-  const s = loadStats();
-  if(!s.last){ s.streak=1; s.last=today; } else {
-    const diff=(new Date(today)-new Date(s.last))/(1000*60*60*24);
-    s.streak = (diff===1) ? (s.streak+1) : (diff>1 ? 1 : s.streak);
-    s.last=today;
-  }
-  s.sessions=(s.sessions||0)+1; saveStats(s); renderStats(); return s;
-}
-function renderStats(){ const s=loadStats(); streakEl.textContent=s.streak||0; sessionsEl.textContent=s.sessions||0; }
-
-/* Supabase auth + leaderboard (optional) */
-async function renderAuth(){
-  if(!sb){ authBox.innerHTML='<button class="btn">Sign in</button><small style="color:#8b90a2"> (enable Supabase to use)</small>'; return; }
-  const { data: { user } } = await sb.auth.getUser();
-  if(!user){
-    authBox.innerHTML='<button class="btn" id="loginG">Sign in with Google</button>';
-    document.getElementById('loginG').onclick=async()=>{
-      await sb.auth.signInWithOAuth({ provider:'google' }); // redirects
+    const GOALS = ["Work English","Daily Life","Interview Prep","Travel","Presentation"];
+    const PROMPTS = {
+      "Work English":[
+        "Describe a recent challenge you faced at work and how you handled it.",
+        "Explain one problem your team faced and how you solved it.",
+        "Tell me about a project you’re working on and your role."
+      ],
+      "Daily Life":[
+        "Describe your morning routine in detail.",
+        "What did you do last weekend? Share for ~45 seconds.",
+        "Tell me about your favorite hobby and why you enjoy it."
+      ],
+      "Interview Prep":[
+        "Tell me about yourself (as in a job interview).",
+        "What’s a tough decision you made at work?",
+        "Describe a time you improved a process."
+      ],
+      "Travel":[
+        "Describe your favorite trip. Where did you go and what did you do?",
+        "Plan a weekend in a new city for a friend.",
+        "Explain how to apply for a visa step by step."
+      ],
+      "Presentation":[
+        "Summarize a product idea and its main benefits.",
+        "Pitch a proposal to reduce team bottlenecks.",
+        "Explain a complex topic to a non-expert in 45 seconds."
+      ]
     };
-  }else{
-    const email=user.email||'';
-    authBox.innerHTML=`<div class="user"><div class="avatar"></div><span>${email}</span><button class="btn" id="logout">Sign out</button></div>`;
-    document.getElementById('logout').onclick=()=>sb.auth.signOut().then(()=>location.reload());
-  }
-}
-async function recordSessionSB(dur){
-  if(!sb) return;
-  const { data:{ user } } = await sb.auth.getUser();
-  if(!user) return;
-  await sb.from('sessions').insert({ user_id:user.id, duration_sec:dur, goal:goalText });
-}
-async function loadLeaderboardSB(){
-  lbRows.innerHTML="";
-  if(!sb){
-    const s=loadStats();
-    lbInfo.textContent="Public leaderboard requires sign-in (Supabase). This shows your local total.";
-    const row=document.createElement('div'); row.className='row';
-    row.innerHTML=`<span class="name">You</span><span>${s.sessions||0} sessions</span>`;
-    lbRows.appendChild(row);
-    return;
-  }
-  const { data:{ user } } = await sb.auth.getUser();
-  if(!user){
-    lbInfo.textContent="Sign in to join the public leaderboard.";
-    return;
-  }
-  lbInfo.textContent="Top 10 by sessions (last 7 days).";
-  const { data, error } = await sb.rpc('leaderboard_week'); // see SQL note below
-  if(error){ lbRows.textContent="(Leaderboard RPC missing)"; return; }
-  data.slice(0,10).forEach((r,i)=>{
-    const row=document.createElement('div'); row.className='row';
-    row.innerHTML=`<span class="name">${i+1}. ${r.email||r.user_id.slice(0,8)}</span><span>${r.sessions} sessions</span>`;
-    lbRows.appendChild(row);
-  });
-}
 
-/* Analyze click */
-btnSend.addEventListener('click', async ()=>{
-  if(recording){ toast("Stop recording first."); return; }
-  if(chunks.length===0){ toast("No audio recorded."); return; }
+    /* ====== ELEMENTS ====== */
+    const goalChips = document.getElementById('goalChips');
+    const btnStart  = document.getElementById('btnStart');
+    const btnStop   = document.getElementById('btnStop');
+    const btnSend   = document.getElementById('btnSend');
+    const btnRand   = document.getElementById('btnRand');
+    const timerEl   = document.getElementById('timer');
+    const progressI = document.getElementById('progress');
+    const promptBox = document.getElementById('promptBox');
 
-  const durSec = Math.max(1, Math.floor((Date.now()-startTs)/1000));
-  const blob   = new Blob(chunks, {type: REC_MIME || 'audio/webm'});
-  const file   = new File([blob], `audio.${extFor(REC_MIME)}`, {type: blob.type});
-  const fd = new FormData();
-  fd.append('files[]', file);
-  fd.append('duration_sec', String(durSec));
-  fd.append('goal', goalText);
+    const liveDot   = document.getElementById('liveDot');
+    const levelText = document.getElementById('levelText');
+    const fillersEl = document.getElementById('fillers');
+    const sessionsEl= document.getElementById('sessions');
+    const levelBar  = document.getElementById('levelBar');
+    const relWrap   = document.getElementById('relWrap');
+    const relBar    = document.getElementById('relBar');
 
-  setLoading(true);
-  try{
-    const res = await fetch(API_URL, { method:'POST', body: fd });
-    const raw = await res.text(); let data={};
-    try{ data=JSON.parse(raw); }catch{ data={ok:false, error:"Bad response", raw} }
+    const pronList  = document.getElementById('pronList');
+    const gramList  = document.getElementById('gramList');
+    const fixNow    = document.getElementById('fixNow');
+    const nextPrompt= document.getElementById('nextPrompt');
 
-    if(data.fallback){
-      lvlEl.textContent="—"; fillersEl.textContent="0"; lvlBar.style.width='0%'; lvlPct.textContent='0%'; relBar.style.width='0%'; relPct.textContent='0%';
-      pronList.innerHTML=""; pronList.appendChild(pronEmpty.cloneNode(true));
-      gramList.innerHTML=""; gramList.appendChild(gramEmpty.cloneNode(true));
-      fixNowEl.textContent="Speak for at least 30–45s in complete sentences.";
-      nextEl.textContent=(PROMPTS[goalText]||PROMPTS["Work English"])[0];
-      toast("Try again with a longer answer 🙂");
-    }else{
-      const L = levelLabel(data.cefr_estimate || data.level);
-      lvlEl.textContent=L.label; lvlBar.style.width=`${L.pct}%`; lvlPct.textContent=`${L.pct}%`;
+    /* ====== STATE ====== */
+    let mediaRecorder = null;
+    let chunks = [];
+    let recStart = 0;
+    let timer = null;
+    let sec = 0;
+    let goal = GOALS[0];
+    let sessions = Number(localStorage.getItem('ec_sessions')||'0');
 
-      const renderList=(ul,empty,arr,map)=>{
-        ul.innerHTML="";
-        if(!arr||!arr.length){ ul.appendChild(empty.cloneNode(true)); return; }
-        for(const it of arr){ const li=document.createElement('li'); li.innerHTML=map(it); ul.appendChild(li); }
-      }
-      renderList(pronList, pronEmpty, data.pronunciation, p=>{
-        const w=p.sound_or_word||p.word||"—"; const issue=p.issue||p.note||"—";
-        const pair=p.minimal_pair?` <span class="why">Try: ${p.minimal_pair}</span>`:"";
-        return `<b>${w}</b> — ${issue}${pair}`;
+    sessionsEl.textContent = sessions;
+
+    // Build goals UI
+    function renderGoals(){
+      goalChips.innerHTML = '';
+      GOALS.forEach(g=>{
+        const el = document.createElement('button');
+        el.className = 'chip' + (g===goal?' active':'');
+        el.textContent = g;
+        el.onclick = ()=>{
+          goal = g;
+          renderGoals();
+          setPrompt(randomPrompt());
+        };
+        goalChips.appendChild(el);
       });
-      renderList(gramList, gramEmpty, data.grammar_issues, g=>{
-        const e=g.error||"—"; const f=g.fix||g.suggest||"—"; const y=g.why||"";
-        return `→ ${e}<span class="why">Try: ${f}${y?`<br/>Why: ${y}`:""}</span>`;
-      });
-
-      const fill = (data.fluency && typeof data.fluency.fillers==="number") ? data.fluency.fillers : 0;
-      fillersEl.textContent=String(fill);
-      fixNowEl.textContent = data.one_thing_to_fix || data.fix_now || "—";
-      nextEl.textContent   = data.next_prompt || (PROMPTS[goalText]||PROMPTS["Work English"])[1];
-
-      // Relevancy
-      const rel = relevancePercent(promptBox.value, data.transcript||"");
-      relBar.style.width = `${rel}%`; relPct.textContent = `${rel}%`;
-
-      // progress + (optional) cloud log
-      const s=bumpStats();
-      if(sb){ await recordSessionSB(durSec); await loadLeaderboardSB(); }
     }
-  }catch(err){
-    console.error(err); toast("Request failed. Please try again.");
-  }finally{
-    setLoading(false);
-    chunks=[]; timerEl.textContent="00:00"; barEl.style.width='0%'; barEl.style.background='#ff4757'; btnSend.disabled=true;
-  }
-});
 
-/* INIT */
-(function(){
-  timerEl.textContent="00:00"; barEl.style.width="0%"; barEl.style.background='#ff4757';
-  renderStats(); renderAuth(); loadLeaderboardSB();
-})();
-</script>
+    function randomPrompt(){
+      const arr = PROMPTS[goal] || PROMPTS[GOALS[0]];
+      return arr[Math.floor(Math.random()*arr.length)];
+    }
+    function setPrompt(t){ promptBox.textContent = t; }
+
+    // Timer / progress
+    function fmt(n){ return (n<10?'0':'') + n; }
+    function setTimer(s){
+      sec = s;
+      timerEl.textContent = fmt(Math.floor(sec/60)) + ':' + fmt(sec%60);
+      const pct = Math.min(100, Math.round((sec / MAX_REC_SEC) * 100));
+      progressI.style.width = pct + '%';
+    }
+    function tick(){
+      setTimer(sec+1);
+      // color “phases”: red <45, amber <60, green >=60
+      const pct = (sec / MAX_REC_SEC);
+      if (pct >= 1) stopRec(true);
+      liveDot.classList.add('live');
+    }
+
+    // Recording
+    async function startRec(){
+      if (mediaRecorder && mediaRecorder.state === 'recording') return;
+      try{
+        const stream = await navigator.mediaDevices.getUserMedia({audio:true});
+        mediaRecorder = new MediaRecorder(stream);
+        chunks = [];
+        mediaRecorder.ondataavailable = e => { if (e.data.size>0) chunks.push(e.data); };
+        mediaRecorder.onstop = ()=>{};
+        mediaRecorder.start(250);
+
+        recStart = Date.now();
+        setTimer(0);
+        timer = setInterval(tick, 1000);
+
+        btnStart.disabled = true;
+        btnStop.disabled  = false;
+        btnSend.disabled  = true;
+        btnRand.disabled  = true; // disable randomize while recording
+        liveDot.classList.add('live');
+      }catch(e){
+        alert('Mic permission is required.');
+      }
+    }
+
+    function stopRec(auto=false){
+      if (!mediaRecorder) return;
+      if (mediaRecorder.state !== 'inactive') mediaRecorder.stop();
+      clearInterval(timer); timer = null;
+      btnStart.disabled = false;
+      btnStop.disabled  = true;
+      btnSend.disabled  = chunks.length===0; // allow Send if we have audio
+      btnRand.disabled  = false;
+      if (auto) btnSend.focus();
+    }
+
+    async function sendAnalyze(){
+      if (!chunks.length) return;
+      btnSend.disabled = true;
+
+      // build form
+      const blob = new Blob(chunks, {type:'audio/webm'});
+      const file = new File([blob], 'audio.webm', {type:blob.type});
+      const fd = new FormData();
+      fd.append('files[]', file);
+      fd.append('duration_sec', Math.floor(sec));
+      fd.append('goal', goal);
+      fd.append('prompt_text', promptBox.textContent||'');
+
+      liveDot.classList.remove('live');
+
+      try{
+        const res = await fetch(ANALYZER_URL, {method:'POST', body:fd});
+        const json = await res.json();
+        renderResult(json);
+
+        // count sessions
+        localStorage.setItem('ec_sessions', String(++sessions));
+        sessionsEl.textContent = sessions;
+
+        // reset UI for fresh recording
+        chunks = [];
+        setTimer(0);
+        progressI.style.width = '0%';
+        btnSend.disabled = true;
+        btnStart.focus();
+      }catch(err){
+        alert('Request failed. Please try again.');
+      }
+    }
+
+    // Rendering results
+    function clearList(el){ el.innerHTML = '<div class="muted">–</div>'; }
+    function pushItem(el, title, sub){
+      if (el.firstElementChild && el.firstElementChild.classList.contains('muted')) el.innerHTML='';
+      const it = document.createElement('div');
+      it.className = 'item';
+      it.innerHTML = `<div class="titleRow"><b>${title}</b></div>${sub?`<div class="muted" style="margin-top:6px">${sub}</div>`:''}`;
+      el.appendChild(it);
+    }
+
+    function renderResult(r){
+      const friendly = r.friendly_level || r.cefr_estimate || '–';
+      levelText.textContent = friendly;
+      fillersEl.textContent = (r.fluency && typeof r.fluency.fillers==='number')? r.fluency.fillers : 0;
+
+      // level meter
+      const lvl = Math.max(0, Math.min(100, Number(r.level_score||0)));
+      levelBar.style.width = lvl + '%';
+
+      // relevancy (optional)
+      if (SHOW_RELEVANCE && r.relevance && typeof r.relevance.score==='number'){
+        relWrap.classList.remove('hide');
+        relBar.style.width = Math.max(0,Math.min(100,Math.round(r.relevance.score))) + '%';
+      } else {
+        relWrap.classList.add('hide');
+      }
+
+      // pronunciation
+      clearList(pronList);
+      (r.pronunciation||[]).forEach(p=>{
+        const title = `${p.sound_or_word || '—'} — ${p.issue || ''}`.trim();
+        pushItem(pronList, title, p.minimal_pair?`Try: ${p.minimal_pair}`:'');
+      });
+      if ((r.pronunciation||[]).length===0) pronList.innerHTML = '<div class="muted">–</div>';
+
+      // grammar
+      clearList(gramList);
+      (r.grammar_issues||[]).forEach(g=>{
+        const t = `→ ${g.error || ''}`;
+        const sub = [
+          g.fix?`Try: ${g.fix}`:'',
+          g.why?`Why: ${g.why}`:''
+        ].filter(Boolean).join('<br/>');
+        pushItem(gramList, t, sub);
+      });
+      if ((r.grammar_issues||[]).length===0) gramList.innerHTML = '<div class="muted">–</div>';
+
+      // fix now & next prompt (next last)
+      fixNow.textContent = r.one_thing_to_fix || '–';
+      nextPrompt.textContent = r.next_prompt || '–';
+    }
+
+    // Wire up
+    btnStart.onclick = startRec;
+    btnStop.onclick  = ()=>stopRec(false);
+    btnSend.onclick  = sendAnalyze;
+    btnRand.onclick  = ()=>{ if (!btnRand.disabled) setPrompt(randomPrompt()); };
+
+    // init
+    renderGoals();
+    setPrompt(randomPrompt());
+    setTimer(0);
+  </script>
 </body>
 </html>
