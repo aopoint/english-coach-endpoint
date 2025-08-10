@@ -1,136 +1,117 @@
-// api/analyze.js
-// Vercel Node.js Serverless Function
-// Accepts multipart/form-data with fields: files[] (audio.webm), duration_sec, goal
-// Returns a strict JSON evaluation
+// Serverless handler for /api/analyze (Vercel)
+// - Accepts multipart/form-data with fields: files[] (audio file), duration_sec, goal
+// - Transcribes with Whisper
+// - Asks GPT for structured JSON feedback
+// - Returns JSON
+//
+// ENV: set OPENAI_API_KEY in Vercel (Project → Settings → Environment Variables)
 
-const formidable = require("formidable");
-const fs = require("node:fs");
+const { readFile } = require('fs/promises');
+const formidable = require('formidable');
+const OpenAI = require('openai');
 
 function cors(res) {
-  res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
-}
-
-function parseForm(req) {
-  return new Promise((resolve, reject) => {
-    const form = formidable({ multiples: false, keepExtensions: true });
-    form.parse(req, (err, fields, files) => {
-      if (err) return reject(err);
-      resolve({ fields, files });
-    });
-  });
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'POST,GET,OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
 }
 
 module.exports = async (req, res) => {
   cors(res);
-  if (req.method === "OPTIONS") {
-    res.status(204).end();
-    return;
+
+  if (req.method === 'OPTIONS') return res.status(200).end();
+
+  if (req.method === 'GET') {
+    return res.status(200).json({ ok: true, message: 'Analyzer is alive. POST audio here.' });
   }
-  if (req.method !== "POST") {
-    res.status(405).json({ ok: false, error: "Use POST" });
-    return;
+
+  if (req.method !== 'POST') {
+    return res.status(405).json({ ok: false, error: 'Method not allowed' });
   }
 
   try {
-    const { fields, files } = await parseForm(req);
+    // ---- 1) Parse multipart form
+    const { fields, files } = await new Promise((resolve, reject) => {
+      const form = formidable({ multiples: true, keepExtensions: false });
+      form.parse(req, (err, fields, files) => (err ? reject(err) : resolve({ fields, files })));
+    });
 
-    // Support several field names from your FE
+    // Accept either files[] or audio/file
+    const pick = (obj, keys) => keys.map(k => obj?.[k]).find(Boolean);
+    const fileEntry =
+      pick(files, ['files[]', 'file', 'audio']) ||
+      (Array.isArray(files) && files.length ? files[0] : null);
+
     const f =
-      files?.audio ||
-      files?.["files[]"] ||
-      files?.file ||
-      (files?.files && Array.isArray(files.files) ? files.files[0] : files?.files);
+      (Array.isArray(fileEntry) ? fileEntry[0] : fileEntry) || {};
 
-    if (!f || !f.filepath) {
-      res.status(400).json({ ok: false, error: "No audio file in form-data (expected files[]/audio/file)." });
-      return;
+    if (!f.filepath) {
+      return res.status(400).json({ ok: false, error: 'No audio file found (expected files[]).' });
     }
 
-    const durationSec = parseInt(
-      (Array.isArray(fields.duration_sec) ? fields.duration_sec[0] : fields.duration_sec) || "0",
-      10
-    );
-    const goal = (Array.isArray(fields.goal) ? fields.goal[0] : fields.goal) || "Work English";
+    const filename = f.originalFilename || 'audio.webm';
+    const mimetype = f.mimetype || 'audio/webm';
+    const buffer = await readFile(f.filepath);
 
-    // 1) Transcribe with Whisper
-    const fd = new FormData();
-    fd.append("model", "whisper-1");
-    fd.append("response_format", "json");
-    fd.append("file", fs.createReadStream(f.filepath), f.originalFilename || "audio.webm");
+    const durationSec = parseFloat(fields.duration_sec || fields.duration || '0') || 0;
+    const goal = (fields.goal || '').toString().trim() || 'General English';
 
-    const trRes = await fetch("https://api.openai.com/v1/audio/transcriptions", {
-      method: "POST",
-      headers: { Authorization: `Bearer ${process.env.OPENAI_API_KEY}` },
-      body: fd,
+    // ---- 2) Transcribe with Whisper
+    const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+    const fileForOpenAI = await openai.files.toFile(buffer, filename, { type: mimetype });
+
+    const tr = await openai.audio.transcriptions.create({
+      file: fileForOpenAI,
+      model: 'whisper-1',
+      // language: 'en', // optional
     });
 
-    if (!trRes.ok) {
-      const t = await trRes.text();
-      res.status(trRes.status).json({ ok: false, stage: "transcribe", error: t });
-      return;
+    const transcript = (tr?.text || '').trim();
+    if (!transcript) {
+      return res.status(400).json({ ok: false, error: 'Transcription empty.' });
     }
 
-    const trJson = await trRes.json();
-    const transcript = trJson.text || "";
+    // ---- 3) Ask GPT for compact JSON feedback
+    const system = `
+You are Speak Coach. Return ONLY a single JSON object with these keys:
+cefr_estimate (A1/A2/B1/B2/C1),
+rationale (string),
+fluency { wpm:number, fillers:number, note:string },
+grammar_issues: [{ error, fix, why }],
+pronunciation: [{ sound_or_word, issue, minimal_pair }],
+one_thing_to_fix (string),
+next_prompt (string).
+No markdown, no code fences, no extra text.
+`.trim();
 
-    // 2) Evaluate with Chat Completions (JSON-only)
-    const prompt = {
+    const user = JSON.stringify({
       transcript,
-      duration_sec: durationSec,
+      duration_sec: Math.round(durationSec),
       goal,
-    };
-
-    const evalBody = {
-      model: "gpt-4o-mini",
-      response_format: { type: "json_object" },
-      messages: [
-        {
-          role: "system",
-          content:
-            "You are Speak Coach. Return ONLY a single JSON object with these exact keys: " +
-            "cefr_estimate (A1/A2/B1/B2/C1), rationale (string), " +
-            "fluency { wpm:number, fillers:number, note:string }, " +
-            "grammar_issues: [{ error, fix, why }], " +
-            "pronunciation: [{ sound_or_word, issue, minimal_pair }], " +
-            "one_think_to_fix (string), next_prompt (string). " +
-            "No markdown, no code fences, no extra text.",
-        },
-        {
-          role: "user",
-          content: JSON.stringify(prompt),
-        },
-      ],
-    };
-
-    const evRes = await fetch("https://api.openai.com/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(evalBody),
     });
 
-    if (!evRes.ok) {
-      const t = await evRes.text();
-      res.status(evRes.status).json({ ok: false, stage: "evaluate", error: t });
-      return;
+    const completion = await openai.chat.completions.create({
+      model: 'gpt-4o-mini-2024-07-18',
+      response_format: { type: 'json_object' },
+      messages: [
+        { role: 'system', content: system },
+        { role: 'user', content: user },
+      ],
+      temperature: 0.3,
+    });
+
+    const raw = completion.choices?.[0]?.message?.content || '{}';
+
+    // Validate it's JSON
+    let json;
+    try { json = JSON.parse(raw); } catch {
+      return res.status(500).json({ ok: false, error: 'Model did not return JSON', raw });
     }
 
-    const evJson = await evRes.json();
-    const content = evJson.choices?.[0]?.message?.content || "{}";
-    let result;
-    try {
-      result = JSON.parse(content);
-    } catch {
-      // Fallback: if the model returned something odd, wrap it
-      result = { raw: content };
-    }
-
-    res.status(200).json(result);
+    // ---- 4) Return feedback JSON
+    return res.status(200).json(json);
   } catch (err) {
-    res.status(500).json({ ok: false, error: err.message || String(err) });
+    console.error('analyze error:', err);
+    return res.status(500).json({ ok: false, error: err.message || 'Server error' });
   }
 };
