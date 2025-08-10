@@ -1,558 +1,583 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>English Coach — Instant English Feedback</title>
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='96' height='96'%3E%3Crect rx='20' ry='20' width='96' height='96' fill='%237b3ff6'/%3E%3C/svg%3E" />
-<style>
-  :root{
-    --bg:#0f0f12;--panel:#17181c;--panel-2:#1c1e23;--muted:#a3a7b0;--text:#e9e9ef;
-    --accent:#7b3ff6;--accent-2:#5b2cd3;--ok:#28c281;--warn:#ffc858;--danger:#ff5a6d;
-    --card:#1a1b21;--chip:#22232a;--shadow:0 10px 30px rgba(0,0,0,.35);
-    --radius:14px;--radius-sm:10px;--radius-lg:18px;
-  }
-  *{box-sizing:border-box}
-  html,body{background:var(--bg);color:var(--text);font:16px/1.5 Inter,system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif;margin:0}
-  .wrap{max-width:1220px;margin:32px auto;padding:0 20px}
-  header{display:flex;align-items:center;gap:14px;margin-bottom:22px}
-  .logo{width:26px;height:26px;border-radius:8px;background:linear-gradient(135deg,var(--accent),#9b6bff);box-shadow:0 0 18px rgba(123,63,246,.45)}
-  h1{font-size:26px;margin:0 6px 0 0}
-  .version{margin-left:auto;color:var(--muted);font-size:12px;opacity:.8}
-  .grid{display:grid;grid-template-columns:340px 1fr;gap:18px}
-  @media (max-width:980px){.grid{grid-template-columns:1fr}}
-  .card{background:var(--panel);border:1px solid #23252c;border-radius:var(--radius);box-shadow:var(--shadow)}
-  .card h3{margin:0 0 10px;font-size:14px;color:#cfd2da;letter-spacing:.4px}
-  .section{padding:16px}
-  .chip-row{display:flex;flex-wrap:wrap;gap:10px}
-  .chip{background:var(--chip);color:#dfe2ea;border:1px solid #2a2c35;padding:10px 14px;border-radius:999px;cursor:pointer;user-select:none}
-  .chip.active{background:linear-gradient(135deg,var(--accent),#9b6bff);border-color:transparent;color:#fff;box-shadow:0 8px 20px rgba(123,63,246,.35)}
-  .row{display:flex;gap:10px;align-items:center}
-  .btn{border:0;border-radius:14px;padding:14px 18px;font-weight:700;letter-spacing:.2px;cursor:pointer}
-  .btn-primary{background:linear-gradient(135deg,var(--accent),#9b6bff);color:#fff}
-  .btn-ghost{background:#24252c;color:#cdd1da}
-  .btn-secondary{background:#23242b;color:#dfe2ea;border:1px solid #2b2d36}
-  .btn-tertiary{background:#1f2026;color:#c2c6cf;border:1px solid #2a2c33}
-  .btn[disabled]{opacity:.5;cursor:not-allowed}
-  .muted{color:var(--muted)}
-  .mono{font-family:ui-monospace,Menlo,Consolas,monospace}
-  .pill{padding:6px 10px;border-radius:999px;background:#202129;border:1px solid #2c2e37;font-size:12px;color:#c7cbd5}
-  .meter{height:12px;background:#24252b;border:1px solid #2c2e36;border-radius:999px;overflow:hidden}
-  .meter>i{display:block;height:100%;background:linear-gradient(90deg,#ff6b6b,#ffc858,#34d399);width:0%}
-  .timer{font-size:38px;font-weight:900;letter-spacing:.5px;background:#1a1b21;border:1px solid #2a2c34;border-radius:20px;padding:16px 18px;min-width:190px;text-align:center}
-  .title{font-weight:800;font-size:28px;line-height:1.2;margin:0 0 10px}
-  .subtitle{color:#c8cbd4;margin-top:-4px}
-  .block{background:var(--panel-2);border:1px solid #262830;border-radius:14px;padding:14px}
-  .list{display:grid;gap:10px}
-  .item{background:#1a1b21;border:1px solid #272a33;border-radius:12px;padding:12px}
-  .small{font-size:12px;color:#b7bbc6}
-  textarea, input[type="text"], input[type="email"]{background:#1a1b21;border:1px solid #2c2f37;color:#e7e9ef;border-radius:12px;padding:12px;width:100%}
-  .footer{margin:26px 0 60px;color:#aeb3bf;text-align:center}
-  /* modal */
-  .modal{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;z-index:50}
-  .modal.open{display:flex}
-  .modal .sheet{width:min(560px,92vw);background:var(--panel);border:1px solid #262931;border-radius:16px;box-shadow:var(--shadow)}
-  .sheet header{padding:14px 16px;border-bottom:1px solid #262931}
-  .sheet .body{padding:16px}
-  .sheet footer{padding:12px 16px;border-top:1px solid #262931;display:flex;justify-content:flex-end;gap:10px}
-  .stars{display:flex;gap:6px;font-size:20px;cursor:pointer}
-  .star{filter:grayscale(1);opacity:.6}
-  .star.active{filter:none;opacity:1}
-  /* auth bar */
-  .auth-card .btn{padding:10px 14px}
-  .link{color:#cdbbff;text-decoration:underline;cursor:pointer}
-</style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>English Coach</title>
+  <link rel="icon" href="data:image/svg+xml,\
+  %3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' x2='1'%3E%3Cstop stop-color='%238d4bff'/%3E%3Cstop offset='1' stop-color='%23513cff'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect rx='14' ry='14' width='64' height='64' fill='url(%23g)'/%3E%3C/svg%3E" />
+  <style>
+    :root {
+      --bg: #0f1012;
+      --panel: #17181c;
+      --panel-2: #1d1f24;
+      --muted: #9aa3ad;
+      --text: #e8ebf0;
+      --brand1: #8d4bff;
+      --brand2: #5b3bff;
+      --ok: #39d98a;
+      --warn: #ffcc66;
+      --bad: #ff5c5c;
+      --chip: #262a31;
+      --shadow: 0 10px 28px rgba(0,0,0,.35);
+      --radius: 16px;
+    }
+    * { box-sizing:border-box; }
+    body {
+      margin:0; background:var(--bg); color:var(--text);
+      font: 14px/1.3 system-ui, -apple-system, Segoe UI, Roboto, Inter, Helvetica, Arial, sans-serif;
+    }
+    .wrap { max-width:1200px; margin:20px auto 60px; padding:0 16px; }
+    header {
+      display:flex; align-items:center; gap:14px; margin-bottom:16px;
+    }
+    .logo {
+      width:24px; height:24px; border-radius:8px;
+      background:linear-gradient(135deg,var(--brand1),var(--brand2));
+      box-shadow: var(--shadow);
+    }
+    .title { font-size:20px; font-weight:700; letter-spacing:.2px; }
+    .spacer { flex:1 }
+    .top-links { display:flex; align-items:center; gap:14px; color:var(--muted); }
+    .link { color:var(--muted); text-decoration:none; }
+    .link:hover { color:#fff; }
+    .chip { background:var(--chip); color:#cfd6dd; padding:6px 10px; border-radius:999px; }
+    .ver { opacity:.6; }
+
+    .grid {
+      display:grid; grid-template-columns: 340px 1fr; gap:18px;
+    }
+    @media (max-width: 1000px) { .grid { grid-template-columns: 1fr; } }
+
+    .card {
+      background:var(--panel); border-radius:var(--radius); box-shadow: var(--shadow);
+      padding:16px;
+    }
+    .card h3 { margin:0 0 10px; font-size:14px; text-transform:uppercase; letter-spacing:.12em; color:#cdd5df; }
+    .subtle { color:var(--muted); }
+
+    .goals { display:flex; flex-wrap:wrap; gap:10px; }
+    .goal { background:#20242a; padding:10px 14px; border-radius:12px; color:#cdd5df; }
+    .goal.active { color:#fff; background:linear-gradient(135deg,var(--brand1),var(--brand2)); box-shadow:0 8px 22px rgba(103,77,255,.35); }
+
+    .row { display:flex; gap:10px; align-items:center; }
+    .row.wrap { flex-wrap:wrap; }
+    .btn {
+      appearance:none; border:0; cursor:pointer; border-radius:14px;
+      padding:14px 18px; background:linear-gradient(135deg,var(--brand1),var(--brand2)); color:#fff;
+      font-weight:700; letter-spacing:.2px; box-shadow: var(--shadow);
+      display:inline-flex; gap:8px; align-items:center; justify-content:center;
+    }
+    .btn:disabled { opacity:.55; cursor:not-allowed; }
+    .btn.gray { background:#262a31; color:#e6ecf3; }
+    .btn.ghost { background:#20242a; color:#dbe3ea; }
+    .timer {
+      font-size:36px; font-weight:800; background:#121317; padding:14px 18px; border-radius:14px; min-width:160px; text-align:center;
+    }
+    .bar {
+      height:10px; background:#232730; border-radius:999px; width:100%; position:relative; overflow:hidden;
+    }
+    .bar > i { position:absolute; left:0; top:0; bottom:0; width:0%; border-radius:999px;
+      background:linear-gradient(90deg,#f55555,#ffb74a,#3dd982);
+      transition: width .25s ease;
+    }
+    .list { display:flex; flex-direction:column; gap:10px; }
+    .pill {
+      background:var(--panel-2); border-radius:12px; padding:14px; color:#d9e0e7;
+    }
+    .empty { color:var(--muted); font-style:italic; }
+    .kpis { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+    .kpi { background:#20242a; color:#d6dee6; padding:8px 10px; border-radius:999px; font-weight:600; }
+    .kpi.ok { color:var(--ok); }
+    .kpi.bad { color:#ff8686; }
+    .table { width:100%; }
+    .table .rowh, .table .rowd {
+      display:grid; grid-template-columns: 1fr 120px; padding:10px 12px; gap:8px; align-items:center;
+    }
+    .table .rowh { color:#a9b4c0; text-transform:uppercase; letter-spacing:.1em; font-size:12px; }
+    .table .rowd:nth-child(odd) { background:#1a1d23; border-radius:10px; }
+    .table small { color:#96a1ad; }
+
+    /* Modals */
+    .modal {
+      position:fixed; inset:0; background:rgba(8,9,11,.6); display:none; align-items:center; justify-content:center; z-index:40;
+    }
+    .modal > .box {
+      background:var(--panel); border-radius:16px; width:min(560px, 92vw); padding:18px; box-shadow: var(--shadow);
+    }
+    .modal h2 { margin:0 0 8px; }
+    .modal .actions { display:flex; gap:10px; flex-wrap:wrap; margin-top:12px; }
+    .input { width:100%; background:#20242a; color:#fff; border:0; padding:12px 14px; border-radius:12px; }
+    .hr { height:1px; background:#232730; margin:14px 0; }
+    .right { margin-left:auto }
+
+    .muted { color:var(--muted) }
+    footer { margin-top:20px; text-align:center; color:#9fa9b4; }
+    .danger { color:#ff7a7a; }
+  </style>
 </head>
 <body>
-<div class="wrap">
-  <header>
-    <div class="logo"></div>
-    <h1>English Coach</h1>
-    <div class="version mono">v1.2.12</div>
-  </header>
+  <div class="wrap">
+    <header>
+      <div class="logo"></div>
+      <div class="title">English Coach</div>
+      <div class="spacer"></div>
 
-  <!-- Auth bar -->
-  <div id="auth-bar" class="card section auth-card" style="margin-bottom:14px;">
-    <div id="auth-out">
-      <div class="muted" style="margin-bottom:8px">Sign in to save your streak & appear on the leaderboard</div>
-      <div class="row" style="flex-wrap:wrap;gap:8px">
-        <button id="btn-google"   class="btn btn-secondary">Continue with Google</button>
-        <button id="btn-facebook" class="btn btn-secondary">Continue with Facebook</button>
-      </div>
-      <div class="row" style="margin-top:8px;gap:8px">
-        <input id="email-input" type="email" placeholder="you@email.com" style="max-width:260px">
-        <button id="btn-email" class="btn btn-secondary">Email sign-in link</button>
-      </div>
-      <div id="email-hint" class="small" style="display:none;margin-top:6px">Check your inbox for the magic link.</div>
-    </div>
-    <div id="auth-in" style="display:none">
-      <div class="row" style="justify-content:space-between">
-        <div id="user-badge" class="muted"></div>
-        <button id="btn-signout" class="btn btn-tertiary">Sign out</button>
-      </div>
-    </div>
-  </div>
+      <a class="link" id="lnkFeedback" href="#">Give feedback</a>
+      <span class="chip ver">v1.2.13</span>
+      <span class="chip" id="chipUser"><a class="link" id="lnkAuth" href="#">Sign in</a></span>
+    </header>
 
-  <div class="grid">
-    <!-- LEFT: controls -->
-    <div class="card section">
-      <div class="title">Record for 60–90 seconds.</div>
-      <div class="subtitle">We’ll analyze fluency & correctness, then show key corrections and a next prompt.</div>
+    <div class="grid">
+      <!-- Left column: controls -->
+      <div class="card">
+        <h2 style="margin:4px 0 12px">Record for <b>60–90 seconds</b>.</h2>
+        <div class="subtle" style="margin-bottom:16px">We’ll analyze fluency & correctness, then show key corrections and a next prompt.</div>
 
-      <div style="height:10px"></div>
-      <h3>Goal</h3>
-      <div class="chip-row" id="goal-row">
-        <div class="chip active" data-goal="Work English">Work English</div>
-        <div class="chip" data-goal="Daily Life">Daily Life</div>
-        <div class="chip" data-goal="Interview Prep">Interview Prep</div>
-        <div class="chip" data-goal="Travel">Travel</div>
-        <div class="chip" data-goal="Presentation">Presentation</div>
-      </div>
-
-      <div style="height:16px"></div>
-      <h3>Recording</h3>
-      <div class="row" style="flex-wrap:wrap">
-        <button id="btn-start" class="btn btn-primary">▶️&nbsp;&nbsp;Start recording</button>
-        <button id="btn-stop"  class="btn btn-tertiary" disabled>⏹️&nbsp;&nbsp;Stop</button>
-      </div>
-
-      <div class="row" style="align-items:center;margin-top:12px">
-        <div id="timer" class="timer mono">00:00</div>
-        <div class="meter" style="flex:1">
-          <i id="progress" style="width:0%"></i>
-        </div>
-      </div>
-
-      <div style="height:12px"></div>
-      <button id="btn-send" class="btn btn-primary" style="width:100%" disabled>Send & Analyze</button>
-
-      <div style="height:16px"></div>
-      <h3>What to say to start</h3>
-      <div class="block">
-        <textarea id="prompt" rows="3">Describe a recent project you led and one lesson you learned.</textarea>
-        <div class="row" style="margin-top:10px;gap:8px">
-          <button id="btn-random" class="btn btn-ghost">🎲 Randomize prompt</button>
-          <div class="small muted">We don’t store your audio; it’s sent to the analyzer and immediately discarded.</div>
-        </div>
-      </div>
-
-      <div style="height:18px"></div>
-      <div class="block">
-        <div class="row" style="gap:8px;flex-wrap:wrap">
-          <div class="pill" id="pill-live">● Idle</div>
-          <div class="pill"><b>Level:</b> <span id="level-text">—</span></div>
-          <div class="pill"><b>Fillers:</b> <span id="fillers">0</span></div>
-          <div class="pill"><b>Streak:</b> <span id="streak">0</span></div>
-          <div class="pill"><b>Sessions:</b> <span id="sessions">0</span></div>
-        </div>
-        <div style="height:10px"></div>
-        <div class="small muted">Level meter</div>
-        <div class="meter"><i id="level-meter" style="width:0%"></i></div>
-      </div>
-    </div>
-
-    <!-- RIGHT: results -->
-    <div class="card section">
-      <div class="list">
-
-        <div class="item">
-          <h3>Pronunciation</h3>
-          <div id="pron" class="small muted">–</div>
+        <h3>Goal</h3>
+        <div class="goals" id="goalChips">
+          <button class="goal active" data-goal="Work English">Work English</button>
+          <button class="goal" data-goal="Daily Life">Daily Life</button>
+          <button class="goal" data-goal="Interview Prep">Interview Prep</button>
+          <button class="goal" data-goal="Travel">Travel</button>
+          <button class="goal" data-goal="Presentation">Presentation</button>
         </div>
 
-        <div class="item">
-          <h3>Grammar</h3>
-          <div id="grammar" class="list"></div>
+        <h3 style="margin-top:18px">Recording</h3>
+        <div class="row wrap" style="gap:12px">
+          <button id="btnStart" class="btn">
+            <span>▶</span> Start recording
+          </button>
+          <button id="btnStop" class="btn gray" disabled>
+            ▪ Stop
+          </button>
         </div>
 
-        <div class="item">
-          <h3>What to fix now</h3>
-          <div id="fixnow" class="small muted">–</div>
-        </div>
-
-        <div class="item">
-          <h3>Next prompt (30–45s)</h3>
-          <div id="next" class="small muted">–</div>
-        </div>
-
-        <div class="item">
-          <h3>Leaderboard</h3>
-          <div id="leader" class="small">
-            Public leaderboard requires sign-in. You’ll still see your local totals below.
-            <div id="leader-table" class="list" style="margin-top:10px"></div>
+        <div class="row" style="margin-top:12px; gap:14px; align-items:center">
+          <div id="timer" class="timer">00:00</div>
+          <div class="bar" title="Aim for 60–90 seconds">
+            <i id="barFill"></i>
           </div>
         </div>
 
+        <button id="btnAnalyze" class="btn" style="margin-top:12px; width:100%" disabled>Send & Analyze</button>
+
+        <h3 style="margin-top:18px">What to say to start</h3>
+        <div class="row" style="gap:10px; align-items:flex-start">
+          <textarea id="promptText" class="input" rows="3" style="height:96px; resize:vertical">Describe a recent project you led and one lesson you learned.</textarea>
+        </div>
+        <div class="row" style="margin-top:10px">
+          <button id="btnRand" class="btn ghost">🎲 Randomize prompt</button>
+          <div class="spacer"></div>
+          <div class="kpis">
+            <span class="kpi" id="kStatus">Idle</span>
+            <span class="kpi">Level: <b id="kLevel">–</b></span>
+            <span class="kpi">Fillers: <b id="kFillers">0</b></span>
+            <span class="kpi">Streak: <b id="kStreak">0</b></span>
+            <span class="kpi">Sessions: <b id="kSessions">0</b></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right column: results -->
+      <div class="card">
+        <div class="kpis" style="margin-bottom:12px">
+          <span class="kpi" id="kLive">● Idle</span>
+          <span class="kpi">Level: <b id="kLevelTop">–</b></span>
+          <span class="kpi">Fillers: <b id="kFillersTop">0</b></span>
+          <span class="kpi" id="kSessionsTop">Sessions: 0</span>
+        </div>
+
+        <div class="list" id="resultsPane">
+          <div>
+            <h3>Pronunciation</h3>
+            <div id="pron" class="pill empty">–</div>
+          </div>
+
+          <div>
+            <h3>Grammar</h3>
+            <div id="gram" class="pill empty">–</div>
+          </div>
+
+          <div>
+            <h3>What to fix now</h3>
+            <div id="fix" class="pill empty">–</div>
+          </div>
+
+          <div>
+            <h3>Next prompt (30–45s)</h3>
+            <div id="next" class="pill empty">–</div>
+          </div>
+
+          <div>
+            <h3>Leaderboard</h3>
+            <div class="table" id="leader">
+              <div class="rowh"><div>User</div><div style="text-align:right">Sessions</div></div>
+              <div class="rowd"><div>You</div><div style="text-align:right">0</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <footer class="muted">© 2025 <a class="link" target="_blank" href="https://simpleia.com">Simpleia</a> — Built by <a class="link" target="_blank" href="https://aosama.net/">Abdo Osama</a></footer>
+  </div>
+
+  <!-- Sign-in modal -->
+  <div class="modal" id="authModal" aria-hidden="true">
+    <div class="box">
+      <h2>Sign in</h2>
+      <div class="muted">Sign in to save your streak and appear on the leaderboard.</div>
+      <div class="actions">
+        <button class="btn" id="btnGoogle">Continue with Google</button>
+        <button class="btn ghost" id="btnFacebook">Continue with Facebook</button>
+      </div>
+      <div class="hr"></div>
+      <div class="actions">
+        <input id="emailLink" class="input" placeholder="you@email.com" />
+        <button class="btn" id="btnEmailLink">Email sign-in link</button>
+        <button class="btn gray right" id="btnCloseAuth">Close</button>
       </div>
     </div>
   </div>
 
-  <div class="footer small">
-    © 2025 <a class="link" href="https://simpleia.com" target="_blank" rel="noreferrer">Simpleia</a> — Built by <a class="link" href="https://aosama.net" target="_blank" rel="noreferrer">Abdo Osama</a> • <span class="mono">v1.2.12</span>
-  </div>
-</div>
-
-<!-- Feedback modal -->
-<div id="modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="fb-title">
-  <div class="sheet">
-    <header><strong id="fb-title">Quick feedback (required to continue)</strong></header>
-    <div class="body">
-      <div class="row" style="gap:10px;flex-wrap:wrap">
-        <input id="fb-name" type="text" placeholder="Your name" style="flex:1;min-width:180px">
-        <input id="fb-email" type="email" placeholder="you@email.com" style="flex:1;min-width:220px">
+  <!-- Feedback modal -->
+  <div class="modal" id="fbModal" aria-hidden="true">
+    <div class="box">
+      <h2>Feedback</h2>
+      <div class="row wrap">
+        <input id="fbName" class="input" placeholder="Your name (optional)" style="flex:1" />
+        <input id="fbEmail" class="input" placeholder="email@domain.com (optional)" style="flex:1" />
       </div>
-      <div style="height:10px"></div>
-      <div>Rating</div>
-      <div class="stars" id="stars">
-        <span class="star">⭐</span><span class="star">⭐</span><span class="star">⭐</span><span class="star">⭐</span><span class="star">⭐</span>
+      <div class="row" style="margin-top:8px">
+        <label class="muted">Rating:</label>
+        <div class="row" id="stars" style="gap:6px">
+          <button class="btn ghost" data-star="1">★</button>
+          <button class="btn ghost" data-star="2">★</button>
+          <button class="btn ghost" data-star="3">★</button>
+          <button class="btn ghost" data-star="4">★</button>
+          <button class="btn ghost" data-star="5">★</button>
+        </div>
       </div>
-      <div style="height:10px"></div>
-      <textarea id="fb-text" rows="4" placeholder="What did you like? What can be improved?"></textarea>
+      <textarea id="fbText" class="input" rows="5" placeholder="Suggestions / bugs / ideas"></textarea>
+      <div class="actions">
+        <button class="btn" id="btnSendFb">Submit feedback</button>
+        <button class="btn gray right" id="btnCloseFb">Close</button>
+      </div>
+      <div class="muted" id="fbNote"></div>
     </div>
-    <footer>
-      <button id="fb-cancel" class="btn btn-tertiary">Cancel</button>
-      <button id="fb-submit" class="btn btn-primary">Submit feedback</button>
-    </footer>
   </div>
-</div>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script>
-/* ---------- CONFIG (replace) ---------- */
-const APP_VERSION = 'v1.2.12';
-const ANALYZE_URL = 'https://english-coach-endpoint.vercel.app/api/analyze';   // ← your Vercel API
-const SUPABASE_URL = 'https://YOUR_PROJECT_REF.supabase.co';                   // ← replace
-const SUPABASE_ANON = 'YOUR_SUPABASE_ANON_PUBLIC_KEY';                         // ← replace
+  <!-- libs -->
+  <script src="https://unpkg.com/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 
-/* ---------- SUPABASE ---------- */
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
-const authOut = document.getElementById('auth-out');
-const authIn  = document.getElementById('auth-in');
-const userBadge = document.getElementById('user-badge');
+  <script>
+    // ==== CONFIG: replace these ====
+    const SUPABASE_URL      = "https://cstwbjtbwwnxrsvpxqro.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNzdHdianRid3dueHJzdnB4cXJvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ4NDg1OTgsImV4cCI6MjA3MDQyNDU5OH0.D-P8NWdJoro_pzSk6qoi5_Hl6Ohz_hiTZr4-fqmyXkM";
+    const ANALYZE_URL       = "https://english-coach-endpoint-git-main-abelrahman-osamas-projects.vercel.app/api/analyze";
 
-document.getElementById('btn-google').onclick = () =>
-  supabase.auth.signInWithOAuth({ provider: 'google', options:{ redirectTo: location.origin }});
+    // ==== Supabase client ====
+    const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-document.getElementById('btn-facebook').onclick = () =>
-  supabase.auth.signInWithOAuth({ provider: 'facebook', options:{ redirectTo: location.origin }});
+    // ==== UI handles ====
+    const goalChips = document.getElementById('goalChips');
+    let goal = 'Work English';
+    goalChips.addEventListener('click', (e)=>{
+      if(e.target.closest('.goal')) {
+        [...goalChips.querySelectorAll('.goal')].forEach(x=>x.classList.remove('active'));
+        e.target.closest('.goal').classList.add('active');
+        goal = e.target.closest('.goal').dataset.goal;
+      }
+    });
 
-document.getElementById('btn-email').onclick = async () => {
-  const email = document.getElementById('email-input').value.trim();
-  if(!email) return;
-  const { error } = await supabase.auth.signInWithOtp({ email, options:{ emailRedirectTo: location.origin }});
-  document.getElementById('email-hint').style.display = error ? 'none' : 'block';
-};
+    const btnStart = document.getElementById('btnStart');
+    const btnStop = document.getElementById('btnStop');
+    const btnAnalyze = document.getElementById('btnAnalyze');
+    const btnRand = document.getElementById('btnRand');
+    const timerEl = document.getElementById('timer');
+    const barFill = document.getElementById('barFill');
+    const promptText = document.getElementById('promptText');
 
-document.getElementById('btn-signout').onclick = async () => { await supabase.auth.signOut(); };
+    const kStatus = document.getElementById('kStatus');
+    const kLevel = document.getElementById('kLevel');
+    const kFillers = document.getElementById('kFillers');
+    const kStreak = document.getElementById('kStreak');
+    const kSessions = document.getElementById('kSessions');
 
-async function onAuthInit(){
-  const { data:{ session } } = await supabase.auth.getSession();
-  applyAuth(session?.user || null);
-}
-supabase.auth.onAuthStateChange((_e, session)=> applyAuth(session?.user || null));
+    const kLive = document.getElementById('kLive');
+    const kLevelTop = document.getElementById('kLevelTop');
+    const kFillersTop = document.getElementById('kFillersTop');
+    const kSessionsTop = document.getElementById('kSessionsTop');
 
-function applyAuth(user){
-  if(user){
-    authOut.style.display = 'none';
-    authIn.style.display = 'block';
-    const name = user.user_metadata?.full_name || user.user_metadata?.name || '';
-    userBadge.textContent = name ? `${name} — ${user.email}` : (user.email||'');
-    document.getElementById('fb-name').value = name||'';
-    document.getElementById('fb-email').value = user.email||'';
-  }else{
-    authOut.style.display = 'block';
-    authIn.style.display = 'none';
-  }
-}
-onAuthInit();
+    const elPron = document.getElementById('pron');
+    const elGram = document.getElementById('gram');
+    const elFix  = document.getElementById('fix');
+    const elNext = document.getElementById('next');
+    const leader = document.getElementById('leader');
 
-/* ---------- UI refs ---------- */
-const chips = [...document.querySelectorAll('.chip')];
-const promptEl = document.getElementById('prompt');
-const btnRandom = document.getElementById('btn-random');
+    const lnkAuth = document.getElementById('lnkAuth');
+    const chipUser = document.getElementById('chipUser');
+    const authModal = document.getElementById('authModal');
+    const btnGoogle = document.getElementById('btnGoogle');
+    const btnFacebook = document.getElementById('btnFacebook');
+    const btnEmailLink = document.getElementById('btnEmailLink');
+    const emailLink = document.getElementById('emailLink');
+    const btnCloseAuth = document.getElementById('btnCloseAuth');
 
-const btnStart = document.getElementById('btn-start');
-const btnStop  = document.getElementById('btn-stop');
-const btnSend  = document.getElementById('btn-send');
-const timerEl  = document.getElementById('timer');
-const progEl   = document.getElementById('progress');
-
-const pillLive = document.getElementById('pill-live');
-const levelText= document.getElementById('level-text');
-const levelMeter=document.getElementById('level-meter');
-const fillersEl= document.getElementById('fillers');
-const streakEl = document.getElementById('streak');
-const sessionsEl=document.getElementById('sessions');
-
-const pronEl   = document.getElementById('pron');
-const grammarEl= document.getElementById('grammar');
-const fixEl    = document.getElementById('fixnow');
-const nextEl   = document.getElementById('next');
-
-const leaderWrap = document.getElementById('leader-table');
-
-/* ---------- prompts by goal ---------- */
-const PROMPTS = {
-  'Work English': [
-    'Describe a recent project you led and one lesson you learned.',
-    'Explain one problem your team faced and how you solved it.',
-    'Share a time you gave feedback that helped a teammate improve.'
-  ],
-  'Daily Life': [
-    'What did you do last weekend? Describe it in 45 seconds.',
-    'Explain your morning routine and one habit you’re trying to build.',
-    'Tell a short story about a small win this week.'
-  ],
-  'Interview Prep': [
-    'Tell me about a challenge you faced and how you overcame it.',
-    'Describe your most impactful project and your role.',
-    'What’s a mistake you learned from? Explain briefly.'
-  ],
-  'Travel': [
-    'Describe your favorite trip and one memorable moment.',
-    'If a friend visited your city, where would you take them and why?',
-    'Explain a travel problem you faced and how you handled it.'
-  ],
-  'Presentation': [
-    'Summarize a presentation you recently gave in simple terms.',
-    'Pitch a product you like to someone who has never seen it.',
-    'Explain a chart or figure as if the audience can’t see it.'
-  ]
-};
-function setPromptFor(goal){ promptEl.value = PROMPTS[goal][0]; }
-function randomizePrompt(){
-  if(recording) return; // disabled while recording
-  const goal = currentGoal();
-  const list = PROMPTS[goal]; const i = Math.floor(Math.random()*list.length);
-  promptEl.value = list[i];
-}
-btnRandom.onclick = randomizePrompt;
-
-/* ---------- goal chips ---------- */
-function currentGoal(){ return document.querySelector('.chip.active').dataset.goal; }
-chips.forEach(ch=>{
-  ch.onclick = ()=>{ chips.forEach(c=>c.classList.remove('active')); ch.classList.add('active'); setPromptFor(currentGoal()); };
-});
-setPromptFor(currentGoal());
-
-/* ---------- recorder ---------- */
-let media, rec, chunks=[], startedAt=0, tickInt=null, duration=0, recording=false;
-const MAX_SEC=95; // auto-stop safeguard
-
-function fmt(s){s|=0; const m=String(Math.floor(s/60)).padStart(2,'0'); const sec=String(s%60).padStart(2,'0'); return `${m}:${sec}`;}
-function setLive(on){ pillLive.textContent = on ? '● Live' : '● Idle'; pillLive.style.background = on?'#1e2620':'#202129'; pillLive.style.color=on?'#9ee8c1':'#c7cbd5'; }
-
-async function startRec(){
-  try{
-    media = await navigator.mediaDevices.getUserMedia({audio:true});
-    rec = new MediaRecorder(media);
-    chunks=[]; rec.ondataavailable = e=> chunks.push(e.data);
-    rec.onstop = ()=> media.getTracks().forEach(t=>t.stop());
-    rec.start(200);
-    startedAt = Date.now(); duration = 0; updateTimer(0);
-    tickInt = setInterval(()=>{
-      duration = Math.floor((Date.now()-startedAt)/1000);
-      updateTimer(duration);
-      if(duration>=MAX_SEC) stopRec();
-    }, 200);
-    recording = true; btnStart.disabled=true; btnStop.disabled=false; btnSend.disabled=true; btnRandom.disabled=true;
-    setLive(true);
-  }catch(e){ alert('Mic permission denied.'); }
-}
-function stopRec(){
-  if(!recording) return;
-  rec.stop(); clearInterval(tickInt); recording=false;
-  btnStart.disabled=false; btnStop.disabled=true; btnSend.disabled = (chunks.length===0);
-  btnRandom.disabled=false;
-  setLive(false);
-}
-function updateTimer(s){
-  timerEl.textContent = fmt(s);
-  const pct = Math.min(100, Math.round( (s/90)*100 ));
-  const color = s<20?'var(--danger)':(s<45?'var(--warn)':'var(--ok)');
-  progEl.style.width = pct+'%'; progEl.style.background = color;
-}
-
-btnStart.onclick = startRec;
-btnStop.onclick  = stopRec;
-
-/* ---------- analyze ---------- */
-let feedbackRequired = false;
-
-btnSend.onclick = async ()=>{
-  if(recording) stopRec();
-  if(chunks.length===0) return;
-  btnSend.disabled=true;
-
-  const blob = new Blob(chunks, {type:'audio/webm'}); chunks=[];
-  const fd = new FormData();
-  fd.append('files[]', new File([blob], 'audio.webm', {type:'audio/webm'}));
-  fd.append('duration_sec', String(duration||0));
-  fd.append('goal', currentGoal());
-  fd.append('prompt_text', promptEl.value);
-
-  const res = await fetch(ANALYZE_URL, { method:'POST', body: fd }).catch(()=>null);
-  if(!res){ btnSend.disabled=false; return alert('Network error.'); }
-  const json = await res.json().catch(()=> ({}));
-
-  // fallback or error
-  if(json.fallback){
-    levelText.textContent = 'Beginner';
-    levelMeter.style.width = '10%';
-    fillersEl.textContent = '0';
-    pronEl.textContent='–';
-    grammarEl.innerHTML='';
-    fixEl.textContent = json.one_thing_to_fix || 'Speak for at least 30–60 seconds in full sentences.';
-    nextEl.textContent = json.next_prompt || 'Describe your last weekend in ~45 seconds.';
-  }else if(json.ok===false){
-    alert(json.error||'Analyzer error');
-  }else{
-    // render
-    levelText.textContent = json.friendly_level || json.cefr_estimate || '—';
-    levelMeter.style.width = (json.level_score||50)+'%';
-    fillersEl.textContent = json.fluency?.fillers ?? 0;
-
-    // pronunciation list
-    if(Array.isArray(json.pronunciation) && json.pronunciation.length){
-      pronEl.innerHTML = json.pronunciation.map(p=>(
-        `<div class="item small"><b>${escapeHtml(p.sound_or_word||'')}</b> — ${escapeHtml(p.issue||'')}
-         ${p.minimal_pair? `<div class="small muted">Try: ${escapeHtml(p.minimal_pair)}</div>`:''}</div>`
-      )).join('');
-    }else pronEl.textContent='—';
-
-    // grammar list
-    grammarEl.innerHTML = (json.grammar_issues||[]).map(g=>(
-      `<div class="item">
-        <div>→ ${escapeHtml(g.error||'')}</div>
-        <div class="small muted">Try: ${escapeHtml(g.fix||'')}</div>
-        <div class="small muted">Why: ${escapeHtml(g.why||'')}</div>
-      </div>`
-    )).join('') || '<div class="small muted">—</div>';
-
-    fixEl.textContent = json.one_thing_to_fix || '—';
-    nextEl.textContent = json.next_prompt || '—';
-  }
-
-  // save session + update counters
-  await addSession(duration||0, levelText.textContent);
-
-  // reset UI for next
-  timerEl.textContent='00:00'; progEl.style.width='0%'; btnSend.disabled=true;
-
-  // require feedback before next session
-  openFeedbackModal();
-};
-
-/* ---------- counters, streak, leaderboard ---------- */
-function todayKey(){ const d=new Date();return d.toISOString().slice(0,10); }
-function lsGet(k,def){ try{const v=localStorage.getItem(k);return v?JSON.parse(v):def}catch{ return def; } }
-function lsSet(k,v){ localStorage.setItem(k, JSON.stringify(v)); }
-
-async function addSession(sec, level){
-  // local counters
-  const sessions = (lsGet('ec_sessions',0)||0)+1; lsSet('ec_sessions', sessions);
-  sessionsEl.textContent = sessions;
-  // streak
-  const last = lsGet('ec_last_day', null);
-  const today = todayKey();
-  let streak = lsGet('ec_streak', 0);
-  if(last!==today){
-    const yest = new Date(); yest.setDate(yest.getDate()-1);
-    const yk = yest.toISOString().slice(0,10);
-    streak = (last===yk) ? streak+1 : 1;
-    lsSet('ec_streak', streak); lsSet('ec_last_day', today);
-  }
-  streakEl.textContent = streak;
-
-  // save to Supabase if logged in
-  const { data:{ session } } = await supabase.auth.getSession();
-  if(session?.user){
-    try{
-      await supabase.from('sessions').insert({
-        user_id: session.user.id,
-        duration_sec: sec,
-        level_label: level,
-        goal: currentGoal()
+    const fbModal = document.getElementById('fbModal');
+    const lnkFeedback = document.getElementById('lnkFeedback');
+    const btnCloseFb = document.getElementById('btnCloseFb');
+    const btnSendFb = document.getElementById('btnSendFb');
+    const fbName = document.getElementById('fbName');
+    const fbEmail = document.getElementById('fbEmail');
+    const fbText = document.getElementById('fbText');
+    const fbNote = document.getElementById('fbNote');
+    let fbRating = 0;
+    document.getElementById('stars').addEventListener('click', (e)=>{
+      const b = e.target.closest('button'); if(!b) return;
+      fbRating = +b.dataset.star;
+      [...e.currentTarget.querySelectorAll('button')].forEach((x,i)=>{
+        x.classList.toggle('gray', i+1>fbRating);
       });
-      await refreshLeaderboard();
-    }catch(e){}
-  }else{
-    refreshLocalLeaderboard();
-  }
-}
-async function refreshLeaderboard(){
-  const { data:{ session } } = await supabase.auth.getSession();
-  leaderWrap.innerHTML='';
-  if(!session?.user){
-    refreshLocalLeaderboard();
-    return;
-  }
-  // top 10 by count
-  const { data, error } = await supabase.rpc('top_users_by_sessions'); // optional function
-  if(error){ refreshLocalLeaderboard(); return; }
-  (data||[]).slice(0,10).forEach((r,i)=>{
-    const row = document.createElement('div');
-    row.className='row'; row.style.justifyContent='space-between'; row.style.background='#1a1b21'; row.style.border='1px solid #2a2d35'; row.style.borderRadius='10px'; row.style.padding='8px 10px';
-    row.innerHTML=`<div class="small">${i+1}. ${escapeHtml(r.display || r.email || 'User')}</div><div class="small muted">${r.sessions} sessions</div>`;
-    leaderWrap.appendChild(row);
-  });
-}
-function refreshLocalLeaderboard(){
-  leaderWrap.innerHTML='';
-  const you = lsGet('ec_sessions',0)||0;
-  const row = document.createElement('div');
-  row.className='row'; row.style.justifyContent='space-between'; row.style.background='#1a1b21'; row.style.border='1px solid #2a2d35'; row.style.borderRadius='10px'; row.style.padding='8px 10px';
-  row.innerHTML=`<div class="small">You</div><div class="small muted">${you} sessions</div>`;
-  leaderWrap.appendChild(row);
-}
-refreshLocalLeaderboard();
+    });
 
-/* ---------- feedback modal ---------- */
-const modal = document.getElementById('modal');
-const fbName = document.getElementById('fb-name');
-const fbEmail= document.getElementById('fb-email');
-const fbText = document.getElementById('fb-text');
-const starsEl= document.getElementById('stars');
-let fbRating = 0;
-[...starsEl.querySelectorAll('.star')].forEach((s,idx)=>{
-  s.onclick = ()=>{ fbRating = idx+1; [...starsEl.children].forEach((c,i)=> c.classList.toggle('active',i<fbRating)); };
-});
-document.getElementById('fb-cancel').onclick = ()=> { /* feedback is required */ };
-document.getElementById('fb-submit').onclick = submitFeedback;
+    // ===== Sign-in UX =====
+    function show(el, on=true){ el.style.display = on?'flex':'none'; el.setAttribute('aria-hidden', on?'false':'true'); }
+    lnkAuth.addEventListener('click', (e)=>{ e.preventDefault(); openAuth(); });
+    function openAuth(){ show(authModal, true); }
+    btnCloseAuth.onclick = () => show(authModal, false);
 
-function openFeedbackModal(){
-  feedbackRequired = true;
-  modal.classList.add('open');
-  btnStart.disabled = true; // block next use
-  btnStop.disabled = true;
-  btnRandom.disabled = false;
-}
-async function submitFeedback(){
-  const name = fbName.value.trim(); const email = fbEmail.value.trim(); const text = fbText.value.trim();
-  if(!fbRating || !text){ return alert('Please pick a rating and add a comment.'); }
-  // try supabase, else store locally
-  const { data:{ session } } = await supabase.auth.getSession();
-  try{
-    if(session?.user){
-      await supabase.from('feedback').insert({
-        user_id: session.user.id,
-        name, email, rating: fbRating, text
-      });
-    }else{
-      const curr = lsGet('ec_feedback', []); curr.push({ name, email, rating: fbRating, text, t: Date.now() }); lsSet('ec_feedback', curr);
+    btnGoogle.onclick = async ()=>{
+      await sb.auth.signInWithOAuth({ provider:'google', options:{ redirectTo: location.href }});
+    };
+    btnFacebook.onclick = async ()=>{
+      await sb.auth.signInWithOAuth({ provider:'facebook', options:{ redirectTo: location.href }});
+    };
+    btnEmailLink.onclick = async ()=>{
+      const email = emailLink.value.trim();
+      if(!email) return alert('Type your email');
+      const { error } = await sb.auth.signInWithOtp({ email, options:{ emailRedirectTo: location.href } });
+      alert(error ? error.message : 'Check your inbox for the sign-in link.');
+    };
+
+    // Feedback modal
+    lnkFeedback.onclick = (e)=>{ e.preventDefault(); show(fbModal,true); };
+    btnCloseFb.onclick = ()=> show(fbModal,false);
+    btnSendFb.onclick = async ()=>{
+      const { data: { user }} = await sb.auth.getUser();
+      const payload = {
+        name: fbName.value || null,
+        email: fbEmail.value || null,
+        text: fbText.value || null,
+        rating: fbRating||3,
+        user_id: user?.id ?? null
+      };
+      const { error } = await sb.from('feedback').insert(payload);
+      fbNote.textContent = error ? error.message : 'Thanks! Feedback submitted.';
+      if(!error) setTimeout(()=>show(fbModal,false), 900);
+    };
+
+    // === Auth state, streak, leaderboard ===
+    let currentUser = null;
+    async function refreshAuthUI(){
+      const { data:{user} } = await sb.auth.getUser();
+      currentUser = user;
+      if(user){
+        chipUser.innerHTML = `<span class="chip">Hi, ${user.email?.split('@')[0]||'you'} • <a class="link" href="#" id="lnkOut">Sign out</a></span>`;
+        document.getElementById('lnkOut').onclick = async (e)=>{ e.preventDefault(); await sb.auth.signOut(); location.reload(); };
+        show(authModal,false);
+        await refreshStats();
+      }else{
+        chipUser.innerHTML = `<a class="link" id="lnkAuth" href="#">Sign in</a>`;
+        chipUser.querySelector('#lnkAuth').onclick = (e)=>{ e.preventDefault(); openAuth(); };
+        kStreak.textContent = '0'; kSessions.textContent='0'; kSessionsTop.textContent='Sessions: 0';
+      }
     }
-  }catch(e){}
-  modal.classList.remove('open'); feedbackRequired=false;
-  btnStart.disabled = false; // allow new recording
-  // reset fields for next time
-  fbText.value=''; fbRating=0; [...starsEl.children].forEach(c=>c.classList.remove('active'));
-}
 
-/* ---------- tiny utils ---------- */
-function escapeHtml(s){ return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[m]); }
+    async function refreshStats(){
+      if(!currentUser) return;
+      // sessions count
+      const { data:sess, error } = await sb.from('sessions').select('created_at').eq('user_id', currentUser.id).order('created_at', { ascending:false });
+      if(error) return;
+      const sessions = sess?.length || 0;
+      kSessions.textContent = sessions; kSessionsTop.textContent = `Sessions: ${sessions}`;
+      // streak (days)
+      kStreak.textContent = computeStreak(sess||[]);
+      // leaderboard (RPC if exists, otherwise fallback)
+      let rows = [];
+      const rpc = await sb.rpc('top_users_by_sessions');
+      if(!rpc.error && rpc.data) rows = rpc.data;
+      else {
+        const agg = await sb.from('sessions').select('user_id, users(email)', { count:'exact', head:false }).not('user_id','is',null);
+        // Fallback omitted for brevity when RLS; we’ll just show “You”.
+      }
+      leader.innerHTML = `<div class="rowh"><div>User</div><div style="text-align:right">Sessions</div></div>` +
+        (rows?.length? rows.slice(0,10).map(r=>(
+          `<div class="rowd"><div>${displayName(r)}</div><div style="text-align:right">${r.sessions||r.count||0}</div></div>`
+        )).join('') : `<div class="rowd"><div>You</div><div style="text-align:right">${sessions}</div></div>`);
+      function displayName(r){
+        const n = r.display || r.display_text || r.email || (r.user_id||'').slice(0,6)+'…';
+        return n;
+      }
+      function computeStreak(list){
+        if(list.length===0) return 0;
+        const days = new Set(list.map(x=> new Date(x.created_at).toISOString().slice(0,10)));
+        let d = new Date(); let streak=0;
+        for(;;){
+          const key = d.toISOString().slice(0,10);
+          if(days.has(key)){ streak++; d.setDate(d.getDate()-1); } else break;
+        }
+        return streak;
+      }
+    }
 
-/* ---------- guard: cannot start while feedback required ---------- */
-btnStart.addEventListener('click', (e)=>{ if(feedbackRequired){ e.preventDefault(); openFeedbackModal(); }});
-</script>
+    // ===== Recording =====
+    let media, rec, chunks=[], dur=0, tInt=null, freeUsed = localStorage.getItem('ec_free_used') === '1';
+    const MAX_SEC = 90;
+
+    function fmt(s){ s=Math.max(0,s|0); const m=String((s/60|0)).padStart(2,'0'); const ss=String(s%60).padStart(2,'0'); return `${m}:${ss}`; }
+    function setTimer(s){ timerEl.textContent = fmt(s); const pct = Math.min(100, (s/90)*100); barFill.style.width = pct+'%'; barFill.style.background = s<20?'#ff6666': s<60?'linear-gradient(90deg,#ffb84d,#ffd44d)':'linear-gradient(90deg,#68f3b2,#3dd982)'; }
+
+    btnStart.onclick = async ()=>{
+      try{
+        btnStart.disabled = true; btnStop.disabled=false; btnAnalyze.disabled=true; btnRand.disabled=true;
+        kStatus.textContent='Recording'; kLive.textContent='● Live';
+        media = await navigator.mediaDevices.getUserMedia({ audio:true });
+        rec = new MediaRecorder(media);
+        chunks = []; dur=0; setTimer(0);
+        rec.ondataavailable = e=>{ if(e.data.size) chunks.push(e.data); };
+        rec.onstop = ()=>{};
+        rec.start(250);
+        tInt = setInterval(()=>{
+          dur++; setTimer(dur);
+          if(dur>=MAX_SEC){ stopRec(); }
+        },1000);
+      }catch(e){
+        alert('Microphone error: '+e.message);
+        resetUI();
+      }
+    };
+    btnStop.onclick = ()=> stopRec();
+
+    function stopRec(){
+      if(!rec) return;
+      rec.stop(); media.getTracks().forEach(t=>t.stop());
+      clearInterval(tInt); tInt=null;
+      kStatus.textContent='Stopped'; kLive.textContent='● Idle';
+      btnStop.disabled=true; btnAnalyze.disabled=false; btnRand.disabled=false; btnStart.disabled=false;
+    }
+
+    function resetUI(){
+      clearInterval(tInt); tInt=null;
+      btnStart.disabled=false; btnStop.disabled=true; btnAnalyze.disabled=true; btnRand.disabled=false;
+      setTimer(0); kLive.textContent='● Idle'; kStatus.textContent='Idle';
+    }
+
+    // Gating: allow one free analysis without login, require auth from the second attempt
+    btnAnalyze.onclick = async ()=>{
+      const { data:{user} } = await sb.auth.getUser();
+      if(!user && freeUsed){ openAuth(); return; } // require sign-in from 2nd run
+      await analyze();
+      // After first successful run mark free used
+      if(!user && !freeUsed){ freeUsed = true; localStorage.setItem('ec_free_used','1'); }
+    };
+
+    async function analyze(){
+      try{
+        kStatus.textContent='Sending…'; btnAnalyze.disabled=true; btnStart.disabled=true; btnStop.disabled=true;
+        const blob = new Blob(chunks, { type: 'audio/webm' });
+        const fd = new FormData();
+        fd.append('files[]', new File([blob],'audio.webm',{type:'audio/webm'}));
+        fd.append('duration_sec', String(dur));
+        fd.append('goal', goal);
+        fd.append('prompt_text', promptText.value||'');
+        const resp = await fetch(ANALYZE_URL, { method:'POST', body:fd });
+        const json = await resp.json();
+
+        renderResults(json);
+        resetUI(); // reset for next round
+
+        // Save session if logged in
+        const { data:{user} } = await sb.auth.getUser();
+        if(user){
+          await sb.from('sessions').insert({
+            user_id: user.id,
+            duration_sec: dur,
+            level_label: json.friendly_level || json.cefr_estimate || '—',
+            goal: goal
+          });
+          await refreshStats();
+        }
+      }catch(e){
+        alert('Analyze failed: '+(e?.message||'unknown'));
+        btnAnalyze.disabled=false;
+      }
+    }
+
+    function renderResults(j){
+      // fallback case
+      const level = j.friendly_level || j.cefr_estimate || '–';
+      const fillers = j.fluency?.fillers ?? 0;
+      kLevel.textContent = level; kLevelTop.textContent = level;
+      kFillers.textContent = fillers; kFillersTop.textContent = fillers;
+
+      // Pronunciation
+      if(j.pronunciation && j.pronunciation.length){
+        elPron.classList.remove('empty');
+        elPron.innerHTML = j.pronunciation.map(p=>(
+          `<div style="margin-bottom:10px"><b>${escape(p.sound_or_word||'')}</b> — ${escape(p.issue||'')}
+            <div class="muted">Try: ${escape(p.minimal_pair||'-')}</div></div>`
+        )).join('');
+      }else{ elPron.classList.add('empty'); elPron.textContent='–'; }
+
+      // Grammar
+      if(j.grammar_issues && j.grammar_issues.length){
+        elGram.classList.remove('empty');
+        elGram.innerHTML = j.grammar_issues.map(g=>(
+          `<div style="margin-bottom:10px">→ ${escape(g.error||'')}
+             <div class="muted">Try: ${escape(g.fix||'')}</div>
+             <div class="muted">Why: ${escape(g.why||'')}</div></div>`
+        )).join('');
+      }else{ elGram.classList.add('empty'); elGram.textContent='–'; }
+
+      // What to fix + next prompt
+      elFix.classList.toggle('empty', !j.one_thing_to_fix);
+      elFix.textContent = j.one_thing_to_fix || '—';
+
+      elNext.classList.toggle('empty', !j.next_prompt);
+      elNext.textContent = j.next_prompt || '—';
+    }
+
+    function escape(s){ return String(s||'').replace(/[&<>]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c])); }
+
+    // random prompts
+    const PROMPTS = [
+      "Describe a recent project you led and one lesson you learned.",
+      "Tell me about a challenge you faced at work and how you solved it.",
+      "Describe your typical day and one change you want to make.",
+      "Talk about your favorite place to visit and why.",
+      "Explain a problem your team faced and how you solved it."
+    ];
+    btnRand.onclick = ()=>{
+      if(!btnStart.disabled) {
+        const p = PROMPTS[(Math.random()*PROMPTS.length|0)];
+        promptText.value = p;
+      }
+    };
+
+    // Disable randomize while recording
+    const mo = new MutationObserver(()=>{
+      btnRand.disabled = !btnStart.disabled && !btnAnalyze.disabled ? false : btnStop.disabled ? false : true;
+    });
+    mo.observe(btnStart, { attributes:true });
+    mo.observe(btnStop, { attributes:true });
+
+    // init
+    (async ()=>{
+      await refreshAuthUI();
+      setTimer(0);
+    })();
+  </script>
 </body>
 </html>
