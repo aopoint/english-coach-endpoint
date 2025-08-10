@@ -1,26 +1,20 @@
 // api/analyze.js
-// Serverless handler for /api/analyze (Vercel, Node 18+)
-//
-// Accepts multipart/form-data:
-//   files[] | file | audio  (audio file)
-//   duration_sec             (number, optional)
-//   goal                     (string, optional)
-//   prompt_text              (string, optional; what user tried to answer)
-//
-// Transcribes with Whisper, asks GPT for structured JSON,
-// and returns JSON (or a fallback when too short). CORS/OPTIONS included.
+// Vercel serverless (Node 18+)
+// POST multipart/form-data: files[] (or file/audio), duration_sec, goal, prompt_text
+// Uses Whisper for STT, GPT for feedback JSON with level_score + relevance.
+// CORS enabled.
 
 const fs = require("fs");
 const { IncomingForm } = require("formidable");
 const OpenAI = require("openai");
 
-// ---------- CONFIG ----------
+// ------ Tunables ------
+const MODEL_WHISPER = "whisper-1";
+const MODEL_CHAT = "gpt-4o-mini-2024-07-18";
 const MIN_SECONDS_FOR_ANALYSIS = 8;
-const MIN_WORDS_FOR_ANALYSIS   = 8;
-const MODEL_CHAT               = "gpt-4o-mini-2024-07-18";
-const MODEL_WHISPER            = "whisper-1";
+const MIN_WORDS_FOR_ANALYSIS = 8;
 
-// ---------- HELPERS ----------
+// ------ Utils ------
 function cors(res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "POST,GET,OPTIONS");
@@ -32,143 +26,112 @@ function parseNumber(n, def = 0) {
   return Number.isFinite(x) ? x : def;
 }
 
-function wordCount(txt) {
-  const t = (txt || "").trim();
-  if (!t) return 0;
-  return t.split(/\s+/).filter(Boolean).length;
+function wordCount(text) {
+  const t = (text || "").trim();
+  return t ? t.split(/\s+/).filter(Boolean).length : 0;
 }
 
 function pick(obj, keys) {
-  for (const k of keys) {
-    if (obj && Object.prototype.hasOwnProperty.call(obj, k) && obj[k]) {
-      return obj[k];
-    }
-  }
+  for (const k of keys) if (obj?.[k]) return obj[k];
   return null;
 }
 
-function computeWPM(transcript, durationSec) {
+function wpm(transcript, sec) {
   const words = wordCount(transcript);
-  if (!durationSec) return 0;
-  return Math.round((words / durationSec) * 60);
+  return sec ? Math.round((words / sec) * 60) : 0;
 }
 
-function cefrToFriendly(s) {
+function ceFRtoFriendly(s) {
   const x = String(s || "").toUpperCase().trim();
-  if (!x) return "Beginner";
   if (x.startsWith("A1")) return "Beginner";
   if (x.startsWith("A2")) return "Elementary";
   if (x.startsWith("B1")) return "Intermediate";
   if (x.startsWith("B2")) return "Advanced";
   if (x.startsWith("C1")) return "Fluent";
   if (x.startsWith("C2")) return "Native-like";
-  return s; // already friendly
+  return s || "Intermediate";
 }
 
-// ---------- FORM PARSE ----------
 function parseForm(req) {
   return new Promise((resolve, reject) => {
     const form = new IncomingForm({
       multiples: true,
       keepExtensions: true,
-      maxFileSize: 50 * 1024 * 1024, // 50MB
+      maxFileSize: 50 * 1024 * 1024,
     });
-    form.parse(req, (err, fields, files) => {
-      if (err) return reject(err);
-      resolve({ fields, files });
-    });
+    form.parse(req, (err, fields, files) => (err ? reject(err) : resolve({ fields, files })));
   });
 }
 
-// ---------- MAIN ----------
+// ------ Handler ------
 module.exports = async (req, res) => {
   cors(res);
-
   if (req.method === "OPTIONS") return res.status(200).end();
-
   if (req.method === "GET") {
-    return res
-      .status(200)
-      .json({ ok: true, message: "Analyzer is alive. POST audio here." });
+    return res.status(200).json({ ok: true, message: "Analyzer is alive. POST audio here." });
   }
+  if (req.method !== "POST") return res.status(405).json({ ok: false, error: "Method not allowed" });
 
-  if (req.method !== "POST") {
-    return res.status(405).json({ ok: false, error: "Method not allowed" });
-  }
-
-  if (!process.env.OPENAI_API_KEY) {
-    return res.status(500).json({ ok: false, error: "Missing OPENAI_API_KEY" });
-  }
-
-  const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+  const apiKey = process.env.OPENAI_API_KEY;
+  if (!apiKey) return res.status(500).json({ ok: false, error: "Missing OPENAI_API_KEY" });
+  const openai = new OpenAI({ apiKey });
 
   try {
     // 1) Parse form
     const { fields, files } = await parseForm(req);
-
-    // file may be under files[] / file / audio
     let fileEntry =
       pick(files, ["files[]", "file", "audio"]) ||
       (Array.isArray(files) && files.length ? files[0] : null);
-
     fileEntry = Array.isArray(fileEntry) ? fileEntry[0] : fileEntry;
 
-    if (!fileEntry || !fileEntry.filepath) {
-      return res
-        .status(400)
-        .json({ ok: false, error: "No audio file found (expected files[]/file/audio)." });
+    if (!fileEntry?.filepath) {
+      return res.status(400).json({ ok: false, error: "No audio file found (files[]/file/audio)." });
     }
 
-    const filename    = fileEntry.originalFilename || "audio.webm";
-    const durationSec = parseNumber(fields.duration_sec || fields.duration, 0);
-    const goal        = (fields.goal || "General English").toString();
+    const durationSec = parseNumber(fields.duration_sec, 0);
+    const goal = (fields.goal || "General English").toString();
     const prompt_text = (fields.prompt_text || "").toString();
 
-    // 2) Transcribe with Whisper
+    // 2) Transcribe
     const tr = await openai.audio.transcriptions.create({
       model: MODEL_WHISPER,
       file: fs.createReadStream(fileEntry.filepath),
-      // language: "en", // uncomment to force English
+      // language: "en", // let Whisper auto-detect unless you want to force EN
     });
-
     const transcript = (tr?.text || "").trim();
 
-    // Short/empty -> fallback
     const tooShort =
-      durationSec < MIN_SECONDS_FOR_ANALYSIS ||
-      wordCount(transcript) < MIN_WORDS_FOR_ANALYSIS;
+      durationSec < MIN_SECONDS_FOR_ANALYSIS || wordCount(transcript) < MIN_WORDS_FOR_ANALYSIS;
 
     if (!transcript || tooShort) {
       return res.status(200).json({
         fallback: true,
         cefr_estimate: "A1",
+        friendly_level: "Beginner",
         rationale:
-          "We didn’t catch enough speech to give accurate feedback. Try speaking in full sentences for 45–90 seconds.",
-        fluency: { wpm: computeWPM(transcript, durationSec), fillers: 0, note: "—" },
+          "We didn’t catch enough speech to give accurate feedback. Try 45–90 seconds in full sentences.",
+        fluency: { wpm: wpm(transcript, durationSec), fillers: 0, note: "—" },
         grammar_issues: [],
         pronunciation: [],
         one_thing_to_fix: "Speak for at least 30–60 seconds in full sentences.",
-        next_prompt: "Describe your last weekend in ~45 seconds.",
-        transcript,               // include for FE if needed
-        duration_sec: durationSec,
-        goal,
+        next_prompt: "Describe your last weekend (~45s).",
+        level_score: 20,
+        relevance: { score: 50, note: "Not enough content to assess." },
       });
     }
 
-    // 3) Ask GPT for JSON feedback
+    // 3) Ask GPT
     const system = `
-You are **Speak Coach**. Analyze the user's **spoken English** transcript and return **ONLY** a single JSON object.
+You are Speak Coach. Analyze the user's spoken English transcript and return ONLY a JSON object.
 
-Rules:
-- Use English for all output.
-- Be concise, helpful, and specific.
-- If the transcript is off-topic from prompt_text, reflect that in "relevance".
-- Surface several grammar items when present (about 3–6 lines).
-- Prefer simple, clear wording.
+- Output in English.
+- Be specific and concise.
+- If the transcript is off-topic from prompt_text, lower "relevance.score" and explain in note.
+- Prefer 3–6 grammar items if available.
 
-Return JSON with these keys exactly:
+Schema:
 {
-  "cefr_estimate": "A1|A2|B1|B2|C1|C2 OR a friendly label (Beginner/Elementary/Intermediate/Advanced/Fluent/Native-like)",
+  "cefr_estimate": "A1|A2|B1|B2|C1|C2 or friendly label",
   "level_score": 0-100,
   "rationale": "string",
   "fluency": { "wpm": number, "fillers": number, "note": "string" },
@@ -180,11 +143,11 @@ Return JSON with these keys exactly:
 }
 `.trim();
 
-    const userPayload = {
+    const payload = {
       transcript,
-      duration_sec: Math.round(durationSec),
       goal,
       prompt_text,
+      duration_sec: Math.round(durationSec),
     };
 
     const completion = await openai.chat.completions.create({
@@ -193,56 +156,33 @@ Return JSON with these keys exactly:
       temperature: 0.3,
       messages: [
         { role: "system", content: system },
-        { role: "user", content: JSON.stringify(userPayload) },
+        { role: "user", content: JSON.stringify(payload) },
       ],
     });
 
     const raw = completion?.choices?.[0]?.message?.content || "{}";
-
     let json;
     try {
       json = JSON.parse(raw);
-    } catch (e) {
+    } catch {
       return res.status(500).json({ ok: false, error: "Model did not return JSON", raw });
     }
 
-    // 4) Post-process / guards
-    // Ensure arrays
-    if (!Array.isArray(json.grammar_issues)) json.grammar_issues = [];
-    if (!Array.isArray(json.pronunciation))  json.pronunciation  = [];
-
-    // Fluency + WPM
+    // 4) Post-process
     if (!json.fluency) json.fluency = {};
-    if (typeof json.fluency.wpm !== "number") {
-      json.fluency.wpm = computeWPM(transcript, durationSec);
-    }
-    if (typeof json.fluency.fillers !== "number") json.fluency.fillers = 0;
-    if (typeof json.fluency.note !== "string")   json.fluency.note = "—";
+    if (typeof json.fluency.wpm !== "number") json.fluency.wpm = wpm(transcript, durationSec);
 
-    // Friendly level + score
-    if (json.cefr_estimate) {
-      json.friendly_level = cefrToFriendly(json.cefr_estimate);
-    } else if (json.friendly_level) {
-      // ok
-    } else {
-      json.friendly_level = "Intermediate";
+    if (!json.friendly_level && json.cefr_estimate) {
+      json.friendly_level = ceFRtoFriendly(json.cefr_estimate);
     }
-
     if (typeof json.level_score !== "number") json.level_score = 50;
     json.level_score = Math.max(0, Math.min(100, Math.round(json.level_score)));
 
-    // Relevance guard
     if (!json.relevance) json.relevance = { score: 50, note: "—" };
     if (typeof json.relevance.score !== "number") json.relevance.score = 50;
     json.relevance.score = Math.max(0, Math.min(100, Math.round(json.relevance.score)));
 
-    // 5) Return (include transcript so FE can compute relevancy too)
-    return res.status(200).json({
-      ...json,
-      transcript,
-      duration_sec: Math.round(durationSec),
-      goal,
-    });
+    return res.status(200).json(json);
   } catch (err) {
     console.error("analyze error:", err);
     return res.status(500).json({ ok: false, error: err?.message || "Server error" });
