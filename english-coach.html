@@ -16,32 +16,28 @@
       --warn:#f7c948;
       --err:#ff6b6b;
       --ring: rgba(157,78,221, .45);
-      --primary1:#8b5cf6; /* purple 500 */
-      --primary2:#7c3aed; /* purple 600 */
-      --primary3:#6d28d9; /* purple 700 */
+      --primary1:#8b5cf6;
+      --primary2:#7c3aed;
+      --primary3:#6d28d9;
       --cardShadow: 0 10px 30px rgba(0,0,0,.35);
       --radius: 16px;
-      --radius-sm: 12px;
-      --radius-lg: 20px;
       --gap: 18px;
-      --gap-sm: 12px;
-      --gap-lg: 24px;
-      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      --mono: ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,Liberation Mono,Courier New,monospace;
       --sans: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
     }
     *{box-sizing:border-box}
     html,body{height:100%}
     body{
-      margin:0; background: radial-gradient(1000px 600px at 30% -10%, rgba(125,60,200,.18), transparent 60%) ,
-                 radial-gradient(900px 500px at 90% -20%, rgba(90,70,200,.16), transparent 60%),
-                 var(--bg);
-      color:var(--text); font-family:var(--sans);
-      line-height:1.35; -webkit-font-smoothing:antialiased;
+      margin:0; background:
+        radial-gradient(1000px 600px at 30% -10%, rgba(125,60,200,.18), transparent 60%),
+        radial-gradient(900px 500px at 90% -20%, rgba(90,70,200,.16), transparent 60%),
+        var(--bg);
+      color:var(--text); font-family:var(--sans); line-height:1.35;
+      -webkit-font-smoothing:antialiased;
     }
-
     header{
-      display:flex; align-items:center; justify-content:space-between;
-      gap:12px; padding:18px 22px 8px;
+      display:flex; align-items:center; justify-content:space-between; gap:12px;
+      padding:18px 22px 8px;
     }
     .brand{display:flex; align-items:center; gap:10px; font-weight:800; font-size:26px; letter-spacing:.2px}
     .pill{background:#221f28; border:1px solid #2a2733; color:#d7caff; padding:6px 10px; border-radius:999px; font-size:13px}
@@ -49,32 +45,24 @@
       max-width:1200px; margin:0 auto; padding:18px 22px 28px;
       display:grid; grid-template-columns: 360px 1fr; gap:24px;
     }
-    @media (max-width:980px){
-      .wrap{grid-template-columns:1fr}
-    }
+    @media (max-width:980px){ .wrap{grid-template-columns:1fr} }
 
-    .panel{
-      background:var(--panel); border:1px solid #26232e; border-radius:var(--radius);
-      box-shadow:var(--cardShadow);
-    }
+    .panel{background:var(--panel); border:1px solid #26232e; border-radius:16px; box-shadow:var(--cardShadow)}
     .pad{padding:22px}
     .h1{font-size:34px; font-weight:900; letter-spacing:.2px; margin:.25rem 0}
     .muted{color:var(--muted)}
     .hint{color:#c7c7d0; font-size:14px}
 
-    .goals{
-      display:flex; flex-wrap:wrap; gap:10px; margin:14px 0 4px;
-    }
+    .goals{display:flex; flex-wrap:wrap; gap:10px; margin:14px 0 4px}
     .goal{
-      background:var(--chip); border:1px solid #2a2733; color:#e8e6ff; padding:10px 14px;
-      border-radius:12px; cursor:pointer; transition:.15s transform;
+      background:var(--chip); border:1px solid #2a2733; color:#e8e6ff;
+      padding:10px 14px; border-radius:12px; cursor:pointer; transition:.15s transform;
       box-shadow: inset 0 0 0 1px rgba(0,0,0,.08);
     }
     .goal:active{transform:scale(.98)}
     .goal.active{
       background: linear-gradient(135deg,var(--primary2),var(--primary1));
-      border-color: transparent; color:white; font-weight:700;
-      box-shadow: 0 0 0 6px var(--ring);
+      border-color: transparent; color:white; font-weight:700; box-shadow: 0 0 0 6px var(--ring);
     }
 
     .row{display:flex; gap:12px; align-items:center; flex-wrap:wrap}
@@ -90,34 +78,28 @@
     .btn.full{width:100%}
 
     .timerCard{
-      background:#21202a; border:1px solid #2a2733; border-radius:14px; padding:12px 16px; font-size:28px; font-weight:900; min-width:140px; text-align:center;
+      background:#21202a; border:1px solid #2a2733; border-radius:14px; padding:12px 16px;
+      font-size:28px; font-weight:900; min-width:140px; text-align:center;
     }
 
-    .meter{
-      position:relative; height:8px; background:#2a2733; border-radius:999px; overflow:hidden;
-      border:1px solid #2f2b39;
-    }
-    .meter > i{display:block; height:100%; width:0%; background: linear-gradient(90deg,#ff7a7a,#f6c343,#62f6b5); transition:width .25s ease}
+    .meter{position:relative; height:8px; background:#2a2733; border-radius:999px; overflow:hidden; border:1px solid #2f2b39}
+    .meter > i{display:block; height:100%; width:0%; background:#2a2733; transition:width .25s ease, background .15s ease}
+
     .smallPills{display:flex; gap:10px; align-items:center; flex-wrap:wrap}
-    .pillStat{
-      background:#22202a; border:1px solid #2a2733; border-radius:999px; padding:6px 10px; font-size:13px; color:#e8e6ff;
-    }
+    .pillStat{background:#22202a; border:1px solid #2a2733; border-radius:999px; padding:6px 10px; font-size:13px; color:#e8e6ff}
 
     .liveDot{width:10px;height:10px;border-radius:50%; background:#666}
     .liveDot.on{background:var(--ok); box-shadow:0 0 0 6px rgba(103,245,180,.15)}
 
-    .card{background:#1f1d26; border:1px solid #2a2733; border-radius:16px; padding:14px; }
+    .card{background:#1f1d26; border:1px solid #2a2733; border-radius:16px; padding:14px}
     .card h4{margin:0 0 8px; font-size:14px; text-transform:uppercase; letter-spacing:.12em; color:#cfcde7}
     .big{padding:16px 14px}
     .slot{min-height:48px; display:flex; align-items:center}
-    .mono{font-family:var(--mono)}
-
     .list{display:flex; flex-direction:column; gap:10px}
     .item{background:#1e1c24; border:1px solid #302c3a; border-radius:12px; padding:10px 12px; color:#ebe9fd}
 
     .rightGrid{display:flex; flex-direction:column; gap:16px}
     .topline{display:flex; gap:12px; align-items:center; justify-content:space-between; flex-wrap:wrap}
-    .badge{background:#2c2936; color:#eae3ff; border:1px solid #373244; padding:8px 12px; border-radius:999px; font-weight:700}
     .barGroup{display:grid; grid-template-columns: 120px 1fr; gap:10px; align-items:center}
     @media (max-width:600px){ .barGroup{grid-template-columns: 1fr} }
 
@@ -139,7 +121,7 @@
   </header>
 
   <main class="wrap">
-    <!-- LEFT: controls -->
+    <!-- LEFT -->
     <section class="panel pad" id="leftPanel">
       <h1 class="h1">Record for<br/>60–90 seconds.</h1>
       <p class="muted">We’ll analyze fluency & correctness, then show key corrections and a next prompt.</p>
@@ -161,7 +143,7 @@
       </div>
 
       <div class="row" style="margin-top:10px;align-items:center">
-        <div class="timerCard mono" id="timer">00:00</div>
+        <div class="timerCard" id="timer">00:00</div>
         <div style="flex:1">
           <div class="meter"><i id="timeFill"></i></div>
         </div>
@@ -174,15 +156,14 @@
       <div class="card big" style="margin-top:14px">
         <h4>What to say to start</h4>
         <textarea id="promptBox" rows="3" class="slot" style="width:100%; background:#17151c; color:#edeafc; border:1px solid #2d2936; border-radius:12px; padding:10px; resize:vertical">Describe a recent project you led and one lesson you learned.</textarea>
-        <div class="row" style="margin-top:10px; justify-content:space-between">
+        <div class="row" style="margin-top:10px; justify-content:flex-start">
           <button class="btn secondary" id="btnRandom">🎲 Randomize prompt</button>
-          <button class="btn secondary" id="btnCopy">Copy</button>
         </div>
         <p class="hint" style="margin-top:10px">We don’t store your audio; it’s sent to the analyzer and immediately discarded.</p>
       </div>
     </section>
 
-    <!-- RIGHT: results -->
+    <!-- RIGHT -->
     <section class="panel pad rightGrid">
       <div class="topline">
         <div class="smallPills">
@@ -229,15 +210,15 @@
   </main>
 
   <footer>
-    © 2025 <a href="https://simpleia.com" target="_blank" rel="noopener">Simpleia</a> — Built by <a href="https://aosama.net" target="_blank" rel="noopener">Abdo Osama</a> — <span id="ver">v1.3</span>
+    © 2025 <a href="https://simpleia.com" target="_blank" rel="noopener">Simpleia</a> — Built by <a href="https://aosama.net" target="_blank" rel="noopener">Abdo Osama</a> — <span id="ver">v1.4</span>
   </footer>
 
   <div class="toast" id="toast"></div>
 
 <script>
 /* ====== SETTINGS ====== */
-const API_URL = "https://english-coach-endpoint.vercel.app/api/analyze"; // <- change if needed
-const VERSION = "v1.3"; // footer version
+const API_URL = "https://english-coach-endpoint.vercel.app/api/analyze"; // change if you deploy elsewhere
+const VERSION = "v1.4";
 const KEY_SESSIONS = "ec_sessions";
 const KEY_STREAK = "ec_streak";
 const KEY_STREAK_DATE = "ec_streak_date";
@@ -267,7 +248,6 @@ const sessionsEl = document.getElementById('sessions');
 
 const promptBox = document.getElementById('promptBox');
 const btnRandom = document.getElementById('btnRandom');
-const btnCopy = document.getElementById('btnCopy');
 const toastEl = document.getElementById('toast');
 document.getElementById('ver').textContent = VERSION;
 
@@ -287,20 +267,20 @@ goalsEl.addEventListener('click', (e)=>{
   currentGoal = b.dataset.goal || b.textContent.trim();
 });
 
-/* ====== TIMER ====== */
+/* ====== TIMER / METER COLOR ====== */
 function fmt(n){return String(n).padStart(2,'0')}
+function meterColor(sec){
+  if(sec < 10)   return 'linear-gradient(90deg,#ff6b6b,#ffa1a1)';      // red
+  if(sec < 45)   return 'linear-gradient(90deg,#f7c948,#ffd86b)';      // amber
+                 return 'linear-gradient(90deg,#62f6b5,#34d399)';      // green
+}
 function tick(){
   const sec = Math.max(0, Math.floor((Date.now()-startTs)/1000));
   const m = Math.floor(sec/60), s = sec%60;
   timerEl.textContent = `${fmt(m)}:${fmt(s)}`;
-
-  // progress to 90s
   const p = Math.min(1, sec/90);
   timeFill.style.width = (p*100)+'%';
-  // color: <45s => orange; >=45 => green
-  timeFill.style.background = sec < 45
-     ? 'linear-gradient(90deg,#f7c948,#ffd86b)'
-     : 'linear-gradient(90deg,#62f6b5,#34d399)';
+  timeFill.style.background = meterColor(sec);
 }
 
 /* ====== MEDIA RECORDER ====== */
@@ -308,17 +288,31 @@ async function startRec(){
   try{
     const stream = await navigator.mediaDevices.getUserMedia({audio:true});
     chunks = [];
-    mediaRecorder = new MediaRecorder(stream, {mimeType: 'audio/webm'});
-    mediaRecorder.ondataavailable = (e)=> { if(e.data.size>0) chunks.push(e.data) }
-    mediaRecorder.onstop = ()=> stream.getTracks().forEach(t=>t.stop());
+    mediaRecorder = new MediaRecorder(stream, {mimeType:'audio/webm'});
+    mediaRecorder.ondataavailable = (e)=> { if(e.data && e.data.size>0) chunks.push(e.data); };
+    mediaRecorder.onstop = ()=>{
+      // stop tracks
+      try{ stream.getTracks().forEach(t=>t.stop()); }catch{}
+      liveDot.classList.remove('on');
+      // enable send once chunks are ready
+      btnSend.disabled = (chunks.length===0);
+    };
     mediaRecorder.start();
     startTs = Date.now();
+    clearInterval(timerId);
     timerId = setInterval(tick, 200);
+
+    // UI states
     btnStart.disabled = true;
-    btnStop.disabled = false;
-    btnSend.disabled = true;
+    btnStop.disabled  = false;
+    btnSend.disabled  = true;          // will be enabled on stop
     liveDot.classList.add('on');
     recording = true;
+
+    // reset meter visuals at start
+    timeFill.style.width = '0%';
+    timeFill.style.background = meterColor(0);
+    timerEl.textContent = '00:00';
   }catch(err){
     toast('Could not access microphone.');
     console.error(err);
@@ -327,14 +321,11 @@ async function startRec(){
 
 function stopRec(){
   if(mediaRecorder && recording){
-    mediaRecorder.stop();
-    clearInterval(timerId);
-    tick(); // one last update
     btnStop.disabled = true;
-    btnStart.disabled = false;
-    btnSend.disabled = chunks.length===0;
-    liveDot.classList.remove('on');
     recording = false;
+    try{ mediaRecorder.stop(); }catch{}
+    clearInterval(timerId);
+    // keep last tick displayed; onstop will enable Send
   }
 }
 
@@ -344,7 +335,6 @@ btnStop.addEventListener('click', stopRec);
 /* ====== SEND ====== */
 btnSend.addEventListener('click', async ()=>{
   if(chunks.length===0){ toast('Please record something first.'); return; }
-
   btnSend.disabled = true;
   btnSend.textContent = 'Analyzing…';
   try{
@@ -359,7 +349,7 @@ btnSend.addEventListener('click', async ()=>{
     const res = await fetch(API_URL, {method:'POST', body:fd});
     const json = await res.json();
 
-    // Always reset timer for next session
+    // Reset for next session (so it feels fresh)
     resetTimer();
 
     renderResult(json);
@@ -368,8 +358,9 @@ btnSend.addEventListener('click', async ()=>{
     console.error(e);
     toast('Request failed. Please try again.');
   }finally{
-    btnSend.disabled = false;
+    btnSend.disabled = true;            // disabled until next recording
     btnSend.textContent = 'Send & Analyze';
+    btnStart.disabled = false;
   }
 });
 
@@ -377,14 +368,12 @@ function resetTimer(){
   clearInterval(timerId);
   timerEl.textContent = '00:00';
   timeFill.style.width='0%';
-  timeFill.style.background='linear-gradient(90deg,#f7c948,#ffd86b)';
+  timeFill.style.background='#2a2733';
   chunks = [];
-  btnSend.disabled = true;
 }
 
 /* ====== RENDER ====== */
 function renderResult(r){
-  // Fallback
   if(r.fallback){
     friendlyLevel.textContent = 'Beginner';
     levelFill.style.width = '20%';
@@ -398,10 +387,8 @@ function renderResult(r){
     nextPrompt.textContent = r.next_prompt || 'Describe your last weekend in ~45 seconds.';
     return;
   }
-
   friendlyLevel.textContent = r.friendly_level || r.cefr_estimate || '—';
-  const lvl = clampNum(r.level_score,0,100);
-  levelFill.style.width = lvl+'%';
+  levelFill.style.width = clampNum(r.level_score,0,100) + '%';
 
   const rel = clampNum(r.relevance?.score ?? 50, 0, 100);
   relFill.style.width = rel+'%';
@@ -440,7 +427,7 @@ function clampNum(n,min,max){
   return Math.max(min, Math.min(max, Math.round(n)));
 }
 
-/* ====== RANDOM / COPY ====== */
+/* ====== RANDOM PROMPTS ====== */
 const seeds = [
   "Describe one problem your team faced and how you solved it.",
   "Talk about a time you had to learn a new skill quickly.",
@@ -450,10 +437,6 @@ const seeds = [
 ];
 btnRandom.addEventListener('click', ()=>{
   promptBox.value = seeds[Math.floor(Math.random()*seeds.length)];
-});
-btnCopy.addEventListener('click', async ()=>{
-  try{ await navigator.clipboard.writeText(promptBox.value); toast('Prompt copied.')}
-  catch{ toast('Could not copy.'); }
 });
 
 /* ====== TOAST ====== */
@@ -477,7 +460,6 @@ function bumpSessionsAndStreak(){
   let streak = parseInt(localStorage.getItem(KEY_STREAK)||'0',10);
 
   if(!last || daysBetween(last,today) >= 1){
-    // new day ⇒ +1 streak (reset if gap >1)
     if(last && daysBetween(last,today) > 1) streak = 0;
     streak += 1;
     localStorage.setItem(KEY_STREAK, String(streak));
@@ -489,13 +471,11 @@ function daysBetween(a,b){
   const ms = Math.abs(b - a);
   return Math.floor(ms / (1000*60*60*24));
 }
-function loadSessionUI(){
+(function loadSessionUI(){
   sessionsEl.textContent = localStorage.getItem(KEY_SESSIONS)||'0';
   streakEl.textContent = localStorage.getItem(KEY_STREAK)||'0';
-}
-loadSessionUI();
+})();
 
-/* ====== INIT ====== */
 </script>
 </body>
 </html>
