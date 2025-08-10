@@ -4,512 +4,449 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>English Coach — Instant English Feedback</title>
-<meta name="color-scheme" content="dark">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   :root{
     --bg:#191919;
-    --panel:#1f1f1f;
-    --panel-2:#181818;
+    --panel:#161616;
+    --card:#1f1f1f;
+    --muted:#9a9a9a;
     --text:#f5f5f5;
-    --muted:#a7a7a7;
-    --chip:#222;
     --ok:#22c55e;
     --err:#ef4444;
-    --ring:rgba(78,10,122,.45);
-    --primary:#4E0A7A;
-    --primary-2:#7123a7;
-    --shadow:0 10px 30px rgba(0,0,0,.35);
-    --radius:14px;
+    --chip:#222;
+    --ring:rgba(78,10,122,.35);
+    --primary:#4E0A7A;      /* Simpleia primary */
+    --primary-2:#7f3ab7;    /* lighter hover */
+    --shadow:0 8px 38px rgba(0,0,0,.45), 0 2px 12px rgba(0,0,0,.35);
+    --radius:16px;
   }
+  *{box-sizing:border-box}
   html,body{height:100%}
   body{
-    margin:0; background:var(--bg); color:var(--text);
-    font-family:"Avenir Next",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,"Apple Color Emoji","Segoe UI Emoji";
+    margin:0;
+    background: radial-gradient(1000px 600px at 30% -10%, rgba(78,10,122,.18), transparent 60%),
+                radial-gradient(900px 500px at 90% -10%, rgba(78,10,122,.12), transparent 60%),
+                var(--bg);
+    color:var(--text);
+    font:16px/1.35 "Avenir Next", Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    letter-spacing:.2px;
   }
-  .wrap{max-width:1200px; margin:24px auto; padding:0 16px}
-  header{display:flex; align-items:center; gap:16px; margin-bottom:20px}
-  .brand{font-size:28px; font-weight:800; letter-spacing:.3px}
-  .pill{font-size:14px; padding:8px 14px; border-radius:999px;
-        background:linear-gradient(135deg,var(--primary),var(--primary-2)); box-shadow:var(--shadow)}
-  .grid{display:grid; grid-template-columns:360px 1fr; gap:18px}
-  @media (max-width:980px){ .grid{grid-template-columns:1fr} }
-
-  .card{background:linear-gradient(180deg,var(--panel),var(--panel-2));
-        border:1px solid #262626; border-radius:var(--radius); box-shadow:var(--shadow)}
-  .card .inner{padding:18px}
-  .title{font-weight:800; font-size:18px; margin-bottom:6px}
-  .muted{color:var(--muted); font-size:14px}
-
-  /* goal row: exactly one row, scroll when narrow */
-  .goal-chips{
-    display:flex; gap:10px; overflow-x:auto; padding-bottom:4px; scrollbar-width:thin; white-space:nowrap;
+  a{color:#b29ad9;text-decoration:none}
+  a:hover{text-decoration:underline}
+  .wrap{
+    max-width:1200px;
+    margin:40px auto 100px;
+    padding:0 20px;
   }
-  .goal-chips::-webkit-scrollbar{height:6px}
-  .goal-chips::-webkit-scrollbar-thumb{background:#2c2c2c; border-radius:8px}
 
+  header{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    margin-bottom:22px;
+  }
+  .brand{
+    display:flex;align-items:center;gap:12px;
+    font-weight:800;letter-spacing:.4px;font-size:26px;
+  }
+  .badge{font-size:12px;padding:6px 10px;border-radius:999px;background:linear-gradient(180deg, var(--primary), #361157);box-shadow:inset 0 0 0 1px rgba(255,255,255,.06);}
+
+  .grid{
+    display:grid;
+    grid-template-columns: 420px 1fr;
+    gap:18px;
+  }
+  @media (max-width: 980px){
+    .grid{grid-template-columns: 1fr;gap:16px}
+  }
+
+  .card{
+    background:var(--card);
+    border-radius:var(--radius);
+    box-shadow:var(--shadow);
+    border:1px solid rgba(255,255,255,.04);
+  }
+  .pad{padding:18px}
+
+  /* Left controller */
+  .title{
+    font-weight:800;
+    font-size:28px;
+    margin:6px 0 6px;
+  }
+  .subtitle{color:var(--muted);margin-bottom:18px}
+  .section-label{font-weight:700;margin:14px 0 10px}
+
+  /* Goal chips row (one row, horizontal scroll on mobile) */
+  .chip-row{
+    display:flex;gap:10px;align-items:center;overflow:auto;padding-bottom:4px;
+    -webkit-overflow-scrolling:touch;scrollbar-width:none;
+  }
+  .chip-row::-webkit-scrollbar{display:none}
   .chip{
-    display:inline-flex; align-items:center; justify-content:center;
-    padding:12px 18px; border-radius:14px; background:var(--chip); color:#ddd;
-    border:1px solid #2a2a2a; user-select:none; cursor:pointer; transition:.15s;
+    white-space:nowrap;
+    padding:12px 18px;border-radius:14px;background:var(--chip);
+    border:1px solid rgba(255,255,255,.06);
+    color:#ddd;cursor:pointer;user-select:none;
+    transition:.15s ease;
   }
-  .chip:hover{border-color:#3a3a3a}
-  .chip.active{background:linear-gradient(135deg,var(--primary),var(--primary-2)); color:#fff; border-color:transparent}
+  .chip:hover{border-color:rgba(255,255,255,.12)}
+  .chip.active{
+    color:#fff;background:linear-gradient(180deg,var(--primary),#361157);
+    box-shadow:0 0 0 3px var(--ring);
+  }
 
-  .row{display:flex; align-items:center; justify-content:space-between; gap:12px}
+  .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+  .row .btn{flex:1}
   .btn{
-    appearance:none; border:0; border-radius:12px; padding:12px 16px; cursor:pointer;
-    font-weight:700; color:#fff; background:#2b2b2b;
-    border:1px solid #2a2a2a; transition:.15s; box-shadow:inset 0 0 0 1px rgba(255,255,255,.02);
+    display:inline-flex;align-items:center;justify-content:center;gap:8px;
+    padding:14px 16px;border-radius:14px;border:1px solid rgba(255,255,255,.06);
+    background:#232323;color:#fff;cursor:pointer;transition:.15s ease;
+    font-weight:700;
   }
-  .btn:hover{background:#343434}
-  .btn.primary{background:linear-gradient(135deg,var(--primary),var(--primary-2)); border-color:transparent}
-  .timer{min-width:100px; text-align:center; padding:12px; border-radius:12px; background:#202020; border:1px solid #2a2a2a}
-
-  .starter{
-    margin-top:14px; border-radius:12px; border:1px dashed #323232; padding:14px;
-    background:#1a1a1a; color:#ddd; font-size:14px; line-height:1.35;
+  .btn:hover{border-color:rgba(255,255,255,.12)}
+  .btn.primary{background:linear-gradient(180deg, var(--primary), #361157)}
+  .btn.primary:hover{filter:brightness(1.08)}
+  .btn.ghost{background:#1b1b1b}
+  .timer{
+    min-width:140px;text-align:center;font-weight:800;font-size:26px;padding:10px 14px;border-radius:14px;background:#141414;border:1px solid rgba(255,255,255,.06)
   }
-
-  .two{display:grid; grid-template-columns:1fr; gap:14px}
-  .row-mini{display:flex; gap:10px; align-items:center}
-  .badge{font-size:12px; padding:6px 10px; border-radius:999px; border:1px solid #2a2a2a; background:#151515}
-  .out{padding:12px; border-radius:12px; border:1px solid #2a2a2a; background:#151515; color:#ddd; min-height:42px}
-  .list{display:grid; gap:10px}
-  .li{padding:12px; border-radius:12px; border:1px solid #2a2a2a; background:#141414}
-  .tag{display:inline-block; padding:2px 8px; border-radius:8px; font-size:12px; margin-right:6px; background:#232323; border:1px solid #2a2a2a}
-
-  footer{margin:26px 0 40px; color:#bdbdbd; font-size:13px; text-align:center}
-  footer a{color:#caa8ff; text-decoration:none}
-  footer a:hover{text-decoration:underline}
-
-  .toast{position:fixed; left:50%; bottom:24px; transform:translateX(-50%);
-         background:#262626; color:#fff; border:1px solid #333; border-radius:12px; padding:12px 16px; box-shadow:var(--shadow);
-         display:none; z-index:50;}
-
-  /* Modal */
-  .modal-back{position:fixed; inset:0; background:rgba(0,0,0,.5); display:none; align-items:center; justify-content:center; z-index:60;}
-  .modal{width:min(520px,92vw); background:#1c1c1c; border:1px solid #2a2a2a; border-radius:16px; box-shadow:var(--shadow)}
-  .modal .hd{padding:16px 18px; border-bottom:1px solid #2a2a2a; font-weight:800}
-  .modal .bd{padding:18px; display:grid; gap:12px}
-  .input, textarea{
-    width:100%; padding:12px 14px; border-radius:12px; background:#111; color:#eee; border:1px solid #2a2a2a;
+  .prompt-box{
+    margin-top:12px;font-size:14px;color:#cfcfcf;background:#151515;border:1px dashed rgba(255,255,255,.08);
+    border-radius:12px;padding:12px
   }
-  textarea{min-height:110px; resize:vertical}
-  .stars{display:flex; gap:10px}
-  .star{font-size:22px; cursor:pointer; color:#666}
-  .star.active{color:#ffd369}
-  .modal .ft{padding:16px 18px; border-top:1px solid #2a2a2a; display:flex; gap:10px; justify-content:flex-end}
-  .tbl{width:100%; border-collapse:collapse; font-size:14px}
-  .tbl th,.tbl td{padding:10px 12px; border-bottom:1px solid #2a2a2a; text-align:left}
+  .prompt-actions{display:flex;gap:8px;margin-top:8px}
+  .mini{font-size:12px;padding:6px 10px;border-radius:10px;background:#232323;border:1px solid rgba(255,255,255,.06);cursor:pointer}
+  .mini:hover{border-color:rgba(255,255,255,.12)}
+
+  /* Right: results */
+  .stack{display:flex;flex-direction:column;gap:14px}
+  .metric-row{display:flex;gap:10px;flex-wrap:wrap}
+  .metric{
+    padding:10px 12px;border-radius:12px;background:#141414;border:1px solid rgba(255,255,255,.06);color:#d9d9d9;
+    display:flex;align-items:center;gap:8px;font-weight:700
+  }
+  .metric .dot{width:10px;height:10px;border-radius:999px;background:#444}
+  .metric .dot.green{background:var(--ok)}
+  .metric .dot.red{background:var(--err)}
+
+  .out{background:#151515;border:1px solid rgba(255,255,255,.06);border-radius:14px;padding:12px;color:#eaeaea;min-height:48px}
+  .out.mono{font:13px/1.4 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;color:#c9c9c9}
+
+  /* Feedback modal */
+  .modal{
+    position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.6);backdrop-filter:blur(2px);z-index:1000;
+  }
+  .modal.show{display:flex}
+  .sheet{
+    width:min(560px,calc(100vw - 32px));
+    background:var(--panel);border:1px solid rgba(255,255,255,.06);border-radius:16px;box-shadow:var(--shadow);
+    padding:16px 16px 12px;
+  }
+  .sheet h3{margin:6px 0 2px}
+  .fld{margin:10px 0}
+  .fld input, .fld textarea{
+    width:100%;background:#121212;border:1px solid rgba(255,255,255,.08);color:#eee;border-radius:12px;padding:12px 12px;font:14px Inter, system-ui
+  }
+  .fld textarea{min-height:120px;resize:vertical}
+  .stars{display:flex;gap:8px;font-size:24px;cursor:pointer}
+  .star{filter:grayscale(1) brightness(1.1);opacity:.6;transition:.12s}
+  .star.active{filter:none;opacity:1}
+  .sheet .row{justify-content:flex-end;margin-top:6px}
+  .toast{
+    position:fixed;left:50%;bottom:22px;transform:translateX(-50%);
+    background:#101010;border:1px solid rgba(255,255,255,.08);color:#eee;padding:10px 14px;border-radius:12px;box-shadow:var(--shadow);
+    z-index:1200;display:none
+  }
+  .toast.show{display:block}
+
+  footer{margin:24px 0 60px;text-align:center;color:#bdbdbd}
 </style>
 </head>
 <body>
   <div class="wrap">
     <header>
-      <div class="brand">English Coach</div>
-      <div class="pill">Instant English Feedback</div>
+      <div class="brand">English Coach <span class="badge">Instant English Feedback</span></div>
     </header>
 
     <div class="grid">
-      <!-- LEFT: controls -->
-      <section class="card">
-        <div class="inner">
-          <div class="title" style="font-size:22px">Record for <strong>60–90 seconds</strong>.</div>
-          <div class="muted">We’ll analyze fluency & correctness, then show key corrections and a next prompt.</div>
+      <!-- LEFT: CONTROLS -->
+      <div class="card pad">
+        <div class="title">Record for 60–90 seconds.</div>
+        <div class="subtitle">We’ll analyze fluency & correctness, then show key corrections and a next prompt.</div>
 
-          <div style="height:14px"></div>
-          <div class="muted" style="margin-bottom:8px">Goal</div>
-          <div id="goalChips" class="goal-chips"></div>
+        <div class="section-label">Goal</div>
+        <div id="goals" class="chip-row" role="tablist" aria-label="Goal">
+          <div class="chip active" data-goal="Work English">Work English</div>
+          <div class="chip" data-goal="Daily Life">Daily Life</div>
+          <div class="chip" data-goal="Interview Prep">Interview Prep</div>
+          <div class="chip" data-goal="Travel">Travel</div>
+        </div>
 
-          <div style="height:14px"></div>
-          <div class="row">
-            <button id="btnStart" class="btn primary">Start recording</button>
-            <button id="btnStop" class="btn">Stop</button>
-            <div class="timer" id="timer">00:00</div>
-          </div>
+        <div class="row" style="margin:12px 0 10px">
+          <button id="btnStart" class="btn primary">Start recording</button>
+          <button id="btnStop" class="btn ghost">Stop</button>
+          <div id="timer" class="timer">00:00</div>
+        </div>
+        <button id="btnSend" class="btn" style="width:100%;font-size:17px;font-weight:800;letter-spacing:.2px;">Send & Analyze</button>
 
-          <div style="height:10px"></div>
-          <button id="btnSend" class="btn" style="width:100%">Send & Analyze</button>
-
-          <div class="starter">
-            <div class="muted" style="margin-bottom:6px">What to say to start</div>
-            <div id="starterText">Describe your last weekend in 45 seconds.</div>
-            <div style="height:6px"></div>
-            <button id="btnDice" class="btn" style="padding:8px 12px">Randomize prompt 🎲</button>
-          </div>
-
-          <div class="muted" style="margin-top:14px; font-size:12px">
-            We don’t store your audio; it’s sent to the analyzer and immediately discarded.
+        <div class="prompt-box">
+          <div style="font-weight:700;margin-bottom:6px">What to say to start</div>
+          <div id="starter">Describe a recent project you led and one lesson you learned.</div>
+          <div class="prompt-actions">
+            <button id="btnRandom" class="mini">Randomize prompt</button>
+            <button id="btnCopy" class="mini">Copy</button>
           </div>
         </div>
-      </section>
 
-      <!-- RIGHT: results -->
-      <section class="card">
-        <div class="inner">
-          <div class="title">Summary</div>
-          <div class="row-mini" style="margin-bottom:8px">
-            <span class="badge">Level: <span id="levelOut">–</span></span>
-            <span class="badge">Fillers: <span id="fillersOut">0</span></span>
-          </div>
-
-          <div class="two">
-            <div>
-              <div class="muted" style="margin-bottom:6px">What to fix now</div>
-              <div class="out" id="fixNowOut">–</div>
-            </div>
-            <div>
-              <div class="muted" style="margin-bottom:6px">Next prompt (30–45s)</div>
-              <div class="out" id="nextPromptOut">–</div>
-            </div>
-          </div>
-
-          <div style="height:16px"></div>
-          <div class="title">Grammar</div>
-          <div class="list" id="grammarList"></div>
-
-          <div style="height:16px"></div>
-          <div class="title">Pronunciation</div>
-          <div class="list" id="pronList"></div>
+        <div style="margin-top:12px;color:#a6a6a6;font-size:13px">
+          We don’t store your audio; it’s sent to the analyzer and immediately discarded.
         </div>
-      </section>
+      </div>
+
+      <!-- RIGHT: RESULTS -->
+      <div class="stack">
+        <div class="card pad">
+          <div class="metric-row" style="margin-bottom:10px">
+            <div class="metric"><span class="dot green"></span> Live</div>
+            <div class="metric">Level: <span id="level" style="margin-left:8px">–</span></div>
+            <div class="metric">Fillers: <span id="fillers" style="margin-left:6px">0</span></div>
+          </div>
+
+          <div class="section-label">What to fix now</div>
+          <div id="fixnow" class="out">–</div>
+
+          <div class="section-label" style="margin-top:14px">Next prompt (30–45s)</div>
+          <div id="nextprompt" class="out">–</div>
+
+          <div class="section-label" style="margin-top:16px">Grammar</div>
+          <div id="grammar" class="out">–</div>
+
+          <div class="section-label" style="margin-top:16px">Pronunciation</div>
+          <div id="pron" class="out">–</div>
+        </div>
+      </div>
     </div>
 
-    <!-- Leaderboard -->
-    <section class="card" id="board" style="margin-top:16px; display:none">
-      <div class="inner">
-        <div class="title">Leaderboard</div>
-        <table class="tbl" id="boardTbl">
-          <thead><tr><th>#</th><th>Name</th><th>Sessions</th></tr></thead>
-          <tbody></tbody>
-        </table>
-        <div class="muted" id="boardEmpty">Coming soon.</div>
-      </div>
-    </section>
-
     <footer>
-      © 2025 <a href="https://simpleia.com" target="_blank" rel="noopener">Simpleia</a> — Built by
-      <a href="https://aosama.net/" target="_blank" rel="noopener">Abdo Osama</a>
+      © 2025 <a href="https://simpleia.com" target="_blank" rel="noopener">Simpleia</a> — Built by <a href="https://aosama.net" target="_blank" rel="noopener">Abdo Osama</a>
     </footer>
   </div>
 
-  <!-- Feedback modal -->
-  <div class="modal-back" id="fbBack">
-    <div class="modal">
-      <div class="hd">Quick feedback (required to continue)</div>
-      <div class="bd">
-        <input id="fbName" class="input" placeholder="Your name" autocomplete="name" />
-        <input id="fbEmail" class="input" placeholder="Email" type="email" autocomplete="email" />
-        <div>
-          <div class="muted" style="margin-bottom:6px">Rating</div>
-          <div class="stars" id="stars"></div>
-        </div>
-        <div>
-          <div class="muted" style="margin-bottom:6px">Feedback / Suggestions</div>
-          <textarea id="fbText" placeholder="What should we improve?"></textarea>
+  <!-- FEEDBACK MODAL (required after the first run) -->
+  <div id="modal" class="modal" aria-hidden="true" aria-label="Feedback modal">
+    <div class="sheet" role="dialog" aria-modal="true">
+      <h3>Quick feedback (required to continue)</h3>
+      <div class="fld"><input id="fbName" type="text" placeholder="Your name"></div>
+      <div class="fld"><input id="fbEmail" type="email" placeholder="Your email"></div>
+
+      <div class="fld">
+        <div style="font-weight:700;margin-bottom:6px">Rating</div>
+        <div id="stars" class="stars" aria-label="Rating">
+          <span class="star">⭐️</span><span class="star">⭐️</span><span class="star">⭐️</span><span class="star">⭐️</span><span class="star">⭐️</span>
         </div>
       </div>
-      <div class="ft">
-        <button class="btn" id="fbCancel">Cancel</button>
-        <button class="btn primary" id="fbSubmit">Submit feedback</button>
+
+      <div class="fld"><textarea id="fbMsg" placeholder="Feedback / Suggestions"></textarea></div>
+
+      <div class="row">
+        <button id="fbCancel" class="btn ghost">Cancel</button>
+        <button id="fbSubmit" class="btn primary">Submit feedback</button>
       </div>
     </div>
   </div>
 
-  <div class="toast" id="toast"></div>
+  <div id="toast" class="toast"></div>
 
 <script>
-/* ===================== CONFIG (change if needed) ===================== */
-const API = 'https://english-coach-endpoint.vercel.app/api/analyze'; // Analyzer
-const FEEDBACK_URL = 'https://hook.your-make.com/your-ec_feedback_webhook'; // <- PUT your Make.com webhook here
-const LEADERBOARD_URL = ''; // optional: endpoint returning [{name,uses}], leave blank to hide
+/* ================== CONFIG ================== */
+const ANALYZE_API  = "https://english-coach-endpoint.vercel.app/api/analyze"; // <- your live analyzer
+const FEEDBACK_API = ""; // optional: Make/Vercel feedback endpoint. Leave blank to store “submitted” locally.
 
-/* =================== GOALS, STARTERS, FRIENDLY LEVELS =================== */
-const GOALS = [
-  { key:'work', label:'Work English',
-    starters:[
-      'Explain one problem your team faced and how you solved it.',
-      'Describe a recent project you led and one lesson you learned.',
-      'Give a 45-second update on your current task and next step.'
-    ] },
-  { key:'daily', label:'Daily Life',
-    starters:[
-      'Describe your last weekend in 45 seconds.',
-      'Tell me about a typical day in your life.',
-      'Talk about a hobby you enjoy and why.'
-    ] },
-  { key:'interview', label:'Interview Prep',
-    starters:[
-      'Tell me about yourself in under one minute.',
-      'What is your biggest strength at work?',
-      'Describe a time you handled a difficult situation.'
-    ] },
-  { key:'travel', label:'Travel',
-    starters:[
-      'Describe a city you want to visit and why.',
-      'Talk about your best travel experience.',
-      'Explain how you plan a short weekend trip.'
-    ] }
-];
+/* ================== UI HELPERS ================== */
+const $ = s => document.querySelector(s);
+const $$ = s => [...document.querySelectorAll(s)];
+function toast(msg){ const t=$("#toast"); t.textContent=msg; t.classList.add("show"); setTimeout(()=>t.classList.remove("show"),2200) }
+function formatTime(sec){
+  const m = Math.floor(sec/60).toString().padStart(2,"0");
+  const s = Math.floor(sec%60).toString().padStart(2,"0");
+  return `${m}:${s}`;
+}
 
-const FRIENDLY_LEVEL = (cefr) => {
-  const x = (cefr||'').toUpperCase();
-  if (x==='A1'||x==='A2') return 'Beginner';
-  if (x==='B1') return 'Intermediate';
-  if (x==='B2' || x==='C1') return 'Advanced';
-  if (x==='C2') return 'Fluent';
-  return '–';
+/* ================== GOALS & PROMPTS ================== */
+const GOALS = ["Work English","Daily Life","Interview Prep","Travel"];
+const STARTERS = {
+  "Work English":[
+    "Describe a recent project you led and one lesson you learned.",
+    "Explain a problem your team faced and how you solved it.",
+    "Give a 60-second update on your current work priorities."
+  ],
+  "Daily Life":[
+    "Tell me about your morning routine and what you enjoy about it.",
+    "Describe your last weekend in 60 seconds.",
+    "Explain one healthy habit you’re trying to build."
+  ],
+  "Interview Prep":[
+    "Answer: 'Tell me about yourself' in 60 seconds.",
+    "Describe a challenge you overcame at work.",
+    "Explain your proudest achievement and why."
+  ],
+  "Travel":[
+    "Describe your favorite city and why you love it.",
+    "Explain a memorable trip you’ve taken.",
+    "Give tips for a first-time visitor to your hometown."
+  ],
 };
-
-/* ============================= UI REFS ============================== */
-const btnStart = document.getElementById('btnStart');
-const btnStop  = document.getElementById('btnStop');
-const btnSend  = document.getElementById('btnSend');
-const timerEl  = document.getElementById('timer');
-
-const starterText = document.getElementById('starterText');
-const btnDice = document.getElementById('btnDice');
-const goalChips = document.getElementById('goalChips');
-
-const levelOut = document.getElementById('levelOut');
-const fillersOut = document.getElementById('fillersOut');
-const fixNowOut = document.getElementById('fixNowOut');
-const nextPromptOut = document.getElementById('nextPromptOut');
-const grammarList = document.getElementById('grammarList');
-const pronList = document.getElementById('pronList');
-
-const toast = document.getElementById('toast');
-const boardSec = document.getElementById('board');
-const boardTbl = document.querySelector('#boardTbl tbody');
-const boardEmpty = document.getElementById('boardEmpty');
-
-/* Feedback modal refs */
-const fbBack = document.getElementById('fbBack');
-const fbName = document.getElementById('fbName');
-const fbEmail = document.getElementById('fbEmail');
-const fbText = document.getElementById('fbText');
-const fbCancel = document.getElementById('fbCancel');
-const fbSubmit = document.getElementById('fbSubmit');
-const starsWrap = document.getElementById('stars');
-
-/* ====================== USER / FEEDBACK GATING ====================== */
-const UID = (()=>{ const k='ec_uid'; let v=localStorage.getItem(k); if(!v){v='web-'+crypto.randomUUID(); localStorage.setItem(k,v);} return v; })();
-const FB_DONE_KEY = 'ec_fb_done';
-const USES_KEY = 'ec_uses';
-
-function uses(){ return parseInt(localStorage.getItem(USES_KEY)||'0',10); }
-function bumpUses(){ localStorage.setItem(USES_KEY, String(uses()+1)); }
-function hasFeedback(){ return !!localStorage.getItem(FB_DONE_KEY); }
-function requireFeedbackGate(){
-  // Allow first run; require feedback before the second run.
-  if (uses() >= 1 && !hasFeedback()){
-    openFeedback(); return true;
-  }
-  return false;
+let goal = "Work English";
+function setGoal(g){
+  goal=g;
+  $$("#goals .chip").forEach(ch=>ch.classList.toggle("active", ch.dataset.goal===g));
+  randomizeStarter();
+}
+function randomizeStarter(){
+  const arr=STARTERS[goal]; $("#starter").textContent = arr[Math.floor(Math.random()*arr.length)];
 }
 
-/* ===================== GOAL CHIPS / STARTERS ====================== */
-let currentGoal = GOALS[0];
-function renderGoalChips(){
-  goalChips.innerHTML='';
-  GOALS.forEach(g=>{
-    const el=document.createElement('div');
-    el.className='chip'+(g.key===currentGoal.key?' active':'');
-    el.textContent=g.label;
-    el.onclick=()=>{ currentGoal=g; renderGoalChips(); setRandomStarter(); };
-    goalChips.appendChild(el);
-  });
-}
-function setRandomStarter(){
-  const arr=currentGoal.starters;
-  starterText.textContent = arr[Math.floor(Math.random()*arr.length)];
-}
-btnDice.addEventListener('click', setRandomStarter);
-renderGoalChips(); setRandomStarter();
-
-/* ============================== RECORDING ============================== */
-let media,rec,chunks=[],startTime=0,timerI=null,blob=null;
-
-function fmt(ms){ const s=Math.floor(ms/1000); const m=String(Math.floor(s/60)).padStart(2,'0'); const r=String(s%60).padStart(2,'0'); return `${m}:${r}`; }
-function setButtons(busy){
-  btnStart.disabled=busy; btnStop.disabled=!busy; btnSend.disabled=busy;
-  document.body.style.cursor = busy ? 'progress' : 'default';
-}
+/* ================== RECORDER ================== */
+let media, recorder, chunks=[], startedAt=0, timerInt;
+function updateTimer(){ $("#timer").textContent = formatTime((performance.now()-startedAt)/1000) }
 async function startRec(){
-  if(requireFeedbackGate()) return;
+  if (!window.MediaRecorder){ toast("Recording not supported in this browser."); return; }
   try{
     media = await navigator.mediaDevices.getUserMedia({audio:true});
-    chunks=[]; rec = new MediaRecorder(media, {mimeType:'audio/webm;codecs=opus'});
-    rec.ondataavailable=e=>{ if(e.data?.size>0) chunks.push(e.data); };
-    rec.onstop=()=>{ blob=new Blob(chunks,{type:'audio/webm'}); if(media){media.getTracks().forEach(t=>t.stop());} };
-    rec.start(200);
-    startTime=performance.now(); clearInterval(timerI);
-    timerI=setInterval(()=>{ timerEl.textContent = fmt(performance.now()-startTime); }, 250);
-    setButtons(true);
-  }catch(e){ notify('Microphone not available.'); console.error(e); }
+    chunks=[]; recorder = new MediaRecorder(media);
+    recorder.ondataavailable = e => { if (e.data.size>0) chunks.push(e.data); };
+    recorder.start(100);
+    startedAt=performance.now(); clearInterval(timerInt); timerInt=setInterval(updateTimer,200);
+    $("#timer").textContent="00:00";
+  }catch(e){ console.error(e); toast("Mic permission denied."); }
 }
 function stopRec(){
-  try{ rec?.stop(); }catch{}
-  clearInterval(timerI);
-  timerEl.textContent = fmt(performance.now()-startTime);
-  setButtons(false);
+  try{
+    recorder && recorder.state!=="inactive" && recorder.stop();
+    media && media.getTracks().forEach(t=>t.stop());
+  }catch{}
+  clearInterval(timerInt);
 }
-btnStart.addEventListener('click', startRec);
-btnStop.addEventListener('click', stopRec);
 
-/* =============================== ANALYZE =============================== */
-async function sendAnalyze(){
-  if(requireFeedbackGate()) return;
-  if(!blob || blob.size===0){ notify('Please record first, then Send & Analyze.'); return; }
-  const dur=Math.round((performance.now()-startTime)/1000);
-  const fd=new FormData();
-  const file=new File([blob],'audio.webm',{type:blob.type||'audio/webm'});
-  fd.append('files[]', file);
-  fd.append('duration_sec', String(dur));
-  fd.append('goal', currentGoal.label);
+/* ================== ANALYZE ================== */
+let alreadyRan = localStorage.getItem("ec_first_run_done")==="yes";
+let feedbackOK = localStorage.getItem("ec_feedback_ok")==="yes";
 
-  setButtons(true);
+async function analyze(){
+  if (!alreadyRan || feedbackOK){ /* allowed */ }
+  else { openFeedback(); return; }
+
+  if (chunks.length===0){ toast("Please record something first."); return; }
+
+  const blob = new Blob(chunks, {type:"audio/webm"});
+  const file = new File([blob], "audio.webm", {type:blob.type});
+  const fd = new FormData();
+  fd.append("files[]", file);
+  fd.append("duration_sec", ((performance.now()-startedAt)/1000).toFixed(0));
+  fd.append("goal", goal);
 
   try{
-    const res=await fetch(API,{method:'POST',body:fd});
-    const text=await res.text();
+    $("#btnSend").disabled = true;
+    const res = await fetch(ANALYZE_API, {method:"POST", body:fd});
+    const raw = await res.text();
+    let js;
+    try{ js = JSON.parse(raw); }catch{ js = { fallback:true, rationale:"We didn’t catch enough speech to analyze." } }
 
-    if(!res.ok){ notify('Analyzer error'); setButtons(false); return; }
-    let j; try{ j=JSON.parse(text); }catch{ notify('Analyzer returned non-JSON'); setButtons(false); return; }
+    // Handle fallback from server or empty JSON
+    const isFallback = js.fallback || !js.cefr_estimate;
 
-    bumpUses();              // mark a completed session
-    renderResult(j);
-  }catch(err){
-    notify('Network error'); console.error(err);
-  }finally{
-    setButtons(false);
-  }
-}
-btnSend.addEventListener('click', sendAnalyze);
+    // Fill UI
+    $("#level").textContent      = js.cefr_estimate || "–";
+    $("#fillers").textContent    = js.fluency?.fillers ?? 0;
+    $("#fixnow").textContent     = js.one_thing_to_fix || "–";
+    $("#nextprompt").textContent = js.next_prompt || "–";
+    $("#grammar").textContent    = (js.grammar_issues && js.grammar_issues.length)
+                                      ? js.grammar_issues.map(g=>`→ ${g.error} → ${g.fix}`).join("\n")
+                                      : "–";
+    $("#pron").textContent       = (js.pronunciation && js.pronunciation.length)
+                                      ? js.pronunciation.map(p=>`${p.sound_or_word} — ${p.issue}`).join("\n")
+                                      : "–";
 
-/* ============================== RENDER =============================== */
-function renderResult(j){
-  if(j.fallback){
-    levelOut.textContent = '–';
-    fillersOut.textContent = '0';
-    fixNowOut.textContent = 'Speak for at least 30–60 seconds in full sentences.';
-    nextPromptOut.textContent = starterText.textContent;
-    grammarList.innerHTML=''; pronList.innerHTML='';
-    return;
-  }
-  levelOut.textContent   = FRIENDLY_LEVEL(j.cefr_estimate);
-  fillersOut.textContent = String(j?.fluency?.fillers ?? 0);
-  fixNowOut.textContent  = (j?.one_thing_to_fix || j?.rationale || '–');
-  nextPromptOut.textContent = (j?.next_prompt || starterText.textContent);
+    if (!alreadyRan){ alreadyRan=true; localStorage.setItem("ec_first_run_done","yes"); openFeedback(); }
 
-  grammarList.innerHTML='';
-  (j?.grammar_issues||[]).forEach(g=>{
-    const row=document.createElement('div'); row.className='li';
-    row.innerHTML = `
-      <div class="tag">error</div> ${escapeHtml(g.error||'')}
-      <div style="height:6px"></div>
-      <div class="tag">fix</div> ${escapeHtml(g.fix||'')}
-      ${g.why ? `<div style="height:6px"></div><div class="tag">why</div> ${escapeHtml(g.why)}`:''}
-    `;
-    grammarList.appendChild(row);
-  });
-
-  pronList.innerHTML='';
-  (j?.pronunciation||[]).forEach(p=>{
-    const row=document.createElement('div'); row.className='li';
-    row.innerHTML = `
-      <div class="tag">word</div> ${escapeHtml(p.sound_or_word||'')}
-      ${p.issue ? `<div style="height:6px"></div><div class="tag">issue</div> ${escapeHtml(p.issue)}`:''}
-      ${p.minimal_pair ? `<div style="height:6px"></div><div class="tag">try</div> ${escapeHtml(p.minimal_pair)}`:''}
-    `;
-    pronList.appendChild(row);
-  });
-}
-function escapeHtml(s){ return (s??'').toString().replace(/[<>&"]/g,m=>({ '<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;' }[m])); }
-
-/* ============================ FEEDBACK MODAL ============================ */
-let rating=0;
-function drawStars(){
-  starsWrap.innerHTML='';
-  for(let i=1;i<=5;i++){
-    const el=document.createElement('span');
-    el.className = 'star' + (i<=rating?' active':'');
-    el.textContent = '★';
-    el.title = `${i} star${i>1?'s':''}`;
-    el.onclick=()=>{ rating=i; drawStars(); };
-    starsWrap.appendChild(el);
-  }
-}
-drawStars();
-
-function openFeedback(){ fbBack.style.display='flex'; }
-function closeFeedback(){ fbBack.style.display='none'; }
-
-fbCancel.addEventListener('click', closeFeedback);
-fbSubmit.addEventListener('click', async ()=>{
-  const name=(fbName.value||'').trim();
-  const email=(fbEmail.value||'').trim();
-  const text=(fbText.value||'').trim();
-
-  if(!name || !email || !rating || !text){
-    notify('Please fill all fields and select a rating.'); return;
-  }
-  if(!FEEDBACK_URL || FEEDBACK_URL.includes('your-ec_feedback_webhook')){
-    notify('Feedback endpoint not configured.'); return;
-  }
-
-  const payload={
-    user_id:UID,
-    user_name:name,
-    email,
-    rating,
-    suggestions:text,
-    ts_date:new Date().toISOString()
-  };
-  try{
-    await fetch(FEEDBACK_URL,{method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload)});
-    localStorage.setItem(FB_DONE_KEY, 'true');
-    notify('Thanks for the feedback!'); closeFeedback();
   }catch(e){
-    notify('Failed to send feedback.'); console.error(e);
+    console.error(e); toast("Request failed.");
+  }finally{
+    $("#btnSend").disabled = false;
+  }
+}
+
+/* ================== FEEDBACK (required after first run) ================== */
+const modal=$("#modal");
+const nameEl=$("#fbName"), mailEl=$("#fbEmail"), msgEl=$("#fbMsg");
+const starsWrap=$("#stars"); let rating=5;
+function openFeedback(){
+  // Prefill from localStorage
+  nameEl.value = localStorage.getItem("ec_name") || "";
+  mailEl.value = localStorage.getItem("ec_email") || "";
+  msgEl.value  = "";
+  setStars(rating);
+  modal.classList.add("show");
+  modal.setAttribute("aria-hidden","false");
+}
+function closeFeedback(){
+  modal.classList.remove("show");
+  modal.setAttribute("aria-hidden","true");
+}
+function setStars(n){
+  rating=n;
+  [...starsWrap.children].forEach((s,i)=>s.classList.toggle("active", i<n));
+}
+starsWrap.addEventListener("click", e=>{
+  const idx=[...starsWrap.children].indexOf(e.target);
+  if (idx>-1) setStars(idx+1);
+});
+
+$("#fbCancel").addEventListener("click", ()=>closeFeedback());
+$("#fbSubmit").addEventListener("click", async ()=>{
+  const name=nameEl.value.trim();
+  const email=mailEl.value.trim();
+  const text=msgEl.value.trim();
+  if (!name || !email || !text){ toast("Please fill in all fields."); return; }
+
+  localStorage.setItem("ec_name", name);
+  localStorage.setItem("ec_email", email);
+
+  try{
+    if (FEEDBACK_API && !FEEDBACK_API.startsWith("PUT_")){
+      const payload = { user_name:name, user_email:email, rating, suggestions:text, ts: new Date().toISOString() };
+      await fetch(FEEDBACK_API,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)});
+    }
+    localStorage.setItem("ec_feedback_ok","yes");
+    feedbackOK = true;
+    closeFeedback();
+    toast("Thanks for your feedback!");
+  }catch{
+    toast("Feedback endpoint not configured.");
+    // Still allow continuing for demo purposes:
+    localStorage.setItem("ec_feedback_ok","yes");
+    feedbackOK = true;
+    closeFeedback();
   }
 });
 
-/* =========================== LEADERBOARD ============================ */
-async function loadBoard(){
-  if(!LEADERBOARD_URL){ boardSec.style.display='none'; return; }
-  try{
-    const r=await fetch(LEADERBOARD_URL, {cache:'no-store'});
-    if(!r.ok) throw 0;
-    const data=await r.json(); // [{name,uses}]
-    if(!Array.isArray(data)||!data.length){ boardSec.style.display='none'; return; }
-    boardTbl.innerHTML='';
-    data.slice(0,20).forEach((row,i)=>{
-      const tr=document.createElement('tr');
-      tr.innerHTML=`<td>${i+1}</td><td>${escapeHtml(row.name||'Anonymous')}</td><td>${row.uses||0}</td>`;
-      boardTbl.appendChild(tr);
-    });
-    boardEmpty.style.display='none';
-    boardSec.style.display='block';
-  }catch{
-    boardSec.style.display='none';
-  }
-}
-loadBoard();
+/* ================== EVENTS ================== */
+$("#goals").addEventListener("click", (e)=>{ const x=e.target.closest(".chip"); if(!x) return; setGoal(x.dataset.goal) });
+$("#btnStart").addEventListener("click", async ()=>{
+  if (alreadyRan && !feedbackOK){ openFeedback(); return; }
+  await startRec();
+});
+$("#btnStop").addEventListener("click", stopRec);
+$("#btnSend").addEventListener("click", analyze);
+$("#btnRandom").addEventListener("click", randomizeStarter);
+$("#btnCopy").addEventListener("click", ()=>{ navigator.clipboard.writeText($("#starter").textContent); toast("Copied") });
 
-/* ================================ UX ================================= */
-let toastT=null;
-function notify(msg){
-  toast.textContent=msg; toast.style.display='block';
-  clearTimeout(toastT); toastT=setTimeout(()=>toast.style.display='none', 2200);
-}
-
-/* ========================= INIT (optional ?api) ======================== */
-(function maybeOverrideApiFromQuery(){
-  const u=new URL(location.href);
-  const q=u.searchParams.get('api');
-  if(q && /^https?:\/\//.test(q)) { /* hidden override for internal testing */ }
-})();
+/* ================== INIT ================== */
+setGoal(goal);
 </script>
 </body>
 </html>
