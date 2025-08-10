@@ -1,15 +1,12 @@
 // Serverless handler for /api/analyze (Vercel)
 // - Accepts multipart/form-data with fields: files[] (audio file), duration_sec, goal
-// - Transcribes with Whisper
-// - Asks GPT for structured JSON feedback
-// - Returns JSON (falls back to friendly message if audio empty/too short)
-//
-// ENV: set OPENAI_API_KEY in Vercel (Project → Settings → Environment Variables)
+// - Transcribes with Whisper (forced English)
+// - Asks GPT for structured JSON feedback (English-only)
+// - Returns JSON or a friendly fallback
 
-const { readFile } = require('fs/promises');
 const { IncomingForm } = require('formidable');
+const { createReadStream } = require('fs');
 const OpenAI = require('openai');
-const { toFile } = require('openai/uploads');
 
 function cors(res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -17,16 +14,16 @@ function cors(res) {
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
 }
 
-function fallbackJSON(msg) {
+function fallbackResponse(reason) {
   return {
     fallback: true,
-    cefr_estimate: '—',
-    rationale: msg,
-    fluency: { wpm: 0, fillers: 0, note: 'No speech detected.' },
+    cefr_estimate: '',
+    rationale: reason || "We didn’t catch enough speech to analyze.",
+    fluency: { wpm: 0, fillers: 0, note: "" },
     grammar_issues: [],
     pronunciation: [],
-    one_thing_to_fix: 'Speak for at least 30–60 seconds in full sentences.',
-    next_prompt: 'Describe your last weekend in 45 seconds.'
+    one_thing_to_fix: "Speak for at least 30–60 seconds in full sentences.",
+    next_prompt: "Describe your last weekend in 45 seconds."
   };
 }
 
@@ -49,83 +46,71 @@ module.exports = async (req, res) => {
     // ---- 1) Parse multipart form
     const { fields, files } = await new Promise((resolve, reject) => {
       const form = new IncomingForm({ multiples: true, keepExtensions: true });
-      form.parse(req, (err, flds, fls) =>
-        err ? reject(err) : resolve({ fields: flds, files: fls })
-      );
+      form.parse(req, (err, flds, fls) => (err ? reject(err) : resolve({ fields: flds, files: fls })));
     });
 
-    // Accept either files[] or audio/file
-    const pick = (obj, keys) => keys.map(k => obj?.[k]).find(Boolean);
-    let fileEntry =
-      pick(files, ['files[]', 'file', 'audio']) ||
-      (Array.isArray(files) && files.length ? files[0] : null);
+    // Find the uploaded file under common keys
+    const candidates = ['files[]', 'file', 'audio', 'upload', 'audiofile'];
+    let fileEntry = null;
+    if (files) {
+      for (const k of candidates) {
+        if (files[k]) { fileEntry = files[k]; break; }
+      }
+      if (!fileEntry && Array.isArray(files) && files.length) fileEntry = files[0];
+    }
+    const f = Array.isArray(fileEntry) ? fileEntry[0] : fileEntry || {};
 
-    fileEntry = Array.isArray(fileEntry) ? fileEntry[0] : fileEntry || {};
-
-    if (!fileEntry.filepath) {
-      return res
-        .status(200)
-        .json(fallbackJSON('We didn’t receive any audio. Please try again.'));
+    const filepath = f.filepath || f.path;
+    if (!filepath) {
+      return res.status(200).json(fallbackResponse("No audio detected. Please record 60–90 seconds in English."));
     }
 
-    const buffer = await readFile(fileEntry.filepath);
-    const filename = fileEntry.originalFilename || 'audio.webm';
-    const mimetype = fileEntry.mimetype || 'audio/webm';
+    const filename = f.originalFilename || f.newFilename || 'audio.webm';
+    const mimetype = f.mimetype || 'audio/webm';
+    const durationSec = parseFloat(fields.duration_sec || fields.duration || '0') || 0;
+    const goal = (fields.goal || '').toString().trim() || 'General English';
 
-    // Quick sanity check: empty / almost empty
-    const size = buffer?.length || 0;
-    if (size < 2000) {
-      return res
-        .status(200)
-        .json(
-          fallbackJSON(
-            `The audio looked too short to analyze (${size} bytes). Try again closer to the mic.`
-          )
-        );
-    }
-
-    const goal =
-      (fields.goal || '').toString().trim() || 'General English';
-    const durationSec =
-      parseFloat(fields.duration_sec || fields.duration || '0') || 0;
-
-    // ---- 2) Transcribe with Whisper
+    // ---- 2) Transcribe with Whisper (force English)
     const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-    const fileForOpenAI = await toFile(buffer, filename, { type: mimetype });
 
     const tr = await openai.audio.transcriptions.create({
-      file: fileForOpenAI,
+      file: createReadStream(filepath),     // Node stream from formidable temp file
       model: 'whisper-1',
-      language: 'en',
+      language: 'en',                        // force English decoding
     });
 
-const hasArabic = /[\u0600-\u06FF]/.test(transcript);
-const englishTokens = (transcript.match(/[A-Za-z]+/g) || []).length;
+    const transcript = (tr?.text || '').trim();
 
-if (hasArabic || englishTokens < 10) {
-  return res.status(200).json({
-    fallback: true,
-    cefr_estimate: '',
-    rationale: "We detected mostly non-English speech. Please speak in English so we can analyze you correctly.",
-    fluency: { wpm: 0, fillers: 0, note: "" },
-    grammar_issues: [],
-    pronunciation: [],
-    one_thing_to_fix: "Speak only in English for 60–90 seconds.",
-    next_prompt: "Describe your typical workday in English in 45 seconds."
-  });
-}
+    // Empty or too short -> fallback
+    if (!transcript) {
+      return res.status(200).json(fallbackResponse());
+    }
 
-    // ---- 3) Ask GPT for compact JSON feedback
+    // Guardrail: mostly non-English -> fallback
+    const hasArabic = /[\u0600-\u06FF]/.test(transcript);
+    const englishTokens = (transcript.match(/[A-Za-z]+/g) || []).length;
+    if (hasArabic || englishTokens < 10) {
+      return res
+        .status(200)
+        .json(fallbackResponse("We detected mostly non-English speech. Please speak in English so we can analyze you correctly."));
+    }
+
+    // ---- 3) Ask GPT for compact JSON feedback (English-only)
     const system = `
-You are Speak Coach. Return ONLY a single JSON object with these keys:
-cefr_estimate (A1/A2/B1/B2/C1),
-rationale (string),
-fluency { wpm:number, fillers:number, note:string },
-grammar_issues: [{ error, fix, why }],
-pronunciation: [{ sound_or_word, issue, minimal_pair }],
-one_thing_to_fix (string),
-next_prompt (string).
-No markdown, no code fences, no extra text.
+You are Speak Coach. Return ONLY a single JSON object with exactly these keys:
+- cefr_estimate (one of A1, A2, B1, B2, C1)
+- rationale (string)
+- fluency { wpm:number, fillers:number, note:string }
+- grammar_issues: [{ error:string, fix:string, why:string }]
+- pronunciation: [{ sound_or_word:string, issue:string, minimal_pair:string }]
+- one_thing_to_fix (string)
+- next_prompt (string)
+
+Hard rules:
+- WRITE EVERYTHING IN ENGLISH. Do NOT use Arabic script or any non-Latin characters.
+- If the learner uses other languages, still respond in English; if needed, transliterate into English letters (e.g., "marhaba") but prefer English words/examples.
+- Keep examples and minimal pairs in English only.
+- No markdown, no code fences, no extra keys, no extra text outside the JSON.
 `.trim();
 
     const user = JSON.stringify({
@@ -146,27 +131,17 @@ No markdown, no code fences, no extra text.
 
     const raw = completion.choices?.[0]?.message?.content || '{}';
 
-    // Validate it's JSON
     let json;
     try {
       json = JSON.parse(raw);
     } catch {
-      // Friendly fallback if the model failed to return JSON
-      return res
-        .status(200)
-        .json(
-          fallbackJSON(
-            'I couldn’t build your feedback this time. Please try another recording.'
-          )
-        );
+      // If model ever returns non-JSON, degrade nicely instead of 500
+      return res.status(200).json(fallbackResponse("We couldn’t parse the response. Please try another 60–90s English clip."));
     }
 
-    // ---- 4) Return feedback JSON
     return res.status(200).json(json);
   } catch (err) {
     console.error('analyze error:', err);
-    return res
-      .status(500)
-      .json({ ok: false, error: err.message || 'Server error' });
+    return res.status(500).json({ ok: false, error: err.message || 'Server error' });
   }
 };
