@@ -117,6 +117,7 @@
     <input id="api" class="api-input" type="url"
       placeholder="https://your-domain.vercel.app/api/analyze" />
     <button class="btn icon" id="saveApi" title="Save API">Save</button>
+      <button class="btn icon" id="shareLink" title="Copy public link">Share</button>
   </div>
 </header>
 
@@ -216,6 +217,8 @@
 </footer>
 
 <script>
+
+  
 /* ==============================
    Config & helpers
 ============================== */
@@ -293,6 +296,52 @@ saveApiBtn.onclick = () => {
   localStorage.setItem(LS_KEY, API_INPUT.value.trim());
   apiDot.style.background = '#22c55e';
 };
+
+  // --- Prefill from ?api= (and save it)
+(function hydrateFromQuery() {
+  const qs = new URLSearchParams(location.search);
+  const apiParam = qs.get('api');
+  if (apiParam) {
+    API_INPUT.value = apiParam.trim();
+    localStorage.setItem(LS_KEY, API_INPUT.value);
+    apiDot.style.background = '#22c55e';
+  }
+})();
+
+// Optional: also honor ?goal=Work%20English etc.
+(function hydrateGoal() {
+  const qs = new URLSearchParams(location.search);
+  const g = qs.get('goal');
+  if (!g) return;
+  const chip = [...goalChips.querySelectorAll('.chip')]
+    .find(c => (c.dataset.goal || '').toLowerCase() === g.toLowerCase());
+  if (chip) {
+    goalChips.querySelectorAll('.chip').forEach(c=>c.classList.remove('active'));
+    chip.classList.add('active');
+    setStarter();
+  }
+})();
+
+// --- Share button: copies link with ?api=<current value>
+function buildShareURL() {
+  const api = (API_INPUT.value || '').trim();
+  const u = new URL(location.href);
+  if (api) u.searchParams.set('api', api);
+  else u.searchParams.delete('api');
+  // keep ?goal= if present (useful when sharing a goal)
+  return u.toString();
+}
+
+const shareBtn = document.getElementById('shareLink');
+shareBtn?.addEventListener('click', async () => {
+  try {
+    const url = buildShareURL();
+    await navigator.clipboard.writeText(url);
+    debugBox.textContent = 'Copied share link:\n' + url;
+  } catch (e) {
+    debugBox.textContent = 'Could not copy link: ' + e.message + '\n' + buildShareURL();
+  }
+});
 
 /* Goal chips */
 goalChips.addEventListener('click', (e)=>{
