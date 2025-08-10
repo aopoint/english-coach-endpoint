@@ -1,52 +1,77 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>English Coach</title>
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='96' height='96'%3E%3Crect rx='16' width='96' height='96' fill='%238a2be2'/%3E%3C/svg%3E">
+<link rel="icon" href="/favicon.svg">
 <style>
   :root{
-    --bg:#0f0f12;--panel:#16161a;--chip:#202028;--text:#e9e9ee;--muted:#9a9aa6;--accent1:#7b2cf1;--accent2:#5c2df5;--ok:#27d1a0;--warn:#f0c032;--danger:#f06464;
+    --bg:#0f0f12;--panel:#16161a;--chip:#202028;--text:#e9e9ee;--muted:#9a9aa6;
+    --accent1:#7b2cf1;--accent2:#5c2df5;--ok:#27d1a0;--warn:#f0c032;--danger:#f06464;
   }
-  *{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--text);font:16px/1.5 Inter,system-ui,Segoe UI,Roboto,Helvetica,Arial}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font:16px/1.5 Inter,system-ui,Segoe UI,Roboto,Helvetica,Arial}
   .wrap{max-width:1180px;margin:32px auto;padding:0 16px}
-  header{display:flex;align-items:center;gap:14px;margin-bottom:18px}
+  header{display:flex;align-items:center;gap:14px;justify-content:space-between;margin-bottom:18px}
+  .brand{display:flex;align-items:center;gap:12px}
   .logo{width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,var(--accent1),var(--accent2));box-shadow:0 0 0 2px #0006 inset}
   h1{margin:0;font-weight:800;font-size:24px}
+  .auth{display:flex;align-items:center;gap:10px}
+  .avatar{width:28px;height:28px;border-radius:50%;object-fit:cover;border:1px solid #0006}
+  .muted{color:var(--muted)}
+  .btn{display:inline-flex;align-items:center;gap:10px;border:0;border-radius:12px;padding:10px 14px;font-weight:800;cursor:pointer;color:#fff;background:linear-gradient(135deg,var(--accent1),var(--accent2))}
+  .btn.secondary{background:var(--chip);color:var(--text)}
+  .btn:disabled{opacity:.5;cursor:not-allowed}
+
   .grid{display:grid;grid-template-columns:320px 1fr;gap:18px}
   @media (max-width:950px){.grid{grid-template-columns:1fr}}
   .card{background:var(--panel);border-radius:14px;box-shadow:0 8px 24px rgba(0,0,0,.25);padding:16px}
-  .section-title{font-weight:700;margin:0 0 8px 0;letter-spacing:.2px}
+
+  .section-title{font-weight:700;margin:0 0 8px}
   .chip-row{display:flex;flex-wrap:wrap;gap:10px;margin:6px 0 12px}
   .chip{background:var(--chip);color:var(--text);border-radius:12px;padding:10px 14px;font-weight:700}
   .chip.active{background:linear-gradient(135deg,var(--accent1),var(--accent2));box-shadow:0 10px 18px rgba(124,45,240,.25)}
-  .btn{display:inline-flex;align-items:center;gap:10px;border:0;border-radius:16px;padding:14px 18px;font-weight:800;cursor:pointer;color:#fff;background:linear-gradient(135deg,var(--accent1),var(--accent2))}
-  .btn.secondary{background:var(--chip);color:var(--text)}
-  .btn:disabled{opacity:.5;cursor:not-allowed}
+
   .row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
   .timer{font-weight:900;font-size:34px;background:#111218;border-radius:14px;padding:10px 14px;min-width:150px;text-align:center}
   .bar{height:10px;border-radius:8px;background:#2a2a33;flex:1;position:relative;overflow:hidden}
   .bar>i{position:absolute;left:0;top:0;bottom:0;width:0;border-radius:8px;background:var(--danger);transition:width .3s ease,background .3s ease}
   .list{list-style:none;margin:6px 0 0;padding:0;display:grid;gap:8px}
   .item{background:#1a1a20;border-radius:12px;padding:12px}
-  .muted{color:var(--muted)}
+
+  .km{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+  .k{background:#1b1b23;border-radius:12px;padding:8px 10px;font-weight:700}
+
   footer{display:flex;justify-content:center;margin:20px 0 40px;color:var(--muted);gap:8px;font-size:13px}
   .badge{background:#1b1b23;padding:3px 8px;border-radius:10px}
-  .km{display:flex;gap:8px;flex-wrap:wrap}
-  .k{background:#1b1b23;border-radius:12px;padding:8px 10px;font-weight:700}
-  .ok{color:var(--ok)} .warn{color:var(--warn)} .danger{color:var(--danger)}
+
+  /* modal */
+  .modalBg{position:fixed;inset:0;background:#0008;display:none;align-items:center;justify-content:center;padding:16px}
+  .modal{background:var(--panel);border-radius:16px;max-width:560px;width:100%;padding:16px;box-shadow:0 10px 30px #000a}
+  .field{display:flex;flex-direction:column;gap:6px;margin:8px 0}
+  input,textarea{background:#1b1b23;border:1px solid #282838;color:var(--text);border-radius:10px;padding:10px}
+  .stars{display:flex;gap:6px}
+  .star{font-size:22px;cursor:pointer}
+  .star.on{color:#ffd36a}
 </style>
 </head>
 <body>
 <div class="wrap">
   <header>
-    <div class="logo" aria-hidden="true"></div>
-    <h1>English Coach</h1>
+    <div class="brand">
+      <div class="logo" aria-hidden="true"></div>
+      <h1>English Coach</h1>
+    </div>
+    <div class="auth">
+      <img id="avatar" class="avatar" src="" alt="" style="display:none">
+      <span id="who" class="muted"></span>
+      <button id="btnAuth" class="btn secondary">Sign in with Google</button>
+    </div>
   </header>
 
   <div class="grid">
-    <!-- Left column -->
+    <!-- left column -->
     <aside class="card">
       <h2 class="section-title">Goal</h2>
       <div id="goalRow" class="chip-row">
@@ -72,14 +97,14 @@
       <div class="item" id="promptBox">Describe a recent project you led and one lesson you learned.</div>
       <div class="row" style="margin-top:8px">
         <button id="btnRandom" class="btn secondary">🎲 Randomize prompt</button>
-        <span class="muted" style="margin-left:auto">We don’t store your audio; it’s sent to the analyzer and immediately discarded.</span>
+        <span class="muted" style="margin-left:auto">We don’t store your audio.</span>
       </div>
     </aside>
 
-    <!-- Right column -->
+    <!-- right column -->
     <main class="card">
-      <div class="km" style="margin-bottom:12px">
-        <span id="liveDot" class="k">● <span class="muted">Live</span></span>
+      <div class="km">
+        <span id="liveDot" class="k">● Idle</span>
         <span class="k">Level: <b id="lvlTxt">–</b></span>
         <span class="k">Fillers: <b id="fillersTxt">0</b></span>
         <span class="k">Streak: <b id="streakTxt">0</b></span>
@@ -91,20 +116,17 @@
           <span class="bar" style="width:140px;margin-left:8px"><i id="levelFill" style="width:0;background:var(--warn)"></i></span>
           <span id="levelPct" class="muted" style="margin-left:6px">0%</span>
         </span>
-        <span class="k" style="min-width:240px">Relevancy
-          <span class="bar" style="width:140px;margin-left:8px"><i id="relFill" style="width:0;background:var(--warn)"></i></span>
-          <span id="relPct" class="muted" style="margin-left:6px">0%</span>
-        </span>
+        <!-- Relevancy removed as requested -->
       </div>
 
       <section>
         <h3 class="section-title">Pronunciation</h3>
-        <ul id="pronList" class="list"></ul>
+        <ul id="pronList" class="list"><li class="muted">–</li></ul>
       </section>
 
       <section style="margin-top:8px">
         <h3 class="section-title">Grammar</h3>
-        <ul id="gramList" class="list"></ul>
+        <ul id="gramList" class="list"><li class="muted">–</li></ul>
       </section>
 
       <section style="margin-top:8px">
@@ -125,26 +147,79 @@
   </div>
 
   <footer>
-    <span>© 2025 <a href="https://simpleia.com" target="_blank" rel="noopener" class="muted" style="text-decoration:none;color:inherit">Simpleia</a> — Built by <a href="https://aosama.net" target="_blank" rel="noopener" class="muted" style="text-decoration:none;color:inherit">Abdo Osama</a></span>
-    <span class="badge">v1.2.12</span>
+    <span>© 2025 <a href="https://simpleia.com" target="_blank" class="muted" style="text-decoration:none;color:inherit">Simpleia</a> — Built by <a href="https://aosama.net" target="_blank" class="muted" style="text-decoration:none;color:inherit">Abdo Osama</a></span>
+    <span class="badge">v1.3.2</span>
   </footer>
 </div>
 
-<!-- Supabase client -->
+<!-- Feedback modal -->
+<div id="fbBg" class="modalBg">
+  <div class="modal">
+    <h3 class="section-title">Quick feedback (required to continue)</h3>
+    <div class="field">
+      <label>Name</label>
+      <input id="fbName" placeholder="Your name"/>
+    </div>
+    <div class="field">
+      <label>Email</label>
+      <input id="fbEmail" placeholder="you@email.com"/>
+    </div>
+    <div class="field">
+      <label>Rating</label>
+      <div id="stars" class="stars">
+        <span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span>
+      </div>
+    </div>
+    <div class="field">
+      <label>Feedback / Suggestions</label>
+      <textarea id="fbMsg" rows="4" placeholder="Tell us what to improve…"></textarea>
+    </div>
+    <div class="row" style="justify-content:flex-end;margin-top:8px">
+      <button id="fbCancel" class="btn secondary">Cancel</button>
+      <button id="fbSubmit" class="btn">Submit feedback</button>
+    </div>
+  </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-/* === CONFIG === */
-const API_URL = "https://english-coach-endpoint-git-main-abelrahman-osamas-projects.vercel.app/api/analyze";    // <- change to your analyzer endpoint
-// Supabase: paste from Supabase → Settings → API (Client Keys)
-const SUPABASE_URL = "https://cstwbjtbwwnxrsvpxqro.supabase.co";             // <- CHANGE
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNzdHdianRid3dueHJzdnB4cXJvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ4NDg1OTgsImV4cCI6MjA3MDQyNDU5OH0.D-P8NWdJoro_pzSk6qoi5_Hl6Ohz_hiTZr4-fqmyXkM";                    // <- CHANGE
+/* ====== CONFIG (EDIT THESE) ====== */
+const API_URL = "https://YOUR-VERCEL-APP.vercel.app/api/analyze"; // <- your analyzer
+const SUPABASE_URL = "https://YOUR-PROJECT.supabase.co";          // <- Supabase project URL
+const SUPABASE_ANON_KEY = "YOUR-ANON-PUBLIC-KEY";                 // <- anon public key
+/* ================================= */
 
-/* === Supabase client & basic session logging === */
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 const EC_USER_KEY = "ec_user_id";
 const EC_SESSIONS_LOCAL = "ec_sessions_count";
 const EC_STREAK = "ec_streak_days";
 const EC_LAST_DAY = "ec_last_day";
+const FEEDBACK_EVERY_N = 1; // require feedback every N sessions (1 = every time)
+
+/* --------- Auth UI --------- */
+const btnAuth = document.getElementById("btnAuth");
+const who = document.getElementById("who");
+const avatar = document.getElementById("avatar");
+
+async function refreshAuthUI(){
+  const { data: { session } } = await sb.auth.getSession();
+  if(session?.user){
+    const { user } = session;
+    // try profile
+    const { data: prof } = await sb.from("profiles").select("*").eq("id", user.id).maybeSingle();
+    who.textContent = prof?.display_name || user.email || "Signed in";
+    if(prof?.avatar_url){ avatar.src = prof.avatar_url; avatar.style.display="block"; } else { avatar.style.display="none"; }
+    btnAuth.textContent = "Sign out";
+    btnAuth.onclick = async ()=>{ await sb.auth.signOut(); await refreshAuthUI(); };
+  }else{
+    who.textContent = "Guest";
+    avatar.style.display="none";
+    btnAuth.textContent = "Sign in with Google";
+    btnAuth.onclick = async ()=>{
+      await sb.auth.signInWithOAuth({ provider: "google" });
+    };
+  }
+}
 
 function getLocalUserId(){
   let id = localStorage.getItem(EC_USER_KEY);
@@ -152,40 +227,7 @@ function getLocalUserId(){
   return id;
 }
 
-async function saveSessionToSupabase({ goal, duration_sec, result }){
-  try{
-    const user_id = getLocalUserId();
-    const payload = {
-      user_id,
-      goal,
-      duration_sec: Math.round(duration_sec||0),
-      wpm: result?.fluency?.wpm ?? null,
-      fillers: result?.fluency?.fillers ?? null,
-      level_score: result?.level_score ?? null,
-      relevance_score: result?.relevance?.score ?? null,
-    };
-    await sb.from("sessions").insert(payload).throwOnError();
-  }catch(e){ console.warn("Supabase insert:", e.message); }
-}
-
-async function fetchAndRenderLeaderboard(){
-  const UL = document.getElementById("leaderboard-list");
-  try{
-    const { data } = await sb.from("sessions").select("user_id, created_at");
-    const counts = new Map();
-    (data||[]).forEach(row => counts.set(row.user_id, (counts.get(row.user_id)||0)+1));
-    const sorted = [...counts.entries()].sort((a,b)=>b[1]-a[1]).slice(0,10);
-    if(!sorted.length){ UL.innerHTML = `<li class="muted">No sessions yet.</li>`; return; }
-    const me = getLocalUserId();
-    UL.innerHTML = sorted.map(([uid,cnt],i)=>(
-      `<li>${i+1}. <span class="${uid===me?'ok':''}">${uid.slice(0,6)}…</span> — <b>${cnt}</b> sessions</li>`
-    )).join("");
-  }catch(e){
-    UL.innerHTML = `<li class="muted">Leaderboard unavailable</li>`;
-  }
-}
-
-/* === UI / Recorder === */
+/* --------- Recorder --------- */
 const btnStart = document.getElementById("btnStart");
 const btnStop  = document.getElementById("btnStop");
 const btnSend  = document.getElementById("btnSend");
@@ -193,15 +235,12 @@ const btnRandom= document.getElementById("btnRandom");
 const promptBox= document.getElementById("promptBox");
 const timerEl  = document.getElementById("timer");
 const timeFill = document.getElementById("timeFill");
-
 const lvlTxt    = document.getElementById("lvlTxt");
 const fillersTxt= document.getElementById("fillersTxt");
 const streakTxt = document.getElementById("streakTxt");
 const sessionsTxt = document.getElementById("sessionsTxt");
 const levelFill = document.getElementById("levelFill");
 const levelPct  = document.getElementById("levelPct");
-const relFill   = document.getElementById("relFill");
-const relPct    = document.getElementById("relPct");
 const pronList  = document.getElementById("pronList");
 const gramList  = document.getElementById("gramList");
 const fixNowEl  = document.getElementById("fixNow");
@@ -224,11 +263,8 @@ document.getElementById("goalRow").addEventListener("click", (e)=>{
 
 btnStart.onclick = async () => {
   try{
-    btnStart.disabled = true;
-    btnStop.disabled = false;
-    btnSend.disabled = true;
-    btnRandom.disabled = true;
-    liveDot.innerHTML = "● <span class='muted'>Live</span>";
+    btnStart.disabled = true; btnStop.disabled = false; btnSend.disabled = true; btnRandom.disabled = true;
+    liveDot.textContent = "● Live";
     media = await navigator.mediaDevices.getUserMedia({ audio:true });
     rec = new MediaRecorder(media, { mimeType:"audio/webm" });
     chunks = [];
@@ -236,7 +272,6 @@ btnStart.onclick = async () => {
     rec.onstop = () => media.getTracks().forEach(t=>t.stop());
     rec.start(250);
 
-    // timer
     sec = 0; paintTimer();
     clearInterval(timerInt);
     timerInt = setInterval(()=>{
@@ -254,7 +289,19 @@ btnStop.onclick = () => {
   clearInterval(timerInt);
   btnSend.disabled = chunks.length===0;
   btnRandom.disabled = false;
-  liveDot.innerHTML = "● <span class='muted'>Idle</span>";
+  liveDot.textContent = "● Idle";
+};
+
+btnRandom.onclick = () => {
+  if(btnStart.disabled) return; // disabled while recording
+  const options = [
+    "Describe a recent project you led and one lesson you learned.",
+    "Explain a challenge your team faced and how you solved it.",
+    "Talk about a time you disagreed and how you handled it.",
+    "Describe your typical day (~45s).",
+    "What is one skill you want to improve and why?"
+  ];
+  promptBox.textContent = options[Math.floor(Math.random()*options.length)];
 };
 
 btnSend.onclick = async () => {
@@ -272,30 +319,19 @@ btnSend.onclick = async () => {
   const json = await res.json();
   renderResult(json);
 
-  // reset state for next try
-  chunks = [];
-  sec = 0; paintTimer();
-  liveDot.innerHTML = "● <span class='muted'>Idle</span>";
-  btnSend.disabled = true;
+  // reset for next try
+  chunks = []; sec = 0; paintTimer(); liveDot.textContent = "● Idle"; btnSend.disabled = true;
 
   // Save session + refresh leaderboard
   await postAnalysis(json, { goal: currentGoal, duration_sec: sec });
   await fetchAndRenderLeaderboard();
 
-  // local counters / streak
+  // counters / streak
   bumpLocalCounters();
-};
 
-btnRandom.onclick = () => {
-  if(btnStart.disabled && !btnSend.disabled) return; // extra guard
-  const options = [
-    "Describe a recent project you led and one lesson you learned.",
-    "Explain a challenge your team faced and how you solved it.",
-    "Talk about a time you disagreed and how you handled it.",
-    "Describe your typical day (~45s).",
-    "What is one skill you want to improve and why?"
-  ];
-  promptBox.textContent = options[Math.floor(Math.random()*options.length)];
+  // feedback gate
+  const runs = Number(localStorage.getItem(EC_SESSIONS_LOCAL)||0);
+  if(runs % FEEDBACK_EVERY_N === 0) openFeedback();
 };
 
 function paintTimer(){
@@ -304,29 +340,21 @@ function paintTimer(){
   timerEl.textContent = `${mm}:${ss}`;
   const pct = Math.min(100, Math.round((sec/MAX_SEC)*100));
   timeFill.style.width = pct+"%";
-  // color ramp
   timeFill.style.background = sec<30 ? "var(--danger)" : (sec<60 ? "var(--warn)" : "var(--ok)");
 }
 
-// — Render results
+/* --------- Render results --------- */
+function escapeHTML(s){ return String(s||"").replace(/[&<>"']/g, c=>({ "&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;" }[c])); }
 function renderResult(r){
   lastResult = r;
-  // Level text
   const L = r.friendly_level || r.cefr_estimate || "–";
   lvlTxt.textContent = L;
   fillersTxt.textContent = r?.fluency?.fillers ?? 0;
 
-  // meters
   levelPct.textContent = (r.level_score||0)+"%";
   levelFill.style.width = (r.level_score||0)+"%";
   levelFill.style.background = (r.level_score||0) > 66 ? "var(--ok)" : (r.level_score||0) > 33 ? "var(--warn)" : "var(--danger)";
 
-  const rel = r?.relevance?.score ?? 0;
-  relPct.textContent = rel+"%";
-  relFill.style.width = rel+"%";
-  relFill.style.background = rel>66 ? "var(--ok)" : rel>33 ? "var(--warn)" : "var(--danger)";
-
-  // lists
   pronList.innerHTML = (r.pronunciation||[]).map(p => `
     <li class="item">
       <b>${escapeHTML(p.sound_or_word||"-")}</b> — ${escapeHTML(p.issue||"-")}
@@ -344,39 +372,133 @@ function renderResult(r){
   nextPromptEl.textContent = r.next_prompt || "–";
 }
 
-function escapeHTML(s){ return String(s||"").replace(/[&<>"']/g, c=>({ "&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;" }[c])); }
-
-/* === Sessions / streak counters === */
+/* --------- Local counters + streak --------- */
 function bumpLocalCounters(){
   const today = new Date().toISOString().slice(0,10);
   const last = localStorage.getItem(EC_LAST_DAY);
   let streak = Number(localStorage.getItem(EC_STREAK)||0);
   if(!last || last===today){
-    // same day, keep streak as is (counts once/day)
+    if(!streak) streak = 1; // first day
   }else{
-    // if it's exactly next day -> +1 else reset
     const d1 = new Date(last); const d2 = new Date(today);
     const diff = (d2 - d1)/(1000*60*60*24);
     streak = diff===1 ? streak+1 : 1;
   }
   localStorage.setItem(EC_LAST_DAY, today);
-  localStorage.setItem(EC_STREAK, String(streak||1));
+  localStorage.setItem(EC_STREAK, String(streak));
 
-  // session count (local)
   let localCount = Number(localStorage.getItem(EC_SESSIONS_LOCAL)||0) + 1;
   localStorage.setItem(EC_SESSIONS_LOCAL, String(localCount));
 
-  streakTxt.textContent = localStorage.getItem(EC_STREAK)||"0";
-  sessionsTxt.textContent = localStorage.getItem(EC_SESSIONS_LOCAL)||"0";
+  streakTxt.textContent = String(streak);
+  sessionsTxt.textContent = String(localCount);
 }
 
-// Supabase hook called after analysis
+/* --------- Supabase: store sessions + leaderboard --------- */
+async function getUserIdOrGuest(){
+  const { data:{ session } } = await sb.auth.getSession();
+  return session?.user?.id || getLocalUserId();
+}
+
+async function saveSessionToSupabase({ goal, duration_sec, result }){
+  try{
+    const user_id = await getUserIdOrGuest();
+    const payload = {
+      user_id,
+      goal,
+      duration_sec: Math.round(duration_sec||0),
+      wpm: result?.fluency?.wpm ?? null,
+      fillers: result?.fluency?.fillers ?? null,
+      level_score: result?.level_score ?? null,
+      relevance_score: null /* removed from UI */,
+    };
+    await sb.from("sessions").insert(payload).throwOnError();
+  }catch(e){ console.warn("Supabase insert:", e.message); }
+}
+
+async function fetchAndRenderLeaderboard(){
+  const UL = document.getElementById("leaderboard-list");
+  try{
+    // Get counts per user
+    const { data } = await sb.from("sessions").select("user_id");
+    const counts = new Map();
+    (data||[]).forEach(r => counts.set(r.user_id, (counts.get(r.user_id)||0)+1));
+
+    // fetch names for top 10
+    const top = [...counts.entries()].sort((a,b)=>b[1]-a[1]).slice(0,10);
+    if(!top.length){ UL.innerHTML = `<li class="muted">No sessions yet.</li>`; return; }
+
+    const ids = top.map(([id])=>id);
+    const { data: profs } = await sb.from("profiles").select("id, display_name").in("id", ids);
+    const nameById = new Map((profs||[]).map(p=>[p.id, p.display_name]));
+
+    const me = await getUserIdOrGuest();
+    UL.innerHTML = top.map(([uid,cnt],i)=>{
+      const label = nameById.get(uid) || (uid===me ? "You" : "Guest");
+      return `<li>${i+1}. <b>${label}</b> — ${cnt} session${cnt>1?"s":""}</li>`;
+    }).join("");
+  }catch(e){
+    UL.innerHTML = `<li class="muted">Leaderboard unavailable</li>`;
+  }
+}
+
 async function postAnalysis(result, meta){
   await saveSessionToSupabase({ goal: meta?.goal, duration_sec: meta?.duration_sec, result });
 }
 
-document.addEventListener("DOMContentLoaded", ()=>{
-  // initial numbers
+/* --------- Feedback modal --------- */
+const fbBg = document.getElementById("fbBg");
+const fbName = document.getElementById("fbName");
+const fbEmail= document.getElementById("fbEmail");
+const fbMsg  = document.getElementById("fbMsg");
+const fbSubmit = document.getElementById("fbSubmit");
+const fbCancel = document.getElementById("fbCancel");
+const starsEl = document.getElementById("stars");
+let fbRating = 5;
+
+starsEl.querySelectorAll(".star").forEach((el,idx)=>{
+  el.addEventListener("click", ()=>{
+    fbRating = idx+1;
+    starsEl.querySelectorAll(".star").forEach((s,i)=>s.classList.toggle("on", i<fbRating));
+  });
+});
+starsEl.querySelectorAll(".star").forEach((s,i)=>s.classList.toggle("on", i<fbRating));
+
+function openFeedback(){ fbBg.style.display="flex"; prefillFeedback(); }
+function closeFeedback(){ fbBg.style.display="none"; }
+
+async function prefillFeedback(){
+  const { data:{ session } } = await sb.auth.getSession();
+  if(session?.user){
+    const { user } = session;
+    const { data: prof } = await sb.from("profiles").select("*").eq("id", user.id).maybeSingle();
+    fbName.value = prof?.display_name || user.user_metadata?.name || "";
+    fbEmail.value = user.email || "";
+  }
+}
+
+fbCancel.onclick = closeFeedback;
+fbSubmit.onclick = async ()=>{
+  const { data:{ session } } = await sb.auth.getSession();
+  const user_id = session?.user?.id ?? null;
+  try{
+    await sb.from("feedback").insert({
+      user_id,
+      name: fbName.value.trim() || null,
+      email: fbEmail.value.trim() || null,
+      rating: fbRating,
+      message: fbMsg.value.trim() || null
+    }).throwOnError();
+    closeFeedback();
+  }catch(e){
+    alert("Could not submit feedback: "+e.message);
+  }
+};
+
+/* --------- Boot --------- */
+document.addEventListener("DOMContentLoaded", async ()=>{
+  await refreshAuthUI();
+  sb.auth.onAuthStateChange(refreshAuthUI);
   streakTxt.textContent   = localStorage.getItem(EC_STREAK)||"0";
   sessionsTxt.textContent = localStorage.getItem(EC_SESSIONS_LOCAL)||"0";
   fetchAndRenderLeaderboard();
