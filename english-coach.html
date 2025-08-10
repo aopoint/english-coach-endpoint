@@ -1,452 +1,546 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>English Coach — Instant English Feedback</title>
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
 <style>
   :root{
     --bg:#191919;
-    --panel:#161616;
-    --card:#1f1f1f;
-    --muted:#9a9a9a;
+    --panel:#1f1f1f;
+    --panel-2:#232323;
     --text:#f5f5f5;
+    --muted:#a7a7a7;
+    --ring:rgba(78,10,122,.4);
+    --chip:#2a2a2a;
+    --chip-on:#4E0A7A;
+    --chip-on-2:#6a24a6;
     --ok:#22c55e;
     --err:#ef4444;
-    --chip:#222;
-    --ring:rgba(78,10,122,.35);
-    --primary:#4E0A7A;      /* Simpleia primary */
-    --primary-2:#7f3ab7;    /* lighter hover */
-    --shadow:0 8px 38px rgba(0,0,0,.45), 0 2px 12px rgba(0,0,0,.35);
-    --radius:16px;
+    --shadow: 0 10px 30px rgba(0,0,0,.35);
+    --radius:18px;
   }
   *{box-sizing:border-box}
   html,body{height:100%}
   body{
-    margin:0;
-    background: radial-gradient(1000px 600px at 30% -10%, rgba(78,10,122,.18), transparent 60%),
-                radial-gradient(900px 500px at 90% -10%, rgba(78,10,122,.12), transparent 60%),
-                var(--bg);
-    color:var(--text);
-    font:16px/1.35 "Avenir Next", Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-    letter-spacing:.2px;
+    margin:0;background:radial-gradient(1000px 600px at 30% -10%, rgba(78,10,122,.25), transparent 45%) no-repeat var(--bg);
+    color:var(--text); font-family:"Inter","Avenir Next",system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,Apple Color Emoji,Segoe UI Emoji;
   }
-  a{color:#b29ad9;text-decoration:none}
-  a:hover{text-decoration:underline}
-  .wrap{
-    max-width:1200px;
-    margin:40px auto 100px;
-    padding:0 20px;
-  }
+  a{color:#caa6ff;text-decoration:none}
+  .wrap{max-width:1200px;margin:24px auto;padding:0 18px}
+  header{display:flex;align-items:center;gap:12px;margin-bottom:18px}
+  header h1{margin:0;font-weight:800;letter-spacing:.3px}
+  header .pill{font-size:13px;background:linear-gradient(90deg,#4E0A7A,#6a24a6);padding:8px 12px;border-radius:999px;box-shadow:var(--shadow)}
+  .grid{display:grid;grid-template-columns:380px 1fr;gap:20px}
+  @media (max-width:980px){ .grid{grid-template-columns:1fr; } }
 
-  header{
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    gap:12px;
-    margin-bottom:22px;
-  }
-  .brand{
-    display:flex;align-items:center;gap:12px;
-    font-weight:800;letter-spacing:.4px;font-size:26px;
-  }
-  .badge{font-size:12px;padding:6px 10px;border-radius:999px;background:linear-gradient(180deg, var(--primary), #361157);box-shadow:inset 0 0 0 1px rgba(255,255,255,.06);}
+  .card{background:linear-gradient(180deg,rgba(255,255,255,.03),transparent 30%) no-repeat var(--panel);
+        border:1px solid rgba(255,255,255,.06); border-radius:var(--radius); box-shadow:var(--shadow)}
+  .card .in{padding:22px}
+  .title{font-size:28px;font-weight:800;margin:0 0 8px}
+  .sub{color:var(--muted);font-size:15px;margin:0 0 18px}
+  .row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 
-  .grid{
-    display:grid;
-    grid-template-columns: 420px 1fr;
-    gap:18px;
-  }
-  @media (max-width: 980px){
-    .grid{grid-template-columns: 1fr;gap:16px}
-  }
-
-  .card{
-    background:var(--card);
-    border-radius:var(--radius);
-    box-shadow:var(--shadow);
-    border:1px solid rgba(255,255,255,.04);
-  }
-  .pad{padding:18px}
-
-  /* Left controller */
-  .title{
-    font-weight:800;
-    font-size:28px;
-    margin:6px 0 6px;
-  }
-  .subtitle{color:var(--muted);margin-bottom:18px}
-  .section-label{font-weight:700;margin:14px 0 10px}
-
-  /* Goal chips row (one row, horizontal scroll on mobile) */
-  .chip-row{
-    display:flex;gap:10px;align-items:center;overflow:auto;padding-bottom:4px;
-    -webkit-overflow-scrolling:touch;scrollbar-width:none;
-  }
+  /* one-row chip selector with scroll & hint */
+  .chip-wrap{position:relative;margin:12px 0 14px}
+  .chip-row{display:flex;gap:12px;overflow-x:auto;scrollbar-width:none;-ms-overflow-style:none;padding-bottom:2px}
   .chip-row::-webkit-scrollbar{display:none}
-  .chip{
-    white-space:nowrap;
-    padding:12px 18px;border-radius:14px;background:var(--chip);
-    border:1px solid rgba(255,255,255,.06);
-    color:#ddd;cursor:pointer;user-select:none;
-    transition:.15s ease;
-  }
-  .chip:hover{border-color:rgba(255,255,255,.12)}
-  .chip.active{
-    color:#fff;background:linear-gradient(180deg,var(--primary),#361157);
-    box-shadow:0 0 0 3px var(--ring);
-  }
+  .chip{background:var(--chip);color:#eee;border:1px solid rgba(255,255,255,.08);
+        padding:14px 18px;border-radius:16px;font-weight:600;white-space:nowrap;cursor:pointer;user-select:none;transition:.2s}
+  .chip:hover{transform:translateY(-1px)}
+  .chip.on{background:linear-gradient(90deg,var(--chip-on),var(--chip-on-2));border-color:transparent}
+  .chip-wrap::after{content:"";position:absolute;right:0;top:0;bottom:0;width:44px;
+                    background:linear-gradient(90deg,rgba(31,31,31,0) 0%, rgba(31,31,31,1) 100%);
+                    pointer-events:none;opacity:0;transition:.25s}
+  .chip-wrap.scrollable::after{opacity:.95}
+  .scroll-hint{position:absolute;right:10px;top:-16px;font-size:12px;color:#c9b5ff;opacity:.65;display:none}
+  .chip-wrap.scrollable .scroll-hint{display:block}
+  .chip-wrap.scrolled .scroll-hint{opacity:0;transition:.25s}
 
-  .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
-  .row .btn{flex:1}
-  .btn{
-    display:inline-flex;align-items:center;justify-content:center;gap:8px;
-    padding:14px 16px;border-radius:14px;border:1px solid rgba(255,255,255,.06);
-    background:#232323;color:#fff;cursor:pointer;transition:.15s ease;
-    font-weight:700;
-  }
-  .btn:hover{border-color:rgba(255,255,255,.12)}
-  .btn.primary{background:linear-gradient(180deg, var(--primary), #361157)}
-  .btn.primary:hover{filter:brightness(1.08)}
-  .btn.ghost{background:#1b1b1b}
-  .timer{
-    min-width:140px;text-align:center;font-weight:800;font-size:26px;padding:10px 14px;border-radius:14px;background:#141414;border:1px solid rgba(255,255,255,.06)
-  }
-  .prompt-box{
-    margin-top:12px;font-size:14px;color:#cfcfcf;background:#151515;border:1px dashed rgba(255,255,255,.08);
-    border-radius:12px;padding:12px
-  }
-  .prompt-actions{display:flex;gap:8px;margin-top:8px}
-  .mini{font-size:12px;padding:6px 10px;border-radius:10px;background:#232323;border:1px solid rgba(255,255,255,.06);cursor:pointer}
-  .mini:hover{border-color:rgba(255,255,255,.12)}
+  .btn{appearance:none;border:1px solid rgba(255,255,255,.12);background:#2b2b2b;color:#fff;border-radius:14px;
+       padding:14px 18px;font-weight:700;cursor:pointer;transition:.2s}
+  .btn:hover{transform:translateY(-1px)}
+  .btn.primary{background:linear-gradient(90deg,#4E0A7A,#6a24a6);border-color:transparent}
+  .btn.ghost{background:transparent}
+  .btn.block{width:100%}
+  .btn.loading{position:relative;color:#cfcfcf;pointer-events:none}
+  .btn.loading::after{content:"";position:absolute;left:50%;top:50%;width:16px;height:16px;border-radius:50%;
+                      border:2px solid rgba(255,255,255,.3);border-top-color:#fff;transform:translate(-50%,-50%);
+                      animation: spin .8s linear infinite}
+  @keyframes spin{to{transform:translate(-50%,-50%) rotate(360deg)}}
 
-  /* Right: results */
-  .stack{display:flex;flex-direction:column;gap:14px}
-  .metric-row{display:flex;gap:10px;flex-wrap:wrap}
-  .metric{
-    padding:10px 12px;border-radius:12px;background:#141414;border:1px solid rgba(255,255,255,.06);color:#d9d9d9;
-    display:flex;align-items:center;gap:8px;font-weight:700
+  .meter{display:flex;align-items:center;gap:12px;margin:6px 0 14px}
+  .dot{width:10px;height:10px;border-radius:999px;background:#666;border:1px solid rgba(255,255,255,.25)}
+  body.recording .dot{background:#f43;animation:pulse 1.2s infinite}
+  @keyframes pulse{
+    0%{ box-shadow:0 0 0 0 rgba(255,68,68,.6) }
+    70%{ box-shadow:0 0 0 12px rgba(255,68,68,0) }
+    100%{ box-shadow:0 0 0 0 rgba(255,68,68,0) }
   }
-  .metric .dot{width:10px;height:10px;border-radius:999px;background:#444}
-  .metric .dot.green{background:var(--ok)}
-  .metric .dot.red{background:var(--err)}
+  .badge{border:1px solid rgba(255,255,255,.12);background:#262626;padding:8px 12px;border-radius:12px;font-weight:700}
+  body.recording .timer{background:rgba(255,68,68,.15);border-color:rgba(255,68,68,.3)}
 
-  .out{background:#151515;border:1px solid rgba(255,255,255,.06);border-radius:14px;padding:12px;color:#eaeaea;min-height:48px}
-  .out.mono{font:13px/1.4 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;color:#c9c9c9}
+  .section h3{margin:10px 0 8px;font-size:16px;letter-spacing:.2px}
+  .pill-stat{display:inline-flex;gap:8px;align-items:center;padding:8px 10px;border-radius:999px;
+             background:#262626;border:1px solid rgba(255,255,255,.08)}
+  .pill-stat b{font-weight:800}
+  .area{background:var(--panel-2);border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:14px 16px;min-height:52px}
+  .muted{color:var(--muted)}
+  .pair{display:flex;gap:12px}
+  .pair .btn{flex:1}
 
-  /* Feedback modal */
-  .modal{
-    position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.6);backdrop-filter:blur(2px);z-index:1000;
-  }
-  .modal.show{display:flex}
-  .sheet{
-    width:min(560px,calc(100vw - 32px));
-    background:var(--panel);border:1px solid rgba(255,255,255,.06);border-radius:16px;box-shadow:var(--shadow);
-    padding:16px 16px 12px;
-  }
-  .sheet h3{margin:6px 0 2px}
-  .fld{margin:10px 0}
-  .fld input, .fld textarea{
-    width:100%;background:#121212;border:1px solid rgba(255,255,255,.08);color:#eee;border-radius:12px;padding:12px 12px;font:14px Inter, system-ui
-  }
-  .fld textarea{min-height:120px;resize:vertical}
-  .stars{display:flex;gap:8px;font-size:24px;cursor:pointer}
-  .star{filter:grayscale(1) brightness(1.1);opacity:.6;transition:.12s}
-  .star.active{filter:none;opacity:1}
-  .sheet .row{justify-content:flex-end;margin-top:6px}
-  .toast{
-    position:fixed;left:50%;bottom:22px;transform:translateX(-50%);
-    background:#101010;border:1px solid rgba(255,255,255,.08);color:#eee;padding:10px 14px;border-radius:12px;box-shadow:var(--shadow);
-    z-index:1200;display:none
-  }
-  .toast.show{display:block}
+  footer{display:flex;justify-content:center;margin:26px 0 40px;color:#c9b5ff}
+  footer a{color:#c9b5ff;text-decoration:none;border-bottom:1px dashed rgba(201,181,255,.35)}
+  .note{font-size:12px;color:var(--muted)}
 
-  footer{margin:24px 0 60px;text-align:center;color:#bdbdbd}
+  /* feedback modal */
+  .modal{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;align-items:center;justify-content:center;padding:18px}
+  .modal.on{display:flex}
+  .modal .sheet{width:min(640px,92vw);background:var(--panel);border:1px solid rgba(255,255,255,.08);border-radius:18px;
+                box-shadow:var(--shadow)}
+  .modal .body{padding:20px}
+  .field{margin:10px 0}
+  input[type="text"],input[type="email"],textarea{
+    width:100%;background:#202020;border:1px solid rgba(255,255,255,.12);color:#fff;border-radius:12px;padding:12px 14px;
+    outline:none
+  }
+  textarea{min-height:120px;resize:vertical}
+  .stars{display:flex;gap:8px;margin:8px 0 2px}
+  .star{font-size:22px;cursor:pointer;filter:drop-shadow(0 2px 6px rgba(0,0,0,.25))}
+  .star.on{color:#ffd76a}
 </style>
 </head>
 <body>
   <div class="wrap">
     <header>
-      <div class="brand">English Coach <span class="badge">Instant English Feedback</span></div>
+      <h1>English Coach</h1>
+      <div class="pill">Instant English Feedback</div>
     </header>
 
     <div class="grid">
-      <!-- LEFT: CONTROLS -->
-      <div class="card pad">
-        <div class="title">Record for 60–90 seconds.</div>
-        <div class="subtitle">We’ll analyze fluency & correctness, then show key corrections and a next prompt.</div>
+      <!-- LEFT: controls -->
+      <div class="card">
+        <div class="in">
+          <h2 class="title">Record for <span style="white-space:nowrap">60-90 seconds.</span></h2>
+          <p class="sub">We’ll analyze fluency & correctness, then show key corrections and a next prompt.</p>
 
-        <div class="section-label">Goal</div>
-        <div id="goals" class="chip-row" role="tablist" aria-label="Goal">
-          <div class="chip active" data-goal="Work English">Work English</div>
-          <div class="chip" data-goal="Daily Life">Daily Life</div>
-          <div class="chip" data-goal="Interview Prep">Interview Prep</div>
-          <div class="chip" data-goal="Travel">Travel</div>
-        </div>
-
-        <div class="row" style="margin:12px 0 10px">
-          <button id="btnStart" class="btn primary">Start recording</button>
-          <button id="btnStop" class="btn ghost">Stop</button>
-          <div id="timer" class="timer">00:00</div>
-        </div>
-        <button id="btnSend" class="btn" style="width:100%;font-size:17px;font-weight:800;letter-spacing:.2px;">Send & Analyze</button>
-
-        <div class="prompt-box">
-          <div style="font-weight:700;margin-bottom:6px">What to say to start</div>
-          <div id="starter">Describe a recent project you led and one lesson you learned.</div>
-          <div class="prompt-actions">
-            <button id="btnRandom" class="mini">Randomize prompt</button>
-            <button id="btnCopy" class="mini">Copy</button>
+          <div class="section">
+            <h3>Goal</h3>
+            <div class="chip-wrap" id="chipWrap">
+              <div class="scroll-hint">drag ⇢</div>
+              <div class="chip-row" id="goals">
+                <div class="chip on" data-goal="Work English">Work English</div>
+                <div class="chip" data-goal="Daily Life">Daily Life</div>
+                <div class="chip" data-goal="Interview Prep">Interview Prep</div>
+                <div class="chip" data-goal="Travel">Travel</div>
+                <div class="chip" data-goal="Presentation">Presentation</div>
+              </div>
+            </div>
           </div>
-        </div>
 
-        <div style="margin-top:12px;color:#a6a6a6;font-size:13px">
-          We don’t store your audio; it’s sent to the analyzer and immediately discarded.
+          <div class="row">
+            <button class="btn primary" id="btnStart">Start recording</button>
+            <button class="btn" id="btnStop">Stop</button>
+            <div class="badge timer" id="timer">00:00</div>
+          </div>
+
+          <button class="btn block primary" id="btnSendAnalyze">Send & Analyze</button>
+
+          <div class="section" style="margin-top:14px">
+            <h3>What to say to start</h3>
+            <div class="area" id="starter">Describe a recent project you led and one lesson you learned.</div>
+            <div class="pair" style="margin-top:10px">
+              <button class="btn ghost" id="btnRandom">Randomize prompt</button>
+              <button class="btn ghost" id="btnCopy">Copy</button>
+            </div>
+            <p class="note" style="margin-top:8px">
+              We don’t store your audio; it’s sent to the analyzer and immediately discarded.
+            </p>
+          </div>
         </div>
       </div>
 
-      <!-- RIGHT: RESULTS -->
-      <div class="stack">
-        <div class="card pad">
-          <div class="metric-row" style="margin-bottom:10px">
-            <div class="metric"><span class="dot green"></span> Live</div>
-            <div class="metric">Level: <span id="level" style="margin-left:8px">–</span></div>
-            <div class="metric">Fillers: <span id="fillers" style="margin-left:6px">0</span></div>
+      <!-- RIGHT: results -->
+      <div class="card">
+        <div class="in">
+          <div class="meter">
+            <span class="dot"></span>
+            <div class="pill-stat"><span>Live</span></div>
+            <div class="pill-stat">Level: <b id="levelLabel">–</b></div>
+            <div class="pill-stat">Fillers: <b id="fillersCount">0</b></div>
           </div>
 
-          <div class="section-label">What to fix now</div>
-          <div id="fixnow" class="out">–</div>
+          <div class="section">
+            <h3>What to fix now</h3>
+            <div class="area" id="fixNow">–</div>
+          </div>
 
-          <div class="section-label" style="margin-top:14px">Next prompt (30–45s)</div>
-          <div id="nextprompt" class="out">–</div>
+          <div class="section">
+            <h3>Next prompt (30-45s)</h3>
+            <div class="area" id="nextPrompt">–</div>
+          </div>
 
-          <div class="section-label" style="margin-top:16px">Grammar</div>
-          <div id="grammar" class="out">–</div>
+          <div class="section">
+            <h3>Grammar</h3>
+            <div class="area" id="grammar">–</div>
+          </div>
 
-          <div class="section-label" style="margin-top:16px">Pronunciation</div>
-          <div id="pron" class="out">–</div>
+          <div class="section">
+            <h3>Pronunciation</h3>
+            <div class="area" id="pron">–</div>
+          </div>
         </div>
       </div>
     </div>
 
     <footer>
-      © 2025 <a href="https://simpleia.com" target="_blank" rel="noopener">Simpleia</a> — Built by <a href="https://aosama.net" target="_blank" rel="noopener">Abdo Osama</a>
+      © 2025 <a href="https://simpleia.com" target="_blank" rel="noopener">Simpleia</a> — Built by
+      <a href="https://aosama.net" target="_blank" rel="noopener">Abdo Osama</a>
     </footer>
   </div>
 
-  <!-- FEEDBACK MODAL (required after the first run) -->
-  <div id="modal" class="modal" aria-hidden="true" aria-label="Feedback modal">
-    <div class="sheet" role="dialog" aria-modal="true">
-      <h3>Quick feedback (required to continue)</h3>
-      <div class="fld"><input id="fbName" type="text" placeholder="Your name"></div>
-      <div class="fld"><input id="fbEmail" type="email" placeholder="Your email"></div>
+  <!-- Feedback modal -->
+  <div class="modal" id="fbModal" aria-hidden="true">
+    <div class="sheet">
+      <div class="body">
+        <h3 style="margin:0 0 6px">Quick feedback (required to continue)</h3>
+        <p class="muted" style="margin:0 0 12px">Tell us how it felt. Just once, then you’re good!</p>
 
-      <div class="fld">
-        <div style="font-weight:700;margin-bottom:6px">Rating</div>
-        <div id="stars" class="stars" aria-label="Rating">
-          <span class="star">⭐️</span><span class="star">⭐️</span><span class="star">⭐️</span><span class="star">⭐️</span><span class="star">⭐️</span>
+        <div class="field">
+          <input type="text" id="fb_name" placeholder="Your name" />
         </div>
-      </div>
+        <div class="field">
+          <input type="email" id="fb_email" placeholder="Email" />
+        </div>
+        <div class="field">
+          <div class="muted" style="margin-bottom:6px">Rating</div>
+          <div class="stars" id="fb_stars" aria-label="Rating out of 5">
+            <span class="star" data-v="1">★</span>
+            <span class="star" data-v="2">★</span>
+            <span class="star" data-v="3">★</span>
+            <span class="star" data-v="4">★</span>
+            <span class="star" data-v="5">★</span>
+          </div>
+        </div>
+        <div class="field">
+          <div class="muted" style="margin-bottom:6px">Feedback / Suggestions</div>
+          <textarea id="fb_notes" placeholder="What worked? What should we improve?"></textarea>
+        </div>
 
-      <div class="fld"><textarea id="fbMsg" placeholder="Feedback / Suggestions"></textarea></div>
-
-      <div class="row">
-        <button id="fbCancel" class="btn ghost">Cancel</button>
-        <button id="fbSubmit" class="btn primary">Submit feedback</button>
+        <div class="row" style="justify-content:flex-end;margin-top:12px">
+          <button class="btn" id="fb_cancel">Cancel</button>
+          <button class="btn primary" id="fb_submit">Submit feedback</button>
+        </div>
       </div>
     </div>
   </div>
 
-  <div id="toast" class="toast"></div>
-
 <script>
-/* ================== CONFIG ================== */
-const ANALYZE_API  = "https://english-coach-endpoint.vercel.app/api/analyze"; // <- your live analyzer
-const FEEDBACK_API = ""; // optional: Make/Vercel feedback endpoint. Leave blank to store “submitted” locally.
+/* ===================== SETTINGS ===================== */
+const ANALYZE_API = "https://english-coach-endpoint.vercel.app/api/analyze";  // hardwired
+const USE_KEY = "ec_uses_v1";        // number of completed analyses
+const FB_DONE_KEY = "ec_fb_done_v1"; // whether feedback was sent at least once
 
-/* ================== UI HELPERS ================== */
-const $ = s => document.querySelector(s);
-const $$ = s => [...document.querySelectorAll(s)];
-function toast(msg){ const t=$("#toast"); t.textContent=msg; t.classList.add("show"); setTimeout(()=>t.classList.remove("show"),2200) }
-function formatTime(sec){
-  const m = Math.floor(sec/60).toString().padStart(2,"0");
-  const s = Math.floor(sec%60).toString().padStart(2,"0");
-  return `${m}:${s}`;
-}
+/* ===================== ELEMENTS ===================== */
+const goalsEl   = document.getElementById('goals');
+const chipWrap  = document.getElementById('chipWrap');
+const starterEl = document.getElementById('starter');
+const btnRandom = document.getElementById('btnRandom');
+const btnCopy   = document.getElementById('btnCopy');
 
-/* ================== GOALS & PROMPTS ================== */
-const GOALS = ["Work English","Daily Life","Interview Prep","Travel"];
-const STARTERS = {
+const btnStart  = document.getElementById('btnStart');
+const btnStop   = document.getElementById('btnStop');
+const btnSend   = document.getElementById('btnSendAnalyze');
+const timerEl   = document.getElementById('timer');
+
+const levelLabel   = document.getElementById('levelLabel');
+const fillersCount = document.getElementById('fillersCount');
+const fixNowEl     = document.getElementById('fixNow');
+const nextEl       = document.getElementById('nextPrompt');
+const grammarEl    = document.getElementById('grammar');
+const pronEl       = document.getElementById('pron');
+
+/* Feedback modal */
+const fbModal  = document.getElementById('fbModal');
+const fbName   = document.getElementById('fb_name');
+const fbEmail  = document.getElementById('fb_email');
+const fbNotes  = document.getElementById('fb_notes');
+const fbStars  = document.getElementById('fb_stars');
+const fbCancel = document.getElementById('fb_cancel');
+const fbSubmit = document.getElementById('fb_submit');
+
+let fbRating = 0;
+
+/* ===================== GOALS & PROMPTS ===================== */
+const GOALS = ["Work English","Daily Life","Interview Prep","Travel","Presentation"];
+const PROMPTS = {
   "Work English":[
     "Describe a recent project you led and one lesson you learned.",
-    "Explain a problem your team faced and how you solved it.",
-    "Give a 60-second update on your current work priorities."
+    "Pitch your team’s work to a client in 60–90 seconds.",
+    "Explain one problem your team faced and how you solved it."
   ],
   "Daily Life":[
-    "Tell me about your morning routine and what you enjoy about it.",
-    "Describe your last weekend in 60 seconds.",
-    "Explain one healthy habit you’re trying to build."
+    "Talk about your weekend plans and why you chose them.",
+    "Describe your morning routine and one thing you’d like to change.",
+    "Explain a small challenge you solved at home recently."
   ],
   "Interview Prep":[
-    "Answer: 'Tell me about yourself' in 60 seconds.",
-    "Describe a challenge you overcame at work.",
-    "Explain your proudest achievement and why."
+    "Tell me about yourself and your professional background.",
+    "Describe a time you disagreed with a teammate and how you handled it.",
+    "What’s a project you’re proud of and what impact did it have?"
   ],
   "Travel":[
-    "Describe your favorite city and why you love it.",
-    "Explain a memorable trip you’ve taken.",
-    "Give tips for a first-time visitor to your hometown."
+    "Describe your favorite trip and one unforgettable moment.",
+    "Explain how you plan a trip to a new city.",
+    "Talk about a travel problem and how you handled it."
   ],
+  "Presentation":[
+    "Open a short talk about a topic you care about.",
+    "Explain a complex idea simply to a general audience.",
+    "Deliver a quick status update as if you’re on stage."
+  ]
 };
-let goal = "Work English";
-function setGoal(g){
-  goal=g;
-  $$("#goals .chip").forEach(ch=>ch.classList.toggle("active", ch.dataset.goal===g));
-  randomizeStarter();
+
+function setGoal(goal){
+  [...goalsEl.querySelectorAll('.chip')].forEach(c=>{
+    c.classList.toggle('on', c.dataset.goal===goal);
+  });
+  setStarter(goal);
+  // hint fades after 2s
+  setTimeout(()=>chipWrap.classList.add('scrolled'), 2000);
 }
-function randomizeStarter(){
-  const arr=STARTERS[goal]; $("#starter").textContent = arr[Math.floor(Math.random()*arr.length)];
+function currentGoal(){
+  return goalsEl.querySelector('.chip.on')?.dataset.goal || "Work English";
+}
+function setStarter(goal){
+  const list = PROMPTS[goal] || PROMPTS["Work English"];
+  starterEl.textContent = list[0];
+}
+goalsEl.addEventListener('click', e=>{
+  const chip = e.target.closest('.chip'); if(!chip) return;
+  setGoal(chip.dataset.goal);
+});
+btnRandom.addEventListener('click', ()=>{
+  const g = currentGoal();
+  const list = PROMPTS[g] || [];
+  if(!list.length) return;
+  const pick = list[Math.floor(Math.random()*list.length)];
+  starterEl.textContent = pick;
+});
+btnCopy.addEventListener('click', ()=>{
+  navigator.clipboard.writeText(starterEl.textContent.trim());
+});
+
+/* scrollability hint */
+function updateScrollable(){
+  const row = goalsEl;
+  const can = row.scrollWidth > row.clientWidth + 2;
+  chipWrap.classList.toggle('scrollable', can);
+  chipWrap.classList.toggle('scrolled', row.scrollLeft>4 || !can);
+}
+goalsEl.addEventListener('scroll', updateScrollable, {passive:true});
+window.addEventListener('resize', updateScrollable);
+
+/* ===================== RECORDER ===================== */
+let mediaRecorder;
+let chunks=[];
+let startTs=0;
+let timerI=null;
+
+function formatTime(ms){
+  const s = Math.max(0, Math.floor(ms/1000));
+  const m = Math.floor(s/60).toString().padStart(2,'0');
+  const ss = (s%60).toString().padStart(2,'0');
+  return `${m}:${ss}`;
 }
 
-/* ================== RECORDER ================== */
-let media, recorder, chunks=[], startedAt=0, timerInt;
-function updateTimer(){ $("#timer").textContent = formatTime((performance.now()-startedAt)/1000) }
 async function startRec(){
-  if (!window.MediaRecorder){ toast("Recording not supported in this browser."); return; }
   try{
-    media = await navigator.mediaDevices.getUserMedia({audio:true});
-    chunks=[]; recorder = new MediaRecorder(media);
-    recorder.ondataavailable = e => { if (e.data.size>0) chunks.push(e.data); };
-    recorder.start(100);
-    startedAt=performance.now(); clearInterval(timerInt); timerInt=setInterval(updateTimer,200);
-    $("#timer").textContent="00:00";
-  }catch(e){ console.error(e); toast("Mic permission denied."); }
+    const stream = await navigator.mediaDevices.getUserMedia({audio:true});
+    chunks=[]; mediaRecorder = new MediaRecorder(stream,{mimeType:'audio/webm'});
+    mediaRecorder.ondataavailable = e=>{ if(e.data.size>0) chunks.push(e.data) };
+    mediaRecorder.start(100);
+    startTs = Date.now();
+    timerEl.textContent = "00:00";
+    document.body.classList.add('recording');
+    clearInterval(timerI);
+    timerI = setInterval(()=>{ timerEl.textContent = formatTime(Date.now()-startTs); }, 200);
+  }catch(e){
+    alert("Mic permission is required.");
+  }
 }
 function stopRec(){
-  try{
-    recorder && recorder.state!=="inactive" && recorder.stop();
-    media && media.getTracks().forEach(t=>t.stop());
-  }catch{}
-  clearInterval(timerInt);
-}
-
-/* ================== ANALYZE ================== */
-let alreadyRan = localStorage.getItem("ec_first_run_done")==="yes";
-let feedbackOK = localStorage.getItem("ec_feedback_ok")==="yes";
-
-async function analyze(){
-  if (!alreadyRan || feedbackOK){ /* allowed */ }
-  else { openFeedback(); return; }
-
-  if (chunks.length===0){ toast("Please record something first."); return; }
-
-  const blob = new Blob(chunks, {type:"audio/webm"});
-  const file = new File([blob], "audio.webm", {type:blob.type});
-  const fd = new FormData();
-  fd.append("files[]", file);
-  fd.append("duration_sec", ((performance.now()-startedAt)/1000).toFixed(0));
-  fd.append("goal", goal);
-
-  try{
-    $("#btnSend").disabled = true;
-    const res = await fetch(ANALYZE_API, {method:"POST", body:fd});
-    const raw = await res.text();
-    let js;
-    try{ js = JSON.parse(raw); }catch{ js = { fallback:true, rationale:"We didn’t catch enough speech to analyze." } }
-
-    // Handle fallback from server or empty JSON
-    const isFallback = js.fallback || !js.cefr_estimate;
-
-    // Fill UI
-    $("#level").textContent      = js.cefr_estimate || "–";
-    $("#fillers").textContent    = js.fluency?.fillers ?? 0;
-    $("#fixnow").textContent     = js.one_thing_to_fix || "–";
-    $("#nextprompt").textContent = js.next_prompt || "–";
-    $("#grammar").textContent    = (js.grammar_issues && js.grammar_issues.length)
-                                      ? js.grammar_issues.map(g=>`→ ${g.error} → ${g.fix}`).join("\n")
-                                      : "–";
-    $("#pron").textContent       = (js.pronunciation && js.pronunciation.length)
-                                      ? js.pronunciation.map(p=>`${p.sound_or_word} — ${p.issue}`).join("\n")
-                                      : "–";
-
-    if (!alreadyRan){ alreadyRan=true; localStorage.setItem("ec_first_run_done","yes"); openFeedback(); }
-
-  }catch(e){
-    console.error(e); toast("Request failed.");
-  }finally{
-    $("#btnSend").disabled = false;
+  if(mediaRecorder && mediaRecorder.state!=='inactive'){
+    mediaRecorder.stop();
+    mediaRecorder.stream.getTracks().forEach(t=>t.stop());
   }
+  clearInterval(timerI);
+  document.body.classList.remove('recording');
 }
 
-/* ================== FEEDBACK (required after first run) ================== */
-const modal=$("#modal");
-const nameEl=$("#fbName"), mailEl=$("#fbEmail"), msgEl=$("#fbMsg");
-const starsWrap=$("#stars"); let rating=5;
+btnStart.addEventListener('click', startRec);
+btnStop.addEventListener('click', stopRec);
+
+/* ===================== FEEDBACK GATE (one-time after first use) ===================== */
+function uses(){ return +(localStorage.getItem(USE_KEY)||0) }
+function incUses(){ localStorage.setItem(USE_KEY, (uses()+1).toString()) }
+function feedbackDone(){ return !!localStorage.getItem(FB_DONE_KEY) }
+function setFeedbackDone(){ localStorage.setItem(FB_DONE_KEY,"1") }
+
+function needFeedbackGate(){
+  // allow first analysis without feedback; after that, require once
+  return uses()>=1 && !feedbackDone();
+}
+
 function openFeedback(){
-  // Prefill from localStorage
-  nameEl.value = localStorage.getItem("ec_name") || "";
-  mailEl.value = localStorage.getItem("ec_email") || "";
-  msgEl.value  = "";
-  setStars(rating);
-  modal.classList.add("show");
-  modal.setAttribute("aria-hidden","false");
+  fbModal.classList.add('on'); fbModal.setAttribute('aria-hidden','false');
 }
 function closeFeedback(){
-  modal.classList.remove("show");
-  modal.setAttribute("aria-hidden","true");
+  fbModal.classList.remove('on'); fbModal.setAttribute('aria-hidden','true');
 }
-function setStars(n){
-  rating=n;
-  [...starsWrap.children].forEach((s,i)=>s.classList.toggle("active", i<n));
-}
-starsWrap.addEventListener("click", e=>{
-  const idx=[...starsWrap.children].indexOf(e.target);
-  if (idx>-1) setStars(idx+1);
+fbCancel.addEventListener('click', closeFeedback);
+
+// stars
+fbStars.addEventListener('click', e=>{
+  const s = e.target.closest('.star'); if(!s) return;
+  fbRating = +s.dataset.v;
+  [...fbStars.querySelectorAll('.star')].forEach(st=>{
+    st.classList.toggle('on', +st.dataset.v<=fbRating);
+  });
 });
-
-$("#fbCancel").addEventListener("click", ()=>closeFeedback());
-$("#fbSubmit").addEventListener("click", async ()=>{
-  const name=nameEl.value.trim();
-  const email=mailEl.value.trim();
-  const text=msgEl.value.trim();
-  if (!name || !email || !text){ toast("Please fill in all fields."); return; }
-
-  localStorage.setItem("ec_name", name);
-  localStorage.setItem("ec_email", email);
-
-  try{
-    if (FEEDBACK_API && !FEEDBACK_API.startsWith("PUT_")){
-      const payload = { user_name:name, user_email:email, rating, suggestions:text, ts: new Date().toISOString() };
-      await fetch(FEEDBACK_API,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)});
-    }
-    localStorage.setItem("ec_feedback_ok","yes");
-    feedbackOK = true;
-    closeFeedback();
-    toast("Thanks for your feedback!");
-  }catch{
-    toast("Feedback endpoint not configured.");
-    // Still allow continuing for demo purposes:
-    localStorage.setItem("ec_feedback_ok","yes");
-    feedbackOK = true;
-    closeFeedback();
+fbSubmit.addEventListener('click', ()=>{
+  const name  = fbName.value.trim();
+  const email = fbEmail.value.trim();
+  const notes = fbNotes.value.trim();
+  if(!name || !email || !fbRating || !notes){
+    alert("Please fill name, email, rating, and a short note."); return;
   }
+  setFeedbackDone();
+  closeFeedback();
+  // auto-continue the pending send
+  reallySendAnalyze(pendingFD);
 });
 
-/* ================== EVENTS ================== */
-$("#goals").addEventListener("click", (e)=>{ const x=e.target.closest(".chip"); if(!x) return; setGoal(x.dataset.goal) });
-$("#btnStart").addEventListener("click", async ()=>{
-  if (alreadyRan && !feedbackOK){ openFeedback(); return; }
-  await startRec();
-});
-$("#btnStop").addEventListener("click", stopRec);
-$("#btnSend").addEventListener("click", analyze);
-$("#btnRandom").addEventListener("click", randomizeStarter);
-$("#btnCopy").addEventListener("click", ()=>{ navigator.clipboard.writeText($("#starter").textContent); toast("Copied") });
+let pendingFD = null;
 
-/* ================== INIT ================== */
-setGoal(goal);
+/* ===================== ANALYZE ===================== */
+function setSending(on){
+  btnSend.classList.toggle('loading', on);
+  btnSend.disabled = on;
+  btnStart.disabled = on;
+  btnStop.disabled = on;
+}
+
+function mapFriendlyLevel(cefr){
+  const m = {
+    "A1":"Beginner",
+    "A2":"Elementary",
+    "B1":"Intermediate",
+    "B2":"Advanced",
+    "C1":"Advanced",
+    "C2":"Fluent"
+  };
+  return m[(cefr||"").toUpperCase()] || "–";
+}
+
+function renderResult(j){
+  if(j.fallback){
+    levelLabel.textContent = "–";
+    fillersCount.textContent = "0";
+    fixNowEl.textContent = "Speak for at least 30–60 seconds in full sentences.";
+    nextEl.textContent   = "Describe your last weekend in 45 seconds.";
+    grammarEl.textContent= "–";
+    pronEl.textContent   = "–";
+    return;
+  }
+  levelLabel.textContent = mapFriendlyLevel(j.cefr_estimate);
+  fillersCount.textContent = (j.fluency?.fillers ?? 0);
+  fixNowEl.textContent = j.one_thing_to_fix || "–";
+  nextEl.textContent   = j.next_prompt    || "–";
+
+  // grammar list
+  if(Array.isArray(j.grammar_issues)&&j.grammar_issues.length){
+    const items = j.grammar_issues.map(g=>`→ ${g.error}\nTry: ${g.fix}\nWhy: ${g.why}`).join('\n\n');
+    grammarEl.textContent = items;
+  }else{
+    grammarEl.textContent = "–";
+  }
+
+  // pron list
+  if(Array.isArray(j.pronunciation)&&j.pronunciation.length){
+    const items = j.pronunciation.map(p=>`${p.sound_or_word} — ${p.issue}${p.minimal_pair?`\nTry: ${p.minimal_pair}`:""}`).join('\n\n');
+    pronEl.textContent = items;
+  }else{
+    pronEl.textContent = "–";
+  }
+}
+
+async function sendAnalyze(){
+  if(!chunks.length){
+    alert("Please record something first.");
+    return;
+  }
+
+  // Build payload
+  const blob = new Blob(chunks,{type:'audio/webm'});
+  const file = new File([blob],'audio.webm',{type:blob.type});
+  const fd   = new FormData();
+  fd.append('files[]', file);
+  const durSec = Math.round((Date.now()-startTs)/1000);
+  fd.append('duration_sec', durSec.toString());
+  fd.append('goal', currentGoal());
+
+  // Gate: require feedback only after first successful run
+  if(needFeedbackGate()){
+    pendingFD = fd;
+    openFeedback();
+    return;
+  }
+  await reallySendAnalyze(fd);
+}
+btnSend.addEventListener('click', sendAnalyze);
+
+async function reallySendAnalyze(fd){
+  try{
+    setSending(true);
+    fixNowEl.textContent = nextEl.textContent = grammarEl.textContent = pronEl.textContent = "Analyzing…";
+    const res = await fetch(ANALYZE_API,{method:'POST',body:fd});
+    const raw = await res.text();
+
+    if(!res.ok){
+      // graceful empty-transcript case (your endpoint may send this)
+      if(/Transcription empty/i.test(raw)||/transcript is not defined/i.test(raw)){
+        renderResult({fallback:true});
+      }else{
+        alert("Analyzer error:\n"+raw);
+      }
+      return;
+    }
+    let json={};
+    try{ json = JSON.parse(raw||"{}"); }catch{ json = {}; }
+    renderResult(json);
+    incUses(); // one more successful analysis done
+  }catch(e){
+    alert("Request failed: "+(e.message||e));
+  }finally{
+    setSending(false);
+  }
+}
+
+/* ===================== INIT ===================== */
+function initStars(){
+  // optional default 5 stars preselected look (no rating value yet)
+  // purely visual until user clicks.
+}
+function initUI(){
+  updateScrollable();
+  setGoal("Work English");
+  initStars();
+}
+document.addEventListener('DOMContentLoaded', initUI);
 </script>
 </body>
 </html>
