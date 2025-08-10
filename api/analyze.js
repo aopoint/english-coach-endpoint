@@ -1,27 +1,26 @@
 // api/analyze.js
 // Serverless handler for /api/analyze (Vercel, Node 18+)
 //
-// - Accepts multipart/form-data:
-//     files[]  (audio file)   OR file OR audio
-//     duration_sec            (number, optional)
-//     goal                    (string, optional)
-//     prompt_text             (string, optional - what user tried to answer)
-// - Transcribes with Whisper
-// - Asks GPT for structured JSON feedback (includes relevance + level_score)
-// - Returns JSON (or a fallback when too short)
-// - CORS/OPTIONS included
+// Accepts multipart/form-data:
+//   files[] | file | audio  (audio file)
+//   duration_sec             (number, optional)
+//   goal                     (string, optional)
+//   prompt_text              (string, optional; what user tried to answer)
+//
+// Transcribes with Whisper, asks GPT for structured JSON,
+// and returns JSON (or a fallback when too short). CORS/OPTIONS included.
 
 const fs = require("fs");
 const { IncomingForm } = require("formidable");
 const OpenAI = require("openai");
 
-// ------------- CONFIG / CONSTANTS -------------
-const MIN_SECONDS_FOR_ANALYSIS = 8;          // below this -> fallback
+// ---------- CONFIG ----------
+const MIN_SECONDS_FOR_ANALYSIS = 8;
 const MIN_WORDS_FOR_ANALYSIS   = 8;
 const MODEL_CHAT               = "gpt-4o-mini-2024-07-18";
 const MODEL_WHISPER            = "whisper-1";
 
-// ------------- HELPERS -------------
+// ---------- HELPERS ----------
 function cors(res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "POST,GET,OPTIONS");
@@ -54,7 +53,7 @@ function computeWPM(transcript, durationSec) {
   return Math.round((words / durationSec) * 60);
 }
 
-function ceFRtoFriendly(s) {
+function cefrToFriendly(s) {
   const x = String(s || "").toUpperCase().trim();
   if (!x) return "Beginner";
   if (x.startsWith("A1")) return "Beginner";
@@ -63,10 +62,10 @@ function ceFRtoFriendly(s) {
   if (x.startsWith("B2")) return "Advanced";
   if (x.startsWith("C1")) return "Fluent";
   if (x.startsWith("C2")) return "Native-like";
-  return s; // already friendly?
+  return s; // already friendly
 }
 
-// ------------- FORM PARSE -------------
+// ---------- FORM PARSE ----------
 function parseForm(req) {
   return new Promise((resolve, reject) => {
     const form = new IncomingForm({
@@ -81,7 +80,7 @@ function parseForm(req) {
   });
 }
 
-// ------------- MAIN HANDLER -------------
+// ---------- MAIN ----------
 module.exports = async (req, res) => {
   cors(res);
 
@@ -97,21 +96,21 @@ module.exports = async (req, res) => {
     return res.status(405).json({ ok: false, error: "Method not allowed" });
   }
 
-  const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
   if (!process.env.OPENAI_API_KEY) {
     return res.status(500).json({ ok: false, error: "Missing OPENAI_API_KEY" });
   }
 
+  const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+
   try {
-    // 1) Parse multipart form
+    // 1) Parse form
     const { fields, files } = await parseForm(req);
 
-    // Grab file from typical keys: files[], file, audio
+    // file may be under files[] / file / audio
     let fileEntry =
       pick(files, ["files[]", "file", "audio"]) ||
       (Array.isArray(files) && files.length ? files[0] : null);
 
-    // If it's an array from formidable, take the first
     fileEntry = Array.isArray(fileEntry) ? fileEntry[0] : fileEntry;
 
     if (!fileEntry || !fileEntry.filepath) {
@@ -120,23 +119,24 @@ module.exports = async (req, res) => {
         .json({ ok: false, error: "No audio file found (expected files[]/file/audio)." });
     }
 
-    const filename = fileEntry.originalFilename || "audio.webm";
+    const filename    = fileEntry.originalFilename || "audio.webm";
     const durationSec = parseNumber(fields.duration_sec || fields.duration, 0);
-    const goal = (fields.goal || "General English").toString();
+    const goal        = (fields.goal || "General English").toString();
     const prompt_text = (fields.prompt_text || "").toString();
 
-    // 2) Transcribe with Whisper (stream file)
+    // 2) Transcribe with Whisper
     const tr = await openai.audio.transcriptions.create({
       model: MODEL_WHISPER,
       file: fs.createReadStream(fileEntry.filepath),
-      // language: "en", // optional: let Whisper auto-detect
+      // language: "en", // uncomment to force English
     });
 
     const transcript = (tr?.text || "").trim();
 
-    // Short/empty -> fallback JSON (frontend renders soft help)
+    // Short/empty -> fallback
     const tooShort =
-      durationSec < MIN_SECONDS_FOR_ANALYSIS || wordCount(transcript) < MIN_WORDS_FOR_ANALYSIS;
+      durationSec < MIN_SECONDS_FOR_ANALYSIS ||
+      wordCount(transcript) < MIN_WORDS_FOR_ANALYSIS;
 
     if (!transcript || tooShort) {
       return res.status(200).json({
@@ -149,31 +149,34 @@ module.exports = async (req, res) => {
         pronunciation: [],
         one_thing_to_fix: "Speak for at least 30–60 seconds in full sentences.",
         next_prompt: "Describe your last weekend in ~45 seconds.",
+        transcript,               // include for FE if needed
+        duration_sec: durationSec,
+        goal,
       });
     }
 
-    // 3) Ask GPT for compact JSON feedback (+ relevance)
+    // 3) Ask GPT for JSON feedback
     const system = `
 You are **Speak Coach**. Analyze the user's **spoken English** transcript and return **ONLY** a single JSON object.
 
 Rules:
-- Use **English** for all output.
+- Use English for all output.
 - Be concise, helpful, and specific.
 - If the transcript is off-topic from prompt_text, reflect that in "relevance".
-- Always try to surface multiple grammar items when present (3–6 lines is fine).
+- Surface several grammar items when present (about 3–6 lines).
 - Prefer simple, clear wording.
 
 Return JSON with these keys exactly:
 {
   "cefr_estimate": "A1|A2|B1|B2|C1|C2 OR a friendly label (Beginner/Elementary/Intermediate/Advanced/Fluent/Native-like)",
-  "level_score": 0-100,                     // numeric skill meter (rough)
+  "level_score": 0-100,
   "rationale": "string",
   "fluency": { "wpm": number, "fillers": number, "note": "string" },
   "grammar_issues": [ { "error":"", "fix":"", "why":"" }, ... ],
   "pronunciation": [ { "sound_or_word":"", "issue":"", "minimal_pair":"" }, ... ],
   "one_thing_to_fix": "string",
   "next_prompt": "string",
-  "relevance": { "score": 0-100, "note": "string" } // how well the transcript matches prompt_text/goal
+  "relevance": { "score": 0-100, "note": "string" }
 }
 `.trim();
 
@@ -200,41 +203,48 @@ Return JSON with these keys exactly:
     try {
       json = JSON.parse(raw);
     } catch (e) {
-      return res
-        .status(500)
-        .json({ ok: false, error: "Model did not return JSON", raw });
+      return res.status(500).json({ ok: false, error: "Model did not return JSON", raw });
     }
 
-    // 4) Post-process: fill any missing bits, ensure friendly level label
-    // WPM (fallback to computed if missing)
+    // 4) Post-process / guards
+    // Ensure arrays
+    if (!Array.isArray(json.grammar_issues)) json.grammar_issues = [];
+    if (!Array.isArray(json.pronunciation))  json.pronunciation  = [];
+
+    // Fluency + WPM
     if (!json.fluency) json.fluency = {};
     if (typeof json.fluency.wpm !== "number") {
       json.fluency.wpm = computeWPM(transcript, durationSec);
     }
+    if (typeof json.fluency.fillers !== "number") json.fluency.fillers = 0;
+    if (typeof json.fluency.note !== "string")   json.fluency.note = "—";
 
-    // Ensure friendly level text if they gave CEFR only
+    // Friendly level + score
     if (json.cefr_estimate) {
-      json.friendly_level = ceFRtoFriendly(json.cefr_estimate);
+      json.friendly_level = cefrToFriendly(json.cefr_estimate);
     } else if (json.friendly_level) {
       // ok
     } else {
       json.friendly_level = "Intermediate";
     }
 
-    // Soft bounds on meters
     if (typeof json.level_score !== "number") json.level_score = 50;
     json.level_score = Math.max(0, Math.min(100, Math.round(json.level_score)));
 
+    // Relevance guard
     if (!json.relevance) json.relevance = { score: 50, note: "—" };
     if (typeof json.relevance.score !== "number") json.relevance.score = 50;
     json.relevance.score = Math.max(0, Math.min(100, Math.round(json.relevance.score)));
 
-    // 5) Return feedback JSON
-    return res.status(200).json(json);
+    // 5) Return (include transcript so FE can compute relevancy too)
+    return res.status(200).json({
+      ...json,
+      transcript,
+      duration_sec: Math.round(durationSec),
+      goal,
+    });
   } catch (err) {
     console.error("analyze error:", err);
-    return res
-      .status(500)
-      .json({ ok: false, error: err?.message || "Server error" });
+    return res.status(500).json({ ok: false, error: err?.message || "Server error" });
   }
 };
