@@ -4,426 +4,425 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>English Coach — Instant English Feedback</title>
-<link rel="preconnect" href="https://fonts.googleapis.com" />
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
   :root{
-    --bg:#191919; --panel:#1f1f1f; --panel-2:#232323; --text:#f5f5f5; --muted:#a7a7a7;
-    --chip:#2a2a2a; --chip-on:#4E0A7A; --chip-on-2:#6a24a6; --shadow:0 10px 30px rgba(0,0,0,.35);
-    --ok:#22c55e; --warn:#f59e0b; --err:#ef4444; --radius:18px;
+    --bg:#191919;
+    --panel:#1f1f1f;
+    --sunken:#1a1a1a;
+    --text:#e9e9e9;
+    --muted:#9aa0a6;
+    --chip:#2a2a2a;
+    --ring: rgba(78,10,122,.35);
+    --primary:#4E0A7A;
+    --primary-2:#7f2dd1;
+    --ok:#22c55e;
+    --warn:#f59e0b;
+    --err:#ef4444;
+    --shadow: 0 10px 30px rgba(0,0,0,.35);
+    --radius:18px;
   }
   *{box-sizing:border-box}
   html,body{height:100%}
   body{
-    margin:0;background:radial-gradient(1000px 600px at 30% -10%, rgba(78,10,122,.25), transparent 45%) no-repeat var(--bg);
-    color:var(--text); font-family:"Inter","Avenir Next",system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;
+    margin:0;
+    background: radial-gradient(1000px 600px at 30% -10%, rgba(127,45,209,.18), transparent 60%),
+                radial-gradient(800px 400px at 90% -10%, rgba(78,10,122,.18), transparent 60%),
+                var(--bg);
+    color:var(--text);
+    font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Apple Color Emoji","Segoe UI Emoji";
   }
-  a{color:#caa6ff;text-decoration:none}
-  .wrap{max-width:1200px;margin:24px auto;padding:0 18px}
-  header{display:flex;align-items:center;gap:12px;margin-bottom:18px}
-  header h1{margin:0;font-weight:800;letter-spacing:.3px}
-  header .pill{font-size:13px;background:linear-gradient(90deg,#4E0A7A,#6a24a6);padding:8px 12px;border-radius:999px;box-shadow:var(--shadow)}
-  .grid{display:grid;grid-template-columns:380px 1fr;gap:20px}
-  @media (max-width:980px){ .grid{grid-template-columns:1fr} }
-
-  .card{background:linear-gradient(180deg,rgba(255,255,255,.03),transparent 30%) no-repeat var(--panel);
-        border:1px solid rgba(255,255,255,.06); border-radius:var(--radius); box-shadow:var(--shadow)}
-  .card .in{padding:22px}
-  .title{font-size:28px;font-weight:800;margin:0 0 8px}
-  .sub{color:var(--muted);font-size:15px;margin:0 0 18px}
-  .row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
-
-  /* goal chips – smaller, no horizontal scroll */
-  .chip-row{display:flex;gap:10px;flex-wrap:wrap}
-  .chip{background:var(--chip);color:#eee;border:1px solid rgba(255,255,255,.08);
-        padding:10px 14px;border-radius:12px;font-weight:600;white-space:nowrap;cursor:pointer;user-select:none;transition:.2s;
-        font-size:14px}
-  .chip:hover{transform:translateY(-1px)}
-  .chip.on{background:linear-gradient(90deg,var(--chip-on),var(--chip-on-2));border-color:transparent}
-
-  .btn{appearance:none;border:1px solid rgba(255,255,255,.12);background:#2b2b2b;color:#fff;border-radius:14px;
-       padding:12px 16px;font-weight:700;cursor:pointer;transition:.2s}
-  .btn:hover{transform:translateY(-1px)}
-  .btn.primary{background:linear-gradient(90deg,#4E0A7A,#6a24a6);border-color:transparent}
-  .btn.ghost{background:transparent}
-  .btn.block{width:100%}
-  .btn.loading{position:relative;color:#cfcfcf;pointer-events:none}
-  .btn.loading::after{content:"";position:absolute;left:50%;top:50%;width:16px;height:16px;border-radius:50%;
-                      border:2px solid rgba(255,255,255,.3);border-top-color:#fff;transform:translate(-50%,-50%);
-                      animation: spin .8s linear infinite}
-  @keyframes spin{to{transform:translate(-50%,-50%) rotate(360deg)}}
-
-  .meter{display:flex;align-items:center;gap:12px;margin:6px 0 14px}
-  .dot{width:10px;height:10px;border-radius:999px;background:#666;border:1px solid rgba(255,255,255,.25)}
-  body.recording .dot{background:#f43;animation:pulse 1.2s infinite}
-  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(255,68,68,.6)}70%{box-shadow:0 0 0 12px rgba(255,68,68,0)}100%{box-shadow:0 0 0 0 rgba(255,68,68,0)}}
-  .pill-stat{display:inline-flex;gap:8px;align-items:center;padding:8px 10px;border-radius:999px;
-             background:#262626;border:1px solid rgba(255,255,255,.08)}
-  .pill-stat b{font-weight:800}
-
-  .section h3{margin:10px 0 8px;font-size:16px;letter-spacing:.2px}
-  .area{background:var(--panel-2);border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:14px 16px;min-height:52px;white-space:pre-wrap}
+  .wrap{max-width:1200px;margin:28px auto;padding:0 16px}
+  header{display:flex;align-items:center;gap:16px;margin-bottom:20px}
+  header h1{margin:0;font-weight:800;letter-spacing:.2px}
+  .badge{display:inline-flex;align-items:center;gap:10px;padding:8px 12px;background:linear-gradient(135deg,var(--primary),var(--primary-2));border-radius:999px;font-weight:700}
+  .layout{display:grid;grid-template-columns:360px 1fr;gap:24px}
+  @media (max-width:980px){.layout{grid-template-columns:1fr}}
+  .card{background:var(--panel);border-radius:var(--radius);box-shadow:var(--shadow)}
+  .card.pad{padding:22px}
+  .title{font-weight:800;margin:0 0 8px;font-size:40px;line-height:1.1}
+  .subtitle{margin:0 0 22px;color:var(--muted)}
+  .section-title{font-weight:800;margin:0 0 10px}
+  .hint{color:var(--muted);font-size:13px}
+  .goals{display:flex;flex-wrap:wrap;gap:12px;margin:6px 0 16px}
+  .goal{border:none;background:#262626;color:#e8e8e8;padding:14px 18px;border-radius:14px;font-weight:700;cursor:pointer;transition:.18s transform}
+  .goal:hover{transform:translateY(-1px)}
+  .goal.active{background:linear-gradient(135deg,var(--primary),var(--primary-2));box-shadow:0 0 0 6px var(--ring)}
+  .controls{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:10px 0 12px}
+  .btn{border:none;border-radius:14px;padding:16px 18px;font-weight:800;cursor:pointer}
+  .btn-primary{background:linear-gradient(135deg,var(--primary),var(--primary-2));color:white}
+  .btn-ghost{background:#2a2a2a;color:#eee}
+  .btn:disabled{opacity:.6;cursor:not-allowed}
+  .timer-row{display:flex;align-items:center;gap:14px;margin:6px 0 14px}
+  .timer{font-weight:900;font-size:22px;letter-spacing:.5px;background:#232323;border-radius:12px;padding:10px 14px;min-width:100px;text-align:center}
+  .bar{flex:1;height:8px;background:#2a2a2a;border-radius:999px;overflow:hidden}
+  .bar > span{display:block;height:100%;width:0;background:linear-gradient(90deg,#7f2dd1,var(--primary),#22c55e);transition:width .25s}
+  .chip{display:inline-flex;align-items:center;gap:10px;background:#242424;border-radius:999px;padding:8px 12px;font-weight:800}
+  .chip .led{width:8px;height:8px;border-radius:50%;background:#7a7a7a;box-shadow:0 0 0 4px rgba(122,122,122,.18)}
+  .chip.live .led{background:#ef4444;box-shadow:0 0 0 6px rgba(239,68,68,.22)}
+  .grid{display:grid;gap:14px}
+  .row-2{grid-template-columns:1fr 1fr}
+  @media (max-width:980px){.row-2{grid-template-columns:1fr}}
+  .pill{display:inline-flex;align-items:center;gap:8px;background:#242424;border-radius:999px;padding:8px 12px;font-weight:800}
+  .slot{background:#222;border:1px solid #2b2b2b;border-radius:14px;padding:16px 18px}
+  .slot p{margin:0}
+  .list{display:grid;gap:10px}
+  .issue{background:#222;border:1px solid #2c2c2c;border-radius:12px;padding:12px 14px;line-height:1.5}
   .muted{color:var(--muted)}
-
-  .timer-wrap{display:flex;align-items:center;gap:12px}
-  .timer{background:#262626;border:1px solid rgba(255,255,255,.12);padding:8px 12px;border-radius:10px;font-weight:800;min-width:66px;text-align:center}
-  body.recording .timer{background:rgba(255,68,68,.15);border-color:rgba(255,68,68,.3)}
-  .bar{position:relative;width:170px;height:7px;border-radius:999px;background:#2a2a2a;border:1px solid rgba(255,255,255,.12);overflow:hidden}
-  .bar > i{position:absolute;left:0;top:0;bottom:0;width:0%;background:linear-gradient(90deg,#ef4444,#f59e0b,#22c55e);
-           transition:width .2s ease}
-
-  footer{display:flex;justify-content:center;margin:26px 0 40px;color:#c9b5ff;gap:6px;flex-wrap:wrap}
-  footer a{color:#c9b5ff;text-decoration:none;border-bottom:1px dashed rgba(201,181,255,.35)}
-  .note{font-size:12px;color:var(--muted)}
-
-  /* feedback modal */
-  .modal{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;align-items:center;justify-content:center;padding:18px}
-  .modal.on{display:flex}
-  .modal .sheet{width:min(640px,92vw);background:var(--panel);border:1px solid rgba(255,255,255,.08);border-radius:18px;box-shadow:var(--shadow)}
-  .modal .body{padding:20px}
-  .field{margin:10px 0}
-  input[type="text"],input[type="email"],textarea{
-    width:100%;background:#202020;border:1px solid rgba(255,255,255,.12);color:#fff;border-radius:12px;padding:12px 14px;outline:none}
-  textarea{min-height:120px;resize:vertical}
-  .stars{display:flex;gap:8px;margin:8px 0 2px}
-  .star{font-size:22px;cursor:pointer;filter:drop-shadow(0 2px 6px rgba(0,0,0,.25))}
-  .star.on{color:#ffd76a}
+  .kbd{display:inline-flex;align-items:center;gap:8px;padding:8px 12px;background:#222;border-radius:999px}
+  footer{display:flex;justify-content:center;margin:26px 0 14px;color:#a9a3b8;font-size:13px;gap:6px}
+  footer a{color:#c1b7ff;text-decoration:none}
+  .row-split{display:grid;grid-template-columns:1fr;gap:14px;margin-top:12px}
+  .row-split .btn-primary{width:100%}
+  .rand{display:flex;align-items:center;gap:10px;margin-top:10px}
+  .rand .btn-ghost{padding:10px 12px;border-radius:999px}
 </style>
 </head>
 <body>
   <div class="wrap">
     <header>
-      <h1>English Coach</h1>
-      <div class="pill">Instant English Feedback</div>
+      <h1 style="font-size:34px;">English Coach</h1>
+      <span class="badge">Instant English Feedback</span>
     </header>
 
-    <div class="grid">
-      <!-- LEFT -->
-      <div class="card">
-        <div class="in">
-          <h2 class="title">Record for <span style="white-space:nowrap">60-90 seconds.</span></h2>
-          <p class="sub">We’ll analyze fluency & correctness, then show key corrections and a next prompt.</p>
+    <div class="layout">
+      <!-- LEFT: controls -->
+      <section class="card pad" aria-labelledby="controlsTitle">
+        <h2 id="controlsTitle" class="title">Record for<br>60–90 seconds.</h2>
+        <p class="subtitle">We’ll analyze fluency & correctness, then show key corrections and a next prompt.</p>
 
-          <div class="section">
-            <h3>Goal</h3>
-            <div class="chip-row" id="goals">
-              <div class="chip on" data-goal="Work English">Work English</div>
-              <div class="chip" data-goal="Daily Life">Daily Life</div>
-              <div class="chip" data-goal="Interview Prep">Interview Prep</div>
-              <div class="chip" data-goal="Travel">Travel</div>
-              <div class="chip" data-goal="Presentation">Presentation</div>
-            </div>
+        <h3 class="section-title">Goal</h3>
+        <div class="goals" id="goals">
+          <button class="goal active" data-goal="Work English">Work English</button>
+          <button class="goal" data-goal="Daily Life">Daily Life</button>
+          <button class="goal" data-goal="Interview Prep">Interview Prep</button>
+          <button class="goal" data-goal="Travel">Travel</button>
+          <button class="goal" data-goal="Presentation">Presentation</button>
+        </div>
+
+        <!-- Controls block looks visually separate -->
+        <div class="card pad" style="background:var(--sunken);margin:10px 0 14px;">
+          <div class="controls">
+            <button id="btnStart" class="btn btn-primary">▶️ Start recording</button>
+            <button id="btnStop" class="btn btn-ghost" disabled>⏹️ Stop</button>
           </div>
 
-          <div class="row" style="margin-top:6px">
-            <button class="btn primary" id="btnStart">Start recording</button>
-            <button class="btn" id="btnStop">Stop</button>
-            <div class="timer-wrap">
-              <div class="timer" id="timer">00:00</div>
-              <div class="bar" title="Aim for 60–90s"><i id="pbar"></i></div>
-            </div>
+          <div class="timer-row">
+            <div class="timer" id="timer">00:00</div>
+            <div class="bar"><span id="barFill"></span></div>
           </div>
 
-          <button class="btn block primary" id="btnSendAnalyze" style="margin-top:12px">Send & Analyze</button>
-
-          <div class="section" style="margin-top:16px">
-            <h3>What to say to start</h3>
-            <div class="area" id="starter">Describe a recent project you led and one lesson you learned.</div>
-            <div class="row" style="margin-top:10px">
-              <button class="btn ghost" id="btnRandom">🎲 Randomize prompt</button>
-            </div>
-            <p class="note" style="margin-top:8px">
-              We don’t store your audio; it’s sent to the analyzer and immediately discarded.
-            </p>
+          <div class="row-split">
+            <button id="btnSend" class="btn btn-primary" disabled>Send & Analyze</button>
           </div>
         </div>
-      </div>
 
-      <!-- RIGHT -->
-      <div class="card">
-        <div class="in">
-          <div class="meter">
-            <span class="dot"></span>
-            <div class="pill-stat">Live</div>
-            <div class="pill-stat">Level: <b id="levelLabel">–</b></div>
-            <div class="pill-stat">Fillers: <b id="fillersCount">0</b></div>
-          </div>
-
-          <div class="section">
-            <h3>What to fix now</h3>
-            <div class="area" id="fixNow">–</div>
-          </div>
-
-          <div class="section">
-            <h3>Next prompt (30-45s)</h3>
-            <div class="area" id="nextPrompt">–</div>
-          </div>
-
-          <div class="section">
-            <h3>Grammar</h3>
-            <div class="area" id="grammar">–</div>
-          </div>
-
-          <div class="section">
-            <h3>Pronunciation</h3>
-            <div class="area" id="pron">–</div>
+        <h3 class="section-title">What to say to start</h3>
+        <div class="slot">
+          <p id="promptBox">Describe a recent project you led and one lesson you learned.</p>
+          <div class="rand">
+            <button id="btnRand" class="btn btn-ghost">🎲 Randomize prompt</button>
+            <span class="hint">We don’t store your audio; it’s sent to the analyzer and immediately discarded.</span>
           </div>
         </div>
-      </div>
+      </section>
+
+      <!-- RIGHT: results -->
+      <section class="card pad" aria-live="polite">
+        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:6px">
+          <span id="liveChip" class="chip"><span class="led"></span> Live</span>
+          <span class="pill">Level: <span id="lvl">–</span></span>
+          <span class="pill">Fillers: <span id="fillers">0</span></span>
+          <span class="pill muted" id="sessionsPill" title="Completed analyses on this device">Sessions: 0</span>
+        </div>
+
+        <div class="grid">
+          <div>
+            <h3 class="section-title">What to fix now</h3>
+            <div class="slot" id="fixNow">–</div>
+          </div>
+
+          <div>
+            <h3 class="section-title">Grammar</h3>
+            <div id="grammar" class="list">
+              <div class="issue muted">–</div>
+            </div>
+          </div>
+
+          <div>
+            <h3 class="section-title">Pronunciation</h3>
+            <div id="pron" class="list">
+              <div class="issue muted">–</div>
+            </div>
+          </div>
+
+          <div>
+            <h3 class="section-title">Next prompt (30–45s)</h3>
+            <div class="slot" id="nextPrompt">–</div>
+          </div>
+        </div>
+      </section>
     </div>
 
     <footer>
-      © 2025 <a href="https://simpleia.com" target="_blank" rel="noopener">Simpleia</a> — Built by
-      <a href="https://aosama.net" target="_blank" rel="noopener">Abdo Osama</a>
+      <span>© 2025&nbsp;Simpleia — Built by <a href="https://aosama.net" target="_blank" rel="noopener">Abdo Osama</a></span>
+      <span>&nbsp;·&nbsp;</span>
+      <span id="ver">v1.2</span>
+      <span>&nbsp;·&nbsp;</span>
+      <span class="muted">Free beta: features and availability may change.</span>
     </footer>
   </div>
 
-  <!-- Feedback modal (one-time) -->
-  <div class="modal" id="fbModal" aria-hidden="true">
-    <div class="sheet">
-      <div class="body">
-        <h3 style="margin:0 0 6px">Quick feedback (required to continue)</h3>
-        <p class="muted" style="margin:0 0 12px">Tell us how it felt. Just once, then you’re good!</p>
-
-        <div class="field"><input type="text" id="fb_name" placeholder="Your name" /></div>
-        <div class="field"><input type="email" id="fb_email" placeholder="Email" /></div>
-
-        <div class="field">
-          <div class="muted" style="margin-bottom:6px">Rating</div>
-          <div class="stars" id="fb_stars" aria-label="Rating out of 5">
-            <span class="star" data-v="1">★</span><span class="star" data-v="2">★</span>
-            <span class="star" data-v="3">★</span><span class="star" data-v="4">★</span>
-            <span class="star" data-v="5">★</span>
-          </div>
-        </div>
-
-        <div class="field">
-          <div class="muted" style="margin-bottom:6px">Feedback / Suggestions</div>
-          <textarea id="fb_notes" placeholder="What worked? What should we improve?"></textarea>
-        </div>
-
-        <div class="row" style="justify-content:flex-end;margin-top:12px">
-          <button class="btn" id="fb_cancel">Cancel</button>
-          <button class="btn primary" id="fb_submit">Submit feedback</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
 <script>
-/* ===== Settings ===== */
-const ANALYZE_API = "https://english-coach-endpoint.vercel.app/api/analyze"; // hardwired
-const USE_KEY = "ec_uses_v1";
-const FB_DONE_KEY = "ec_fb_done_v1";
-
-/* ===== Elements ===== */
-const goalsEl = document.getElementById('goals');
-const starterEl = document.getElementById('starter');
-const btnRandom = document.getElementById('btnRandom');
-const btnStart = document.getElementById('btnStart');
-const btnStop = document.getElementById('btnStop');
-const btnSend = document.getElementById('btnSendAnalyze');
-const timerEl = document.getElementById('timer');
-const pbar = document.getElementById('pbar');
-
-const levelLabel = document.getElementById('levelLabel');
-const fillersCount = document.getElementById('fillersCount');
-const fixNowEl = document.getElementById('fixNow');
-const nextEl = document.getElementById('nextPrompt');
-const grammarEl = document.getElementById('grammar');
-const pronEl = document.getElementById('pron');
-
-/* Feedback modal */
-const fbModal  = document.getElementById('fbModal');
-const fbName   = document.getElementById('fb_name');
-const fbEmail  = document.getElementById('fb_email');
-const fbNotes  = document.getElementById('fb_notes');
-const fbStars  = document.getElementById('fb_stars');
-const fbCancel = document.getElementById('fb_cancel');
-const fbSubmit = document.getElementById('fb_submit');
-let fbRating = 0;
-
-/* ===== Goals & prompts ===== */
-const GOALS = ["Work English","Daily Life","Interview Prep","Travel","Presentation"];
-const PROMPTS = {
-  "Work English":[
-    "Describe a recent project you led and one lesson you learned.",
-    "Pitch your team’s work to a client in 60–90 seconds.",
-    "Explain one problem your team faced and how you solved it."
-  ],
-  "Daily Life":[
-    "Talk about your weekend plans and why you chose them.",
-    "Describe your morning routine and one thing you’d like to change.",
-    "Explain a small challenge you solved at home recently."
-  ],
-  "Interview Prep":[
-    "Tell me about yourself and your professional background.",
-    "Describe a time you disagreed with a teammate and how you handled it.",
-    "What’s a project you’re proud of and what impact did it have?"
-  ],
-  "Travel":[
-    "Describe your favorite trip and one unforgettable moment.",
-    "Explain how you plan a trip to a new city.",
-    "Talk about a travel problem and how you handled it."
-  ],
-  "Presentation":[
-    "Open a short talk about a topic you care about.",
-    "Explain a complex idea simply to a general audience.",
-    "Deliver a quick status update as if you’re on stage."
-  ]
+/* ===== Config ===== */
+const APP_VERSION = "v1.2";
+const API_URL = "https://english-coach-endpoint.vercel.app/api/analyze"; // <- change if needed
+const MIN_SEND_MS = 4000;  // enable “Send” after 4s so people can test quickly
+const IDEAL_MS = 90000;    // 90s target
+const STORAGE = {
+  sessions: "ec_sessions_v1",
+  goal: "ec_goal_v1"
 };
 
-function setGoal(goal){
-  [...goalsEl.querySelectorAll('.chip')].forEach(c=>c.classList.toggle('on', c.dataset.goal===goal));
-  setStarter(goal);
-}
-function currentGoal(){ return goalsEl.querySelector('.chip.on')?.dataset.goal || "Work English" }
-function setStarter(goal){
-  const list = PROMPTS[goal] || PROMPTS["Work English"];
-  starterEl.textContent = list[0];
-}
-goalsEl.addEventListener('click', e=>{
-  const chip = e.target.closest('.chip'); if(!chip) return;
-  setGoal(chip.dataset.goal);
+/* ===== State ===== */
+let mediaRecorder;
+let chunks = [];
+let recStart = 0;
+let timerInt = null;
+let currentGoal = localStorage.getItem(STORAGE.goal) || "Work English";
+
+/* ===== UI refs ===== */
+const btnStart = document.getElementById("btnStart");
+const btnStop  = document.getElementById("btnStop");
+const btnSend  = document.getElementById("btnSend");
+const timerEl  = document.getElementById("timer");
+const barFill  = document.getElementById("barFill");
+const fixNow   = document.getElementById("fixNow");
+const grammar  = document.getElementById("grammar");
+const pron     = document.getElementById("pron");
+const lvl      = document.getElementById("lvl");
+const fillers  = document.getElementById("fillers");
+const nextPrompt = document.getElementById("nextPrompt");
+const liveChip = document.getElementById("liveChip");
+const sessionsPill = document.getElementById("sessionsPill");
+const promptBox = document.getElementById("promptBox");
+
+/* Version badge */
+document.getElementById("ver").textContent = APP_VERSION;
+
+/* Goals */
+document.querySelectorAll(".goal").forEach(b=>{
+  if(b.dataset.goal===currentGoal) b.classList.add("active");
+  b.addEventListener("click", ()=>{
+    document.querySelectorAll(".goal").forEach(x=>x.classList.remove("active"));
+    b.classList.add("active");
+    currentGoal = b.dataset.goal;
+    localStorage.setItem(STORAGE.goal,currentGoal);
+    seedPrompt(currentGoal);
+  });
 });
-btnRandom.addEventListener('click', ()=>{
-  const list = PROMPTS[currentGoal()]||[];
-  if(!list.length) return;
+
+/* Randomize prompt */
+const PROMPTS = {
+  "Work English":[
+    "Describe a recent challenge you faced at work and how you handled it.",
+    "Explain a decision you made that improved your team’s workflow.",
+    "Tell me about a project you’re proud of and why."
+  ],
+  "Daily Life":[
+    "Describe your morning routine and how it affects your day.",
+    "Tell me about a hobby you enjoy and what you’ve learned from it.",
+    "Talk about a place you like to visit and why."
+  ],
+  "Interview Prep":[
+    "What is one mistake you made at work and what did you learn from it?",
+    "Describe a time you led a team through a difficult situation.",
+    "Explain a complex idea from your field as if to a non-expert."
+  ],
+  "Travel":[
+    "Describe a memorable trip and what made it special.",
+    "If you could visit any country next month, where and why?",
+    "Share a travel issue you faced and how you solved it."
+  ],
+  "Presentation":[
+    "Summarize a topic you could teach in 60–90 seconds.",
+    "Pitch your product or idea to a non-technical audience.",
+    "Explain a chart or set of numbers from a recent report."
+  ]
+};
+function seedPrompt(goal){ promptBox.textContent = PROMPTS[goal][0]; }
+seedPrompt(currentGoal);
+
+document.getElementById("btnRand").addEventListener("click", ()=>{
+  const list = PROMPTS[currentGoal] || PROMPTS["Work English"];
   const pick = list[Math.floor(Math.random()*list.length)];
-  starterEl.textContent = pick;
+  promptBox.textContent = pick;
 });
 
-/* ===== Recorder ===== */
-let mediaRecorder; let chunks=[]; let startTs=0; let timerI=null;
+/* Recording */
+btnStart.addEventListener("click", async ()=>{
+  try{
+    const stream = await navigator.mediaDevices.getUserMedia({audio:true});
+    chunks = [];
+    mediaRecorder = new MediaRecorder(stream, {mimeType: 'audio/webm'});
+    mediaRecorder.ondataavailable = e => { if(e.data.size>0) chunks.push(e.data); };
+    mediaRecorder.start(250);
+    recStart = Date.now();
+    setRecordingUI(true);
+    timerInt = setInterval(updateTimer, 200);
+  }catch(e){
+    alert("Microphone permission is required.");
+  }
+});
 
+btnStop.addEventListener("click", ()=>{
+  if(mediaRecorder && mediaRecorder.state !== "inactive"){
+    mediaRecorder.stop();
+    mediaRecorder.stream.getTracks().forEach(t=>t.stop());
+  }
+  setRecordingUI(false);
+  clearInterval(timerInt);
+  updateTimer(); // final tick
+});
+
+function setRecordingUI(on){
+  liveChip.classList.toggle("live", on);
+  btnStart.disabled = on;
+  btnStop.disabled = !on;
+  btnSend.disabled = on || elapsedMs()<MIN_SEND_MS;
+}
+
+function elapsedMs(){ return recStart ? (Date.now() - recStart) : 0; }
 function fmt(ms){
-  const s = Math.max(0, Math.floor(ms/1000));
+  const s = Math.floor(ms/1000);
   const m = Math.floor(s/60).toString().padStart(2,'0');
   const ss = (s%60).toString().padStart(2,'0');
   return `${m}:${ss}`;
 }
-function updateProgress(ms){
-  const s = Math.max(0, Math.floor(ms/1000));
-  const pct = Math.min(1, s/90);
-  pbar.style.width = (pct*100).toFixed(1) + "%";
-}
-async function startRec(){
-  try{
-    const stream = await navigator.mediaDevices.getUserMedia({audio:true});
-    chunks=[]; mediaRecorder = new MediaRecorder(stream,{mimeType:'audio/webm'});
-    mediaRecorder.ondataavailable = e=>{ if(e.data.size>0) chunks.push(e.data) };
-    mediaRecorder.start(100);
-    startTs = Date.now();
-    timerEl.textContent = "00:00";
-    document.body.classList.add('recording');
-    clearInterval(timerI);
-    timerI = setInterval(()=>{
-      const ms = Date.now()-startTs;
-      timerEl.textContent = fmt(ms);
-      updateProgress(ms);
-    }, 200);
-  }catch(e){ alert("Mic permission is required."); }
-}
-function stopRec(){
-  if(mediaRecorder && mediaRecorder.state!=='inactive'){
-    mediaRecorder.stop();
-    mediaRecorder.stream.getTracks().forEach(t=>t.stop());
-  }
-  clearInterval(timerI);
-  document.body.classList.remove('recording');
-}
-btnStart.addEventListener('click', startRec);
-btnStop.addEventListener('click', stopRec);
-
-/* ===== Feedback gate ===== */
-function uses(){ return +(localStorage.getItem(USE_KEY)||0) }
-function incUses(){ localStorage.setItem(USE_KEY, (uses()+1).toString()) }
-function feedbackDone(){ return !!localStorage.getItem(FB_DONE_KEY) }
-function setFeedbackDone(){ localStorage.setItem(FB_DONE_KEY,"1") }
-function needFeedbackGate(){ return uses()>=1 && !feedbackDone(); }
-
-function openFeedback(){ fbModal.classList.add('on'); fbModal.setAttribute('aria-hidden','false'); }
-function closeFeedback(){ fbModal.classList.remove('on'); fbModal.setAttribute('aria-hidden','true'); }
-fbCancel.addEventListener('click', closeFeedback);
-fbStars.addEventListener('click', e=>{
-  const s = e.target.closest('.star'); if(!s) return;
-  fbRating = +s.dataset.v;
-  [...fbStars.querySelectorAll('.star')].forEach(st=>st.classList.toggle('on', +st.dataset.v<=fbRating));
-});
-let pendingFD=null;
-fbSubmit.addEventListener('click', ()=>{
-  const name=fbName.value.trim(), email=fbEmail.value.trim(), notes=fbNotes.value.trim();
-  if(!name || !email || !fbRating || !notes){ alert("Please fill name, email, rating, and a short note."); return; }
-  setFeedbackDone(); closeFeedback(); reallySendAnalyze(pendingFD);
-});
-
-/* ===== Analyze ===== */
-function setSending(on){
-  btnSend.classList.toggle('loading', on);
-  btnSend.disabled = on; btnStart.disabled = on; btnStop.disabled = on;
+function updateTimer(){
+  const ms = elapsedMs();
+  timerEl.textContent = fmt(ms);
+  const pct = Math.min(100, Math.round((ms/IDEAL_MS)*100));
+  barFill.style.width = pct + "%";
+  if(ms >= MIN_SEND_MS) btnSend.disabled = liveChip.classList.contains("live");
 }
 
-function mapLevel(cefr){
-  const m={A1:"Beginner",A2:"Elementary",B1:"Intermediate",B2:"Advanced",C1:"Advanced",C2:"Fluent"};
-  return m[(cefr||"").toUpperCase()] || "–";
-}
-function bulletify(list, mapper){
-  if(!Array.isArray(list) || !list.length) return "–";
-  return list.map(mapper).join("\n\n");
-}
-function renderResult(j){
-  if(j.fallback){
-    levelLabel.textContent="–"; fillersCount.textContent="0";
-    fixNowEl.textContent="Speak for at least 30–60 seconds in full sentences.";
-    nextEl.textContent="Describe your last weekend in 45 seconds.";
-    grammarEl.textContent="–"; pronEl.textContent="–"; return;
-  }
-  levelLabel.textContent = mapLevel(j.cefr_estimate);
-  fillersCount.textContent = (j.fluency?.fillers ?? 0);
-  fixNowEl.textContent = j.one_thing_to_fix || "–";
-  nextEl.textContent   = j.next_prompt    || "–";
+/* Send & analyze */
+btnSend.addEventListener("click", async ()=>{
+  if(elapsedMs()<MIN_SEND_MS){ alert("Please record a few seconds first."); return; }
 
-  grammarEl.textContent = bulletify(j.grammar_issues, g=>`→ ${g.error}\nTry: ${g.fix}\nWhy: ${g.why}`);
-  pronEl.textContent    = bulletify(j.pronunciation, p=>`${p.sound_or_word} — ${p.issue}${p.minimal_pair?`\nTry: ${p.minimal_pair}`:""}`);
-}
-async function sendAnalyze(){
-  if(!chunks.length){ alert("Please record something first."); return; }
-
-  const blob = new Blob(chunks,{type:'audio/webm'});
-  const file = new File([blob],'audio.webm',{type:blob.type});
+  // freeze UI
+  btnSend.disabled = true; btnSend.textContent = "Sending…";
+  const blob = new Blob(chunks, {type:'audio/webm'});
+  const file = new File([blob], 'audio.webm', {type:blob.type});
   const fd = new FormData();
   fd.append('files[]', file);
-  const durSec = Math.round((Date.now()-startTs)/1000);
-  fd.append('duration_sec', durSec.toString());
-  fd.append('goal', currentGoal());
+  fd.append('duration_sec', Math.round(elapsedMs()/1000));
+  fd.append('goal', currentGoal);
 
-  if(needFeedbackGate()){ pendingFD=fd; openFeedback(); return; }
-  await reallySendAnalyze(fd);
-}
-btnSend.addEventListener('click', sendAnalyze);
-
-async function reallySendAnalyze(fd){
   try{
-    setSending(true);
-    fixNowEl.textContent = nextEl.textContent = grammarEl.textContent = pronEl.textContent = "Analyzing…";
-    const res = await fetch(ANALYZE_API,{method:'POST',body:fd});
+    const res = await fetch(API_URL, {method:'POST', body:fd});
     const raw = await res.text();
+    let json={};
+    try{ json = JSON.parse(raw); }catch{ throw new Error("Invalid JSON from analyzer."); }
 
-    if(!res.ok){
-      if(/Transcription empty/i.test(raw)||/transcript is not defined/i.test(raw)){ renderResult({fallback:true}); }
-      else{ alert("Analyzer error:\n"+raw); }
-      return;
-    }
-    let json={}; try{ json=JSON.parse(raw||"{}"); }catch{}
-    renderResult(json); incUses();
-  }catch(e){ alert("Request failed: "+(e.message||e)); }
-  finally{ setSending(false); }
+    renderResult(json);
+    // sessions count (gamification seed)
+    const n = (parseInt(localStorage.getItem(STORAGE.sessions)||"0",10) || 0) + 1;
+    localStorage.setItem(STORAGE.sessions, String(n));
+    sessionsPill.textContent = `Sessions: ${n}`;
+  }catch(e){
+    renderError(e.message || "Request failed.");
+  }finally{
+    btnSend.disabled = false; btnSend.textContent = "Send & Analyze";
+  }
+});
+
+sessionsPill.textContent = `Sessions: ${parseInt(localStorage.getItem(STORAGE.sessions)||"0",10) || 0}`;
+
+/* Rendering */
+function clearList(node){ while(node.firstChild) node.removeChild(node.firstChild); }
+
+function renderResult(j){
+  // fallback (short or silent)
+  if(j && j.fallback){
+    lvl.textContent = "—";
+    fillers.textContent = "0";
+    fixNow.textContent = "Speak for at least 30–60 seconds in full sentences.";
+    setList(grammar, [
+      "Try to extend ideas into full sentences.",
+      "Use simple connectors (and, but, because) to link clauses.",
+      "Keep going for 60–90 seconds."
+    ]);
+    setList(pron, ["—"]);
+    nextPrompt.textContent = "Describe your last weekend in 45 seconds.";
+    return;
+  }
+
+  lvl.textContent = j?.cefr_estimate || mapFriendlyLevel(j?.cefr_estimate);
+  const f = (j?.fluency?.fillers ?? 0);
+  fillers.textContent = String(f);
+  fixNow.textContent = j?.one_thing_to_fix || j?.rationale || "—";
+  nextPrompt.textContent = j?.next_prompt || "—";
+
+  // Grammar
+  const g = Array.isArray(j?.grammar_issues) ? j.grammar_issues : [];
+  if(g.length===0){
+    setList(grammar, ["No clear grammar issues were detected in this short clip."]);
+  }else{
+    setList(grammar, g.map(x=>formatGrammar(x)));
+  }
+
+  // Pronunciation
+  const p = Array.isArray(j?.pronunciation) ? j.pronunciation : [];
+  if(p.length===0){
+    setList(pron, [
+      "We couldn’t confidently assess pronunciation in this sample. " +
+      "Try 45–90 seconds with clear nouns/verbs and steady pace."
+    ]);
+  }else{
+    setList(pron, p.map(x=>formatPron(x)));
+  }
 }
 
-/* ===== Init ===== */
-function init(){ setGoal("Work English"); }
-document.addEventListener('DOMContentLoaded', init);
+function renderError(msg){
+  lvl.textContent = "—";
+  fillers.textContent = "0";
+  fixNow.textContent = msg || "Error.";
+  setList(grammar, ["—"]);
+  setList(pron, ["—"]);
+  nextPrompt.textContent = "—";
+}
+
+function setList(node, items){
+  clearList(node);
+  items.forEach(t=>{
+    const d = document.createElement("div");
+    d.className = "issue";
+    d.textContent = t;
+    node.appendChild(d);
+  });
+}
+
+function formatGrammar(it){
+  const e  = it?.error ? `→ ${it.error}` : null;
+  const fx = it?.fix   ? `Try: ${it.fix}` : null;
+  const w  = it?.why   ? `Why: ${it.why}` : null;
+  return [e,fx,w].filter(Boolean).join("\n");
+}
+function formatPron(it){
+  const w  = it?.sound_or_word || it?.word || "—";
+  const i  = it?.issue ? `— ${it.issue}` : "";
+  const mp = it?.minimal_pair ? `Try: ${it.minimal_pair}` : "";
+  return `${w} ${i}${mp ? "\n" + mp : ""}`;
+}
+
+function mapFriendlyLevel(code){
+  // If backend returns A1..C2 we can map to friendly labels;
+  // keep original for now since you prefer Elementary/Intermediate/Fluent style via backend.
+  return code || "—";
+}
 </script>
 </body>
 </html>
