@@ -96,21 +96,24 @@ module.exports = async (req, res) => {
     const tr = await openai.audio.transcriptions.create({
       file: fileForOpenAI,
       model: 'whisper-1',
-      // language: 'en', // uncomment if you want to force English
+      language: 'en',
     });
 
-    const transcript = (tr?.text || '').trim();
-    const words = transcript ? transcript.split(/\s+/).filter(Boolean).length : 0;
+const hasArabic = /[\u0600-\u06FF]/.test(transcript);
+const englishTokens = (transcript.match(/[A-Za-z]+/g) || []).length;
 
-    if (!transcript || words < 3) {
-      return res
-        .status(200)
-        .json(
-          fallbackJSON(
-            'We didn’t catch enough speech to analyze. Please speak for 30–60 seconds in full sentences.'
-          )
-        );
-    }
+if (hasArabic || englishTokens < 10) {
+  return res.status(200).json({
+    fallback: true,
+    cefr_estimate: '',
+    rationale: "We detected mostly non-English speech. Please speak in English so we can analyze you correctly.",
+    fluency: { wpm: 0, fillers: 0, note: "" },
+    grammar_issues: [],
+    pronunciation: [],
+    one_thing_to_fix: "Speak only in English for 60–90 seconds.",
+    next_prompt: "Describe your typical workday in English in 45 seconds."
+  });
+}
 
     // ---- 3) Ask GPT for compact JSON feedback
     const system = `
