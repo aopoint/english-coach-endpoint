@@ -6,6 +6,8 @@
 //
 // ENV: set OPENAI_API_KEY in Vercel (Project → Settings → Environment Variables)
 
+const { toFile } = require('openai/uploads');
+
 const { readFile } = require('fs/promises');
 const OpenAI = require('openai');
 
@@ -66,7 +68,7 @@ module.exports = async (req, res) => {
 
     // ---- 2) Transcribe with Whisper
     const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-    const fileForOpenAI = await openai.files.toFile(buffer, filename, { type: mimetype });
+    const fileForOpenAI = await toFile(buffer, filename, { type: mimetype });
 
     const tr = await openai.audio.transcriptions.create({
       file: fileForOpenAI,
