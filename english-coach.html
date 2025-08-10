@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>English Coach — Instant Feedback</title>
+  <meta name="theme-color" content="#191919" />
+  <style>
+    :root{
+      --bg:#191919;
+      --card:#1f1f24;
+      --muted:#7a7a7a;
+      --text:#f5f5f5;
+      --primary:#4E0A7A;
+      --primary-2:#7123a7;
+      --ring:rgba(255,255,255,.06);
+      --ok:#22c55e;
+      --warn:#f59e0b;
+      --err:#ef4444;
+      --chip:#2a2a2a;
+      --shadow:0 10px 30px rgba(0,0,0,.35);
+      --radius:16px;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family: "Avenir Next", -apple-system, BlinkMacSystemFont, "Segoe UI",
+        Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+      color:var(--text);
+      background:
+        radial-gradient(1000px 600px at 30% -10%, rgba(78,10,122,.25), transparent 60%),
+        radial-gradient(800px 400px at 90% -10%, rgba(113,35,167,.22), transparent 55%),
+        var(--bg);
+      min-height:100%;
+    }
+
+    header{
+      display:flex; align-items:center; gap:14px;
+      padding:18px 20px;
+    }
+    .app-icon{
+      width:44px;height:44px;border-radius:12px;
+      background:linear-gradient(135deg, var(--primary), var(--primary-2));
+      display:grid;place-items:center; box-shadow:var(--shadow);
+    }
+    .app-icon svg{width:22px;height:22px;opacity:.9}
+    .title-wrap h1{margin:0;font-weight:800;letter-spacing:.2px;font-size:26px}
+    .subtitle{
+      display:inline-block;margin-top:2px;
+      background:linear-gradient(100deg, var(--primary), var(--primary-2));
+      color:#fff; padding:8px 14px;border-radius:999px;font-weight:700;
+      font-size:14px; box-shadow:var(--shadow);
+    }
+
+    .wrap{max-width:1200px; margin:0 auto; padding:0 18px 60px}
+    .grid{
+      display:grid; gap:18px;
+      grid-template-columns: 1fr;
+    }
+    @media (min-width: 960px){
+      .grid{ grid-template-columns: 520px 1fr; align-items:start }
+    }
+
+    .card{
+      background:rgba(255,255,255,.03);
+      border:1px solid var(--ring);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+    }
+
+    .left{padding:16px 16px 20px}
+    .left p{color:#d7d7d7; margin:0 0 18px; line-height:1.5}
+    .row{
+      display:flex; gap:12px; align-items:center; flex-wrap:wrap;
+      margin:12px 0 18px;
+    }
+    label{ font-size:14px; color:#cfcfcf }
+    select, .fake{
+      width:100%;
+      background:rgba(255,255,255,.04); color:var(--text);
+      border:1px solid var(--ring); border-radius:12px;
+      padding:12px 14px; outline:none;
+    }
+    select:focus{border-color:var(--primary)}
+    .fake{
+      display:flex; justify-content:center; align-items:center;
+      min-width:120px; font-variant-numeric:tabular-nums;
+    }
+    .btn{
+      border:none; outline:none; cursor:pointer;
+      background:linear-gradient(135deg, var(--primary), var(--primary-2));
+      color:#fff; padding:14px 18px; border-radius:14px; font-weight:800;
+      box-shadow:var(--shadow); transition:transform .08s ease;
+    }
+    .btn:active{ transform:translateY(1px) }
+    .btn.secondary{
+      background:rgba(255,255,255,.04);
+      color:#fff; border:1px solid var(--ring);
+    }
+    .btn[disabled]{opacity:.5; cursor:not-allowed}
+
+    .bar{ height:6px; background:#2b2b2b; border-radius:999px; overflow:hidden }
+    .bar > i{ display:block; height:100%; width:0%; background:linear-gradient(90deg,var(--primary), var(--primary-2))}
+
+    .right{ padding:14px }
+    .panel{ padding:14px; border-bottom:1px solid var(--ring) }
+    .panel:last-child{border-bottom:none}
+    .panel h3{ margin:0 0 10px; font-size:16px; letter-spacing:.2px }
+    .kv{
+      display:grid; gap:10px; grid-template-columns: 1fr;
+    }
+    @media (min-width:560px){
+      .kv{ grid-template-columns: repeat(2, 1fr) }
+    }
+    .chip{ background:var(--chip); padding:12px 12px; border-radius:12px; border:1px solid var(--ring) }
+    .mono{ font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace }
+    .ok{ color:var(--ok) } .warn{color:var(--warn)} .err{color:var(--err)}
+
+    .debug{
+      display:flex; gap:8px; align-items:center;
+      padding:12px 14px; border-bottom:1px solid var(--ring)
+    }
+    .debug input{
+      flex:1; background:rgba(255,255,255,.04); color:#fff; border:1px solid var(--ring);
+      border-radius:999px; padding:10px 14px; outline:none;
+    }
+    .debug input:focus{border-color:var(--primary)}
+    .debug .btn{padding:10px 14px; border-radius:999px}
+    pre{
+      margin:0; padding:12px 14px; max-height:320px; overflow:auto;
+      background:rgba(255,255,255,.03); border-top:1px solid var(--ring);
+      border-bottom-left-radius:var(--radius); border-bottom-right-radius:var(--radius);
+      font-size:13px; line-height:1.5;
+    }
+
+    .toast{
+      position:fixed; left:50%; bottom:18px; transform:translateX(-50%);
+      background:#0f172a; color:#fff; border:1px solid var(--ring); padding:12px 14px;
+      border-radius:12px; box-shadow:var(--shadow); max-width:90vw; z-index:10
+    }
+    .gear{
+      margin-left:auto; background:rgba(255,255,255,.05); border-radius:10px; border:1px solid var(--ring);
+      padding:8px 10px; display:flex; gap:8px; align-items:center
+    }
+    .gear small{color:#cfcfcf}
+  </style>
+</head>
+<body>
+  <header class="wrap">
+    <div class="app-icon" aria-hidden="true">
+      <!-- tiny check bubble -->
+      <svg viewBox="0 0 24 24" fill="none"><path d="M20 7.5a8 8 0 1 1-5.3-5.3" stroke="white" stroke-width="2" stroke-linecap="round"/><path d="M15.5 7.5l2 2 4-4" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </div>
+    <div class="title-wrap">
+      <h1>English Coach</h1>
+      <span class="subtitle">Instant English Feedback</span>
+    </div>
+    <div class="gear">
+      <small>API:</small>
+      <input id="apiInput" placeholder="https://…/api/analyze" aria-label="API endpoint"/>
+      <button class="btn" id="apiSave" style="padding:8px 12px;border-radius:8px">Save</button>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <div class="grid">
+      <!-- Left: controls -->
+      <section class="card left">
+        <p>Record for <strong>60–90 seconds</strong>. We’ll analyze fluency and correctness, then show key corrections and a next prompt.</p>
+
+        <div class="row">
+          <div style="flex:1 1 220px">
+            <label for="goal">Goal</label>
+            <select id="goal">
+              <option>Work English</option>
+              <option>Daily English</option>
+              <option>IELTS / TOEFL</option>
+              <option>Kids English</option>
+            </select>
+          </div>
+
+          <div style="width:150px">
+            <label>Timer</label>
+            <div class="fake" id="timer">00:00</div>
+          </div>
+        </div>
+
+        <div class="row">
+          <button class="btn" id="btnStart">Start recording</button>
+          <button class="btn secondary" id="btnStop" disabled>Stop</button>
+          <button class="btn" id="btnSend" disabled>Send &amp; Analyze</button>
+        </div>
+
+        <div class="bar"><i id="progress"></i></div>
+      </section>
+
+      <!-- Right: debug + results -->
+      <section class="card right">
+        <div class="debug">
+          <span class="ok" id="statusDot" aria-hidden="true">●</span>
+          <input id="debugUrl" aria-label="Endpoint URL" />
+          <button class="btn secondary" id="debugSave">Save</button>
+        </div>
+        <pre id="debugPre" class="mono">{ "tip": "This panel mirrors whatever your endpoint replies with. If you see a short fallback JSON, recording was too short to analyze." }</pre>
+
+        <div class="panel">
+          <h3>Summary</h3>
+          <div class="kv">
+            <div class="chip"><strong>Level:</strong> <span id="level" class="mono">—</span></div>
+            <div class="chip"><strong>Fluency:</strong> <span class="mono"><span id="wpm">0</span> wpm</span></div>
+            <div class="chip"><strong>Fillers:</strong> <span class="mono"><span id="fillers">0</span></span></div>
+            <div class="chip"><strong>Note:</strong> <span id="fluencyNote">—</span></div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <h3>What to fix now</h3>
+          <div class="chip" id="fixNow">—</div>
+        </div>
+
+        <div class="panel">
+          <h3>Next prompt (30–45s)</h3>
+          <div class="chip" id="nextPrompt">—</div>
+        </div>
+
+        <div class="panel">
+          <h3>Grammar</h3>
+          <div id="grammarList" class="kv"></div>
+        </div>
+
+        <div class="panel">
+          <h3>Pronunciation</h3>
+          <div id="pronList" class="kv"></div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <div id="toast" class="toast" style="display:none"></div>
+
+  <script>
+    // ===== Settings / Defaults =====
+    const DEFAULT_API = (location.origin + '/api/analyze');
+    const LS_KEY_API = 'ec_api_url';
+
+    // ===== Elements =====
+    const apiInput   = document.getElementById('apiInput');
+    const apiSaveBtn = document.getElementById('apiSave');
+    const debugUrl   = document.getElementById('debugUrl');
+    const debugSave  = document.getElementById('debugSave');
+    const debugPre   = document.getElementById('debugPre');
+    const statusDot  = document.getElementById('statusDot');
+
+    const goalSel  = document.getElementById('goal');
+    const timerEl  = document.getElementById('timer');
+    const barEl    = document.getElementById('progress');
+
+    const btnStart = document.getElementById('btnStart');
+    const btnStop  = document.getElementById('btnStop');
+    const btnSend  = document.getElementById('btnSend');
+
+    const levelEl      = document.getElementById('level');
+    const wpmEl        = document.getElementById('wpm');
+    const fillersEl    = document.getElementById('fillers');
+    const fluencyNote  = document.getElementById('fluencyNote');
+    const fixNowEl     = document.getElementById('fixNow');
+    const nextPromptEl = document.getElementById('nextPrompt');
+    const grammarList  = document.getElementById('grammarList');
+    const pronList     = document.getElementById('pronList');
+
+    const toastEl = document.getElementById('toast');
+
+    // ===== Recorder State =====
+    let mediaRecorder, chunks = [], startedAt = 0, tickInt, sentBlob;
+
+    function getAPI(){
+      return (localStorage.getItem(LS_KEY_API) || '').trim() || DEFAULT_API;
+    }
+    function setAPI(v){
+      localStorage.setItem(LS_KEY_API, v.trim());
+    }
+
+    function flash(msg, warn=false){
+      toastEl.textContent = msg;
+      toastEl.style.display = 'block';
+      toastEl.style.borderColor = warn ? 'var(--warn)' : 'var(--ring)';
+      setTimeout(()=> toastEl.style.display='none', 2800);
+    }
+
+    function setUIBusy(b){
+      [btnStart, btnStop, btnSend].forEach(bn=> bn.disabled = b ? true : bn === btnSend && !sentBlob);
+      document.body.style.cursor = b ? 'progress':'default';
+    }
+
+    // ===== Timer / Progress =====
+    function startTimer(){
+      startedAt = Date.now();
+      tickInt = setInterval(()=>{
+        const s = Math.floor((Date.now()-startedAt)/1000);
+        const mm = String(Math.floor(s/60)).padStart(2,'0');
+        const ss = String(s%60).padStart(2,'0');
+        timerEl.textContent = `${mm}:${ss}`;
+        const pct = Math.min(100, (s/90)*100); // suggest 60–90s
+        barEl.style.width = pct+'%';
+      }, 200);
+    }
+    function stopTimer(){
+      clearInterval(tickInt);
+    }
+
+    // ===== Recording =====
+    btnStart.addEventListener('click', async ()=>{
+      try{
+        chunks = [];
+        const stream = await navigator.mediaDevices.getUserMedia({ audio:true });
+        const type = MediaRecorder.isTypeSupported('audio/webm;codecs=opus')
+          ? 'audio/webm;codecs=opus'
+          : (MediaRecorder.isTypeSupported('audio/mp4;codecs=aac') ? 'audio/mp4;codecs=aac' : '');
+
+        mediaRecorder = new MediaRecorder(stream, type ? {mimeType:type}:{});
+        mediaRecorder.ondataavailable = e=> { if(e.data && e.data.size){ chunks.push(e.data); } };
+        mediaRecorder.onstop = ()=> stream.getTracks().forEach(t=>t.stop());
+
+        mediaRecorder.start(250); // small chunks
+        startTimer();
+        btnStart.disabled = true;
+        btnStop.disabled  = false;
+        btnSend.disabled  = true;
+        flash('Recording…');
+      }catch(err){
+        console.error(err);
+        flash('Microphone permission needed.', true);
+      }
+    });
+
+    btnStop.addEventListener('click', ()=>{
+      try{
+        if(mediaRecorder && mediaRecorder.state !== 'inactive'){
+          mediaRecorder.stop();
+          stopTimer();
+          const blob = new Blob(chunks, {type: chunks[0]?.type || 'audio/webm'});
+          sentBlob = blob;
+          btnSend.disabled = false;
+          btnStop.disabled  = true;
+          btnStart.disabled = false;
+          flash('Recording ready. Click “Send & Analyze”.');
+        }
+      }catch(e){
+        console.error(e);
+      }
+    });
+
+    // ===== Send to API =====
+    btnSend.addEventListener('click', async ()=>{
+      const api = getAPI();
+      debugUrl.value = api;
+      if(!sentBlob || !api){ flash('Nothing to send.', true); return; }
+
+      const fd = new FormData();
+      const file = new File([sentBlob], 'audio.webm', {type: sentBlob.type || 'audio/webm'});
+      fd.append('files[]', file);
+      const dur = Math.round((Date.now() - startedAt)/1000) || 0;
+      fd.append('duration_sec', String(dur));
+      fd.append('goal', goalSel.value);
+
+      setUIBusy(true);
+      statusDot.textContent = '●'; statusDot.style.color = 'var(--warn)';
+      debugPre.textContent = 'Sending…';
+
+      try{
+        const res = await fetch(api, { method:'POST', body:fd });
+        const raw = await res.text();
+        debugPre.textContent = raw || '(empty response)';
+        let json;
+        try{ json = JSON.parse(raw); }
+        catch{ flash('Response was not JSON.', true); setUIBusy(false); return; }
+
+        renderResult(json);
+        statusDot.style.color = 'var(--ok)';
+      }catch(e){
+        console.error(e);
+        debugPre.textContent = 'Request failed: ' + e.message;
+        statusDot.style.color = 'var(--err)';
+        flash('Upload failed. Try again.', true);
+      }finally{
+        setUIBusy(false);
+      }
+    });
+
+    // ===== Render results (handles fallbacks) =====
+    function renderResult(json){
+      if(json.fallback){
+        flash(json.rationale || 'No speech detected. Try again with 30–60s of speech.', true);
+      }
+
+      levelEl.textContent    = json.cefr_estimate || '—';
+      wpmEl.textContent      = (json.fluency && json.fluency.wpm) || 0;
+      fillersEl.textContent  = (json.fluency && json.fluency.fillers) || 0;
+      fluencyNote.textContent= (json.fluency && json.fluency.note) || '—';
+      fixNowEl.textContent   = json.one_thing_to_fix || '—';
+      nextPromptEl.textContent = json.next_prompt || '—';
+
+      // grammar
+      grammarList.innerHTML = '';
+      (Array.isArray(json.grammar_issues) ? json.grammar_issues : []).forEach(g=>{
+        const d = document.createElement('div'); d.className='chip';
+        d.innerHTML = `<div><strong>${escapeHTML(g.error||'')}</strong></div>
+          <div style="color:#dcdcdc;margin-top:6px">Fix: ${escapeHTML(g.fix||'')}</div>
+          <div style="color:#bfbfbf;margin-top:4px"><small>${escapeHTML(g.why||'')}</small></div>`;
+        grammarList.appendChild(d);
+      });
+
+      // pronunciation
+      pronList.innerHTML = '';
+      (Array.isArray(json.pronunciation) ? json.pronunciation : []).forEach(p=>{
+        const d = document.createElement('div'); d.className='chip';
+        d.innerHTML = `<div><strong>${escapeHTML(p.sound_or_word||'')}</strong> — ${escapeHTML(p.issue||'')}</div>
+          <div style="color:#bfbfbf;margin-top:6px"><small>Try: ${escapeHTML(p.minimal_pair||'')}</small></div>`;
+        pronList.appendChild(d);
+      });
+    }
+
+    function escapeHTML(s){
+      return (s||'').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+    }
+
+    // ===== Endpoint UI =====
+    function syncInputs(){
+      const api = getAPI();
+      apiInput.value = api;
+      debugUrl.value = api;
+    }
+    apiSaveBtn.addEventListener('click', ()=>{ setAPI(apiInput.value); syncInputs(); flash('API saved.'); });
+    debugSave .addEventListener('click', ()=>{ setAPI(debugUrl.value);  syncInputs(); flash('API saved.'); });
+
+    // Boot
+    syncInputs();
+    // set “alive” message in debug (GET)
+    (async ()=>{
+      try{
+        const res = await fetch(getAPI(), {method:'GET'});
+        const raw = await res.text();
+        debugPre.textContent = raw;
+      }catch{ /* ignore */ }
+    })();
+  </script>
+</body>
+</html>
