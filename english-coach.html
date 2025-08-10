@@ -1,23 +1,23 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>English Coach — Instant Feedback</title>
   <meta name="theme-color" content="#191919" />
   <style>
     :root{
       --bg:#191919;
-      --card:#1f1f24;
-      --muted:#7a7a7a;
+      --panel:#1f1f1f;
+      --panel-2:#232323;
+      --muted:#8b8b8b;
       --text:#f5f5f5;
       --primary:#4E0A7A;
-      --primary-2:#7123a7;
-      --ring:rgba(255,255,255,.06);
+      --primary-2:#7f3bb6;
       --ok:#22c55e;
-      --warn:#f59e0b;
-      --err:#ef4444;
-      --chip:#2a2a2a;
+      --ring:rgba(78,10,122,.35);
+      --chip:#262626;
+      --card:#151515;
       --shadow:0 10px 30px rgba(0,0,0,.35);
       --radius:16px;
     }
@@ -25,424 +25,415 @@
     html,body{height:100%}
     body{
       margin:0;
-      font-family: "Avenir Next", -apple-system, BlinkMacSystemFont, "Segoe UI",
-        Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+      background:var(--bg);
       color:var(--text);
-      background:
-        radial-gradient(1000px 600px at 30% -10%, rgba(78,10,122,.25), transparent 60%),
-        radial-gradient(800px 400px at 90% -10%, rgba(113,35,167,.22), transparent 55%),
-        var(--bg);
-      min-height:100%;
+      font:16px/1.45 "Avenir Next", "Avenir", -apple-system, BlinkMacSystemFont, "Segoe UI",
+            Roboto, Oxygen, Ubuntu, Cantarell, "Helvetica Neue", Arial, "Apple Color Emoji",
+            "Segoe UI Emoji", "Segoe UI Symbol", sans-serif;
     }
 
+    /* Header */
     header{
+      position:sticky; top:0; z-index:10;
       display:flex; align-items:center; gap:14px;
-      padding:18px 20px;
+      padding:14px 18px;
+      background:
+        radial-gradient(1200px 600px at 15% -20%, rgba(78,10,122,.25), transparent 55%),
+        radial-gradient(1000px 500px at 90% -10%, rgba(78,10,122,.18), transparent 60%),
+        var(--bg);
+      border-bottom:1px solid #202020;
+      backdrop-filter:saturate(120%) blur(6px);
     }
-    .app-icon{
-      width:44px;height:44px;border-radius:12px;
+    .brand{font-size:22px; font-weight:800; letter-spacing:.2px}
+    .tag{
       background:linear-gradient(135deg, var(--primary), var(--primary-2));
-      display:grid;place-items:center; box-shadow:var(--shadow);
+      color:#fff; padding:6px 10px; border-radius:999px; font-weight:700; font-size:12px;
+      box-shadow:0 4px 16px rgba(78,10,122,.45);
     }
-    .app-icon svg{width:22px;height:22px;opacity:.9}
-    .title-wrap h1{margin:0;font-weight:800;letter-spacing:.2px;font-size:26px}
-    .subtitle{
-      display:inline-block;margin-top:2px;
-      background:linear-gradient(100deg, var(--primary), var(--primary-2));
-      color:#fff; padding:8px 14px;border-radius:999px;font-weight:700;
-      font-size:14px; box-shadow:var(--shadow);
+    .api-box{margin-left:auto; display:flex; gap:8px; align-items:center}
+    .api-box input{
+      width:min(56vw,520px); max-width:75vw;
+      background:#101010; color:#ddd; border:1px solid #2a2a2a; outline:none;
+      padding:10px 12px; border-radius:10px;
+    }
+    .api-box button{
+      background:var(--primary); color:#fff; border:none; padding:10px 12px; border-radius:10px;
+      cursor:pointer;
     }
 
-    .wrap{max-width:1200px; margin:0 auto; padding:0 18px 60px}
-    .grid{
-      display:grid; gap:18px;
-      grid-template-columns: 1fr;
+    /* Layout */
+    .wrap{
+      margin:18px auto; padding:0 16px; width:100%; max-width:1280px;
+      display:grid; gap:16px;
+      grid-template-columns: 1fr;  /* Mobile default */
     }
     @media (min-width: 960px){
-      .grid{ grid-template-columns: 520px 1fr; align-items:start }
+      .wrap{
+        grid-template-columns: 380px 1fr; /* Sidebar + Content */
+        align-items:start;
+      }
     }
 
+    /* Cards & widgets */
     .card{
-      background:rgba(255,255,255,.03);
-      border:1px solid var(--ring);
+      background:var(--panel);
+      border:1px solid #242424;
       border-radius:var(--radius);
       box-shadow:var(--shadow);
     }
+    .pad{padding:16px}
+    .title{
+      font-weight:800; font-size:18px; margin:0 0 10px;
+    }
+    .muted{color:var(--muted); font-size:14px}
 
-    .left{padding:16px 16px 20px}
-    .left p{color:#d7d7d7; margin:0 0 18px; line-height:1.5}
-    .row{
-      display:flex; gap:12px; align-items:center; flex-wrap:wrap;
-      margin:12px 0 18px;
-    }
-    label{ font-size:14px; color:#cfcfcf }
-    select, .fake{
-      width:100%;
-      background:rgba(255,255,255,.04); color:var(--text);
-      border:1px solid var(--ring); border-radius:12px;
-      padding:12px 14px; outline:none;
-    }
-    select:focus{border-color:var(--primary)}
-    .fake{
-      display:flex; justify-content:center; align-items:center;
-      min-width:120px; font-variant-numeric:tabular-nums;
-    }
+    .row{display:flex; gap:10px; flex-wrap:wrap; align-items:center}
+    .grow{flex:1}
     .btn{
-      border:none; outline:none; cursor:pointer;
-      background:linear-gradient(135deg, var(--primary), var(--primary-2));
-      color:#fff; padding:14px 18px; border-radius:14px; font-weight:800;
-      box-shadow:var(--shadow); transition:transform .08s ease;
+      appearance:none; border:none; cursor:pointer; font-weight:800;
+      color:#fff; border-radius:12px; padding:14px 16px; min-width:120px;
+      background:#2a2a2a; transition:.15s transform, .15s box-shadow, .15s background;
     }
-    .btn:active{ transform:translateY(1px) }
-    .btn.secondary{
-      background:rgba(255,255,255,.04);
-      color:#fff; border:1px solid var(--ring);
-    }
-    .btn[disabled]{opacity:.5; cursor:not-allowed}
+    .btn.primary{ background:linear-gradient(135deg, var(--primary), var(--primary-2)); box-shadow:0 8px 20px var(--ring) }
+    .btn:hover{ transform: translateY(-1px) }
+    .btn:active{ transform: translateY(0) scale(.98) }
 
-    .bar{ height:6px; background:#2b2b2b; border-radius:999px; overflow:hidden }
-    .bar > i{ display:block; height:100%; width:0%; background:linear-gradient(90deg,var(--primary), var(--primary-2))}
+    .select, .timer{
+      background:#131313; color:#ddd; border:1px solid #2b2b2b;
+      padding:10px 12px; border-radius:12px;
+    }
+    select.select{ min-width: 100% }
+    .timer{min-width:110px; text-align:center; font-weight:800}
 
-    .right{ padding:14px }
-    .panel{ padding:14px; border-bottom:1px solid var(--ring) }
-    .panel:last-child{border-bottom:none}
-    .panel h3{ margin:0 0 10px; font-size:16px; letter-spacing:.2px }
-    .kv{
-      display:grid; gap:10px; grid-template-columns: 1fr;
-    }
-    @media (min-width:560px){
-      .kv{ grid-template-columns: repeat(2, 1fr) }
-    }
-    .chip{ background:var(--chip); padding:12px 12px; border-radius:12px; border:1px solid var(--ring) }
-    .mono{ font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace }
-    .ok{ color:var(--ok) } .warn{color:var(--warn)} .err{color:var(--err)}
+    .divider{height:1px; background:#242424; margin:14px -16px}
 
-    .debug{
-      display:flex; gap:8px; align-items:center;
-      padding:12px 14px; border-bottom:1px solid var(--ring)
+    /* Right side content */
+    .grid{
+      display:grid; gap:12px;
     }
-    .debug input{
-      flex:1; background:rgba(255,255,255,.04); color:#fff; border:1px solid var(--ring);
-      border-radius:999px; padding:10px 14px; outline:none;
+    .pill{
+      display:inline-flex; gap:8px; align-items:center;
+      background:#101010; padding:8px 10px; border-radius:999px; color:#cfcfcf;
+      border:1px solid #242424; font-size:13px
     }
-    .debug input:focus{border-color:var(--primary)}
-    .debug .btn{padding:10px 14px; border-radius:999px}
-    pre{
-      margin:0; padding:12px 14px; max-height:320px; overflow:auto;
-      background:rgba(255,255,255,.03); border-top:1px solid var(--ring);
-      border-bottom-left-radius:var(--radius); border-bottom-right-radius:var(--radius);
-      font-size:13px; line-height:1.5;
+    .ok-dot{width:10px; height:10px; border-radius:999px; background:var(--ok); box-shadow:0 0 0 3px rgba(34,197,94,.15)}
+
+    .field{display:flex; flex-direction:column; gap:8px}
+    .input{
+      width:100%; min-height:42px; display:flex; align-items:center;
+      background:#121212; border:1px solid #2b2b2b; color:#eaeaea; border-radius:12px;
+      padding:10px 12px;
+    }
+    .mono{
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
+                   "Courier New", monospace;
     }
 
-    .toast{
-      position:fixed; left:50%; bottom:18px; transform:translateX(-50%);
-      background:#0f172a; color:#fff; border:1px solid var(--ring); padding:12px 14px;
-      border-radius:12px; box-shadow:var(--shadow); max-width:90vw; z-index:10
+    .panel-title{font-weight:800; margin:8px 0 6px}
+    .slot{ background:var(--panel-2); border:1px solid #2a2a2a; border-radius:10px; padding:12px }
+
+    /* Responsive tweaks */
+    @media (max-width: 959px){
+      .api-box input{max-width: 56vw}
+      .row.mobile-stack{flex-direction:column; align-items:stretch}
+      .btn{width:100%}
     }
-    .gear{
-      margin-left:auto; background:rgba(255,255,255,.05); border-radius:10px; border:1px solid var(--ring);
-      padding:8px 10px; display:flex; gap:8px; align-items:center
+
+    .foot{
+      color:#aaa; font-size:12px; padding:18px; text-align:center;
     }
-    .gear small{color:#cfcfcf}
+    a{color:#b98cff; text-decoration:none}
+    a:hover{text-decoration:underline}
   </style>
 </head>
 <body>
-  <header class="wrap">
-    <div class="app-icon" aria-hidden="true">
-      <!-- tiny check bubble -->
-      <svg viewBox="0 0 24 24" fill="none"><path d="M20 7.5a8 8 0 1 1-5.3-5.3" stroke="white" stroke-width="2" stroke-linecap="round"/><path d="M15.5 7.5l2 2 4-4" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-    </div>
-    <div class="title-wrap">
-      <h1>English Coach</h1>
-      <span class="subtitle">Instant English Feedback</span>
-    </div>
-    <div class="gear">
-      <small>API:</small>
-      <input id="apiInput" placeholder="https://…/api/analyze" aria-label="API endpoint"/>
-      <button class="btn" id="apiSave" style="padding:8px 12px;border-radius:8px">Save</button>
+  <header>
+    <div class="brand">English Coach</div>
+    <span class="tag">Instant English Feedback</span>
+
+    <div class="api-box">
+      <small class="muted" style="opacity:.7">API:</small>
+      <input id="apiUrl" placeholder="https://…/api/analyze" />
+      <button id="saveApi">Save</button>
     </div>
   </header>
 
   <main class="wrap">
-    <div class="grid">
-      <!-- Left: controls -->
-      <section class="card left">
-        <p>Record for <strong>60–90 seconds</strong>. We’ll analyze fluency and correctness, then show key corrections and a next prompt.</p>
+    <!-- Left column: controls -->
+    <section class="card pad" id="controls">
+      <p class="muted">Record for <strong>60–90 seconds</strong>. We’ll analyze fluency and correctness, then show key corrections and a next prompt.</p>
 
-        <div class="row">
-          <div style="flex:1 1 220px">
-            <label for="goal">Goal</label>
-            <select id="goal">
-              <option>Work English</option>
-              <option>Daily English</option>
-              <option>IELTS / TOEFL</option>
-              <option>Kids English</option>
-            </select>
-          </div>
-
-          <div style="width:150px">
-            <label>Timer</label>
-            <div class="fake" id="timer">00:00</div>
-          </div>
+      <div class="row mobile-stack" style="margin:12px 0 6px">
+        <div class="grow">
+          <label class="muted" for="goal">Goal</label>
+          <select id="goal" class="select">
+            <option>Work English</option>
+            <option>General English</option>
+            <option>Interview practice</option>
+            <option>Travel English</option>
+          </select>
         </div>
 
-        <div class="row">
-          <button class="btn" id="btnStart">Start recording</button>
-          <button class="btn secondary" id="btnStop" disabled>Stop</button>
-          <button class="btn" id="btnSend" disabled>Send &amp; Analyze</button>
+        <div>
+          <label class="muted">Timer</label>
+          <div class="timer" id="timer">00:00</div>
         </div>
+      </div>
 
-        <div class="bar"><i id="progress"></i></div>
-      </section>
+      <div class="row mobile-stack" style="margin-top:10px">
+        <button class="btn primary" id="btnStart">Start recording</button>
+        <button class="btn" id="btnStop" disabled>Stop</button>
+        <button class="btn" id="btnSend" disabled>Send & Analyze</button>
+      </div>
+    </section>
 
-      <!-- Right: debug + results -->
-      <section class="card right">
-        <div class="debug">
-          <span class="ok" id="statusDot" aria-hidden="true">●</span>
-          <input id="debugUrl" aria-label="Endpoint URL" />
-          <button class="btn secondary" id="debugSave">Save</button>
-        </div>
-        <pre id="debugPre" class="mono">{ "tip": "This panel mirrors whatever your endpoint replies with. If you see a short fallback JSON, recording was too short to analyze." }</pre>
-
-        <div class="panel">
-          <h3>Summary</h3>
-          <div class="kv">
-            <div class="chip"><strong>Level:</strong> <span id="level" class="mono">—</span></div>
-            <div class="chip"><strong>Fluency:</strong> <span class="mono"><span id="wpm">0</span> wpm</span></div>
-            <div class="chip"><strong>Fillers:</strong> <span class="mono"><span id="fillers">0</span></span></div>
-            <div class="chip"><strong>Note:</strong> <span id="fluencyNote">—</span></div>
+    <!-- Right column: results -->
+    <section class="grid">
+      <!-- Debug / raw -->
+      <div class="card pad">
+        <div class="row" style="justify-content:space-between; align-items:center">
+          <div class="row" style="gap:10px; align-items:center">
+            <span class="ok-dot" id="liveDot"></span>
+            <span class="pill mono" id="apiPill">…</span>
           </div>
         </div>
 
-        <div class="panel">
-          <h3>What to fix now</h3>
-          <div class="chip" id="fixNow">—</div>
+        <div class="divider"></div>
+        <div class="field">
+          <div class="panel-title">Debug / Raw response</div>
+          <pre id="debug" class="slot mono" style="white-space:pre-wrap; overflow:auto; max-height:38vh">—</pre>
+        </div>
+      </div>
+
+      <!-- Summaries -->
+      <div class="card pad">
+        <div class="title">Summary</div>
+        <div class="row" style="gap:10px; flex-wrap:wrap">
+          <div class="pill"><strong>Level:</strong>&nbsp;<span id="lv">–</span></div>
+          <div class="pill"><strong>Fillers:</strong>&nbsp;<span id="fillers">0</span></div>
         </div>
 
-        <div class="panel">
-          <h3>Next prompt (30–45s)</h3>
-          <div class="chip" id="nextPrompt">—</div>
+        <div class="field" style="margin-top:12px">
+          <div class="panel-title">What to fix now</div>
+          <div class="slot" id="fixNow">—</div>
         </div>
 
-        <div class="panel">
-          <h3>Grammar</h3>
-          <div id="grammarList" class="kv"></div>
+        <div class="field" style="margin-top:12px">
+          <div class="panel-title">Next prompt (30–45s)</div>
+          <div class="slot" id="next">—</div>
         </div>
+      </div>
 
-        <div class="panel">
-          <h3>Pronunciation</h3>
-          <div id="pronList" class="kv"></div>
-        </div>
-      </section>
-    </div>
+      <!-- Grammar -->
+      <div class="card pad">
+        <div class="title">Grammar</div>
+        <div class="slot" id="grammar">—</div>
+      </div>
+
+      <!-- Pronunciation -->
+      <div class="card pad">
+        <div class="title">Pronunciation</div>
+        <div class="slot" id="pron">—</div>
+      </div>
+    </section>
   </main>
 
-  <div id="toast" class="toast" style="display:none"></div>
+  <div class="foot">© 2025 <a href="https://simpleia.com" target="_blank" rel="noopener">Simpleia</a> — Built by Abdo Osama</div>
 
   <script>
-    // ===== Settings / Defaults =====
-    const DEFAULT_API = (location.origin + '/api/analyze');
-    const LS_KEY_API = 'ec_api_url';
+    // ====== SETTINGS ======
+    const DEFAULT_API = "https://english-coach-endpoint.vercel.app/api/analyze"; // <- change if needed
+    const LS_KEY = "ec_api_url_v1";
 
-    // ===== Elements =====
-    const apiInput   = document.getElementById('apiInput');
-    const apiSaveBtn = document.getElementById('apiSave');
-    const debugUrl   = document.getElementById('debugUrl');
-    const debugSave  = document.getElementById('debugSave');
-    const debugPre   = document.getElementById('debugPre');
-    const statusDot  = document.getElementById('statusDot');
+    // ====== ELEMENTS ======
+    const apiInput = document.getElementById('apiUrl');
+    const apiSave  = document.getElementById('saveApi');
+    const apiPill  = document.getElementById('apiPill');
+    const liveDot  = document.getElementById('liveDot');
 
     const goalSel  = document.getElementById('goal');
     const timerEl  = document.getElementById('timer');
-    const barEl    = document.getElementById('progress');
 
     const btnStart = document.getElementById('btnStart');
     const btnStop  = document.getElementById('btnStop');
     const btnSend  = document.getElementById('btnSend');
 
-    const levelEl      = document.getElementById('level');
-    const wpmEl        = document.getElementById('wpm');
-    const fillersEl    = document.getElementById('fillers');
-    const fluencyNote  = document.getElementById('fluencyNote');
-    const fixNowEl     = document.getElementById('fixNow');
-    const nextPromptEl = document.getElementById('nextPrompt');
-    const grammarList  = document.getElementById('grammarList');
-    const pronList     = document.getElementById('pronList');
+    const debugPre = document.getElementById('debug');
+    const lvEl     = document.getElementById('lv');
+    const fillersEl= document.getElementById('fillers');
+    const fixEl    = document.getElementById('fixNow');
+    const nextEl   = document.getElementById('next');
+    const gramEl   = document.getElementById('grammar');
+    const pronEl   = document.getElementById('pron');
 
-    const toastEl = document.getElementById('toast');
+    // ====== STATE ======
+    let chunks = [];
+    let mediaRecorder = null;
+    let startedAt = 0;
+    let tHandle = null;
 
-    // ===== Recorder State =====
-    let mediaRecorder, chunks = [], startedAt = 0, tickInt, sentBlob;
-
-    function getAPI(){
-      return (localStorage.getItem(LS_KEY_API) || '').trim() || DEFAULT_API;
+    function apiUrl(){
+      return (localStorage.getItem(LS_KEY) || DEFAULT_API).trim();
     }
-    function setAPI(v){
-      localStorage.setItem(LS_KEY_API, v.trim());
+    function setApiUi(){
+      const url = apiUrl();
+      apiInput.value = url;
+      apiPill.textContent = url;
     }
+    apiSave.onclick = () => {
+      const url = (apiInput.value || "").trim();
+      if(!/^https?:\/\//i.test(url)){ alert("Please enter a valid https:// URL"); return; }
+      localStorage.setItem(LS_KEY, url);
+      setApiUi();
+      flash("Saved API URL.");
+    };
 
-    function flash(msg, warn=false){
-      toastEl.textContent = msg;
-      toastEl.style.display = 'block';
-      toastEl.style.borderColor = warn ? 'var(--warn)' : 'var(--ring)';
-      setTimeout(()=> toastEl.style.display='none', 2800);
-    }
-
-    function setUIBusy(b){
-      [btnStart, btnStop, btnSend].forEach(bn=> bn.disabled = b ? true : bn === btnSend && !sentBlob);
-      document.body.style.cursor = b ? 'progress':'default';
-    }
-
-    // ===== Timer / Progress =====
-    function startTimer(){
-      startedAt = Date.now();
-      tickInt = setInterval(()=>{
-        const s = Math.floor((Date.now()-startedAt)/1000);
-        const mm = String(Math.floor(s/60)).padStart(2,'0');
-        const ss = String(s%60).padStart(2,'0');
-        timerEl.textContent = `${mm}:${ss}`;
-        const pct = Math.min(100, (s/90)*100); // suggest 60–90s
-        barEl.style.width = pct+'%';
-      }, 200);
-    }
-    function stopTimer(){
-      clearInterval(tickInt);
+    function flash(msg){
+      debugPre.textContent = msg;
     }
 
-    // ===== Recording =====
-    btnStart.addEventListener('click', async ()=>{
+    function formatTime(ms){
+      const s = Math.max(0, Math.round(ms/1000));
+      const m = String(Math.floor(s/60)).padStart(2,'0');
+      const r = String(s%60).padStart(2,'0');
+      return `${m}:${r}`;
+    }
+
+    // ====== Recording ======
+    btnStart.onclick = async () => {
+      if(!navigator.mediaDevices?.getUserMedia){
+        alert("Recording not supported in this browser.");
+        return;
+      }
       try{
-        chunks = [];
         const stream = await navigator.mediaDevices.getUserMedia({ audio:true });
-        const type = MediaRecorder.isTypeSupported('audio/webm;codecs=opus')
-          ? 'audio/webm;codecs=opus'
-          : (MediaRecorder.isTypeSupported('audio/mp4;codecs=aac') ? 'audio/mp4;codecs=aac' : '');
-
-        mediaRecorder = new MediaRecorder(stream, type ? {mimeType:type}:{});
-        mediaRecorder.ondataavailable = e=> { if(e.data && e.data.size){ chunks.push(e.data); } };
-        mediaRecorder.onstop = ()=> stream.getTracks().forEach(t=>t.stop());
-
-        mediaRecorder.start(250); // small chunks
-        startTimer();
+        chunks = [];
+        mediaRecorder = new MediaRecorder(stream);
+        mediaRecorder.ondataavailable = e => { if(e.data?.size) chunks.push(e.data); };
+        mediaRecorder.onstop = () => { stream.getTracks().forEach(t=>t.stop()); };
+        mediaRecorder.start();
+        startedAt = performance.now();
+        tHandle = setInterval(()=>{
+          timerEl.textContent = formatTime(performance.now() - startedAt);
+        }, 250);
         btnStart.disabled = true;
         btnStop.disabled  = false;
         btnSend.disabled  = true;
-        flash('Recording…');
+        flash("Recording…");
       }catch(err){
         console.error(err);
-        flash('Microphone permission needed.', true);
+        alert("Could not start microphone.");
       }
-    });
+    };
 
-    btnStop.addEventListener('click', ()=>{
-      try{
-        if(mediaRecorder && mediaRecorder.state !== 'inactive'){
-          mediaRecorder.stop();
-          stopTimer();
-          const blob = new Blob(chunks, {type: chunks[0]?.type || 'audio/webm'});
-          sentBlob = blob;
-          btnSend.disabled = false;
-          btnStop.disabled  = true;
-          btnStart.disabled = false;
-          flash('Recording ready. Click “Send & Analyze”.');
-        }
-      }catch(e){
-        console.error(e);
+    btnStop.onclick = () => {
+      if(mediaRecorder && mediaRecorder.state !== "inactive"){
+        mediaRecorder.stop();
       }
-    });
+      clearInterval(tHandle);
+      btnStop.disabled  = true;
+      btnStart.disabled = false;
+      btnSend.disabled  = false;
+      flash("Ready to analyze.");
+    };
 
-    // ===== Send to API =====
-    btnSend.addEventListener('click', async ()=>{
-      const api = getAPI();
-      debugUrl.value = api;
-      if(!sentBlob || !api){ flash('Nothing to send.', true); return; }
+    // ====== Analyze ======
+    btnSend.onclick = async () => {
+      const url = apiUrl();
+      if(!chunks.length){ flash("No audio recorded. Please record first."); return; }
+
+      const durSec = Math.round((performance.now() - startedAt)/1000);
+      const blob = new Blob(chunks, { type:"audio/webm" });
+      const file = new File([blob], "audio.webm", { type: blob.type });
 
       const fd = new FormData();
-      const file = new File([sentBlob], 'audio.webm', {type: sentBlob.type || 'audio/webm'});
-      fd.append('files[]', file);
-      const dur = Math.round((Date.now() - startedAt)/1000) || 0;
-      fd.append('duration_sec', String(dur));
-      fd.append('goal', goalSel.value);
+      fd.append("files[]", file);
+      fd.append("duration_sec", String(durSec));
+      fd.append("goal", goalSel.value || "General English");
 
-      setUIBusy(true);
-      statusDot.textContent = '●'; statusDot.style.color = 'var(--warn)';
-      debugPre.textContent = 'Sending…';
+      setBusy(true);
+      debugPre.textContent = "Sending…";
 
       try{
-        const res = await fetch(api, { method:'POST', body:fd });
+        const res = await fetch(url, { method:"POST", body:fd });
         const raw = await res.text();
-        debugPre.textContent = raw || '(empty response)';
-        let json;
-        try{ json = JSON.parse(raw); }
-        catch{ flash('Response was not JSON.', true); setUIBusy(false); return; }
+        debugPre.textContent = raw || "(empty response)";
+        let js = null;
+        try{ js = JSON.parse(raw); }catch(e){ /* keep null */ }
 
-        renderResult(json);
-        statusDot.style.color = 'var(--ok)';
-      }catch(e){
-        console.error(e);
-        debugPre.textContent = 'Request failed: ' + e.message;
-        statusDot.style.color = 'var(--err)';
-        flash('Upload failed. Try again.', true);
+        if(js) render(js);
+        liveDot.style.background = res.ok ? "var(--ok)" : "#ef4444";
+      }catch(err){
+        console.error(err);
+        flash("Request failed: "+ (err?.message||err));
+        liveDot.style.background = "#ef4444";
       }finally{
-        setUIBusy(false);
+        setBusy(false);
       }
-    });
+    };
 
-    // ===== Render results (handles fallbacks) =====
-    function renderResult(json){
-      if(json.fallback){
-        flash(json.rationale || 'No speech detected. Try again with 30–60s of speech.', true);
+    function render(j){
+      // Fallback path (empty or too short)
+      if(j.fallback){
+        lvEl.textContent = "–";
+        fillersEl.textContent = "0";
+        fixEl.textContent = j.one_thing_to_fix || "Speak for at least 30–60 seconds in full sentences.";
+        nextEl.textContent = j.next_prompt || "Describe your last weekend in 45 seconds.";
+        gramEl.textContent = "—";
+        pronEl.textContent = "—";
+        return;
       }
 
-      levelEl.textContent    = json.cefr_estimate || '—';
-      wpmEl.textContent      = (json.fluency && json.fluency.wpm) || 0;
-      fillersEl.textContent  = (json.fluency && json.fluency.fillers) || 0;
-      fluencyNote.textContent= (json.fluency && json.fluency.note) || '—';
-      fixNowEl.textContent   = json.one_thing_to_fix || '—';
-      nextPromptEl.textContent = json.next_prompt || '—';
+      lvEl.textContent = j.cefr_estimate || "–";
+      const wpm = j.fluency?.wpm ?? 0;
+      const fillers = j.fluency?.fillers ?? 0;
+      fillersEl.textContent = String(fillers);
 
-      // grammar
-      grammarList.innerHTML = '';
-      (Array.isArray(json.grammar_issues) ? json.grammar_issues : []).forEach(g=>{
-        const d = document.createElement('div'); d.className='chip';
-        d.innerHTML = `<div><strong>${escapeHTML(g.error||'')}</strong></div>
-          <div style="color:#dcdcdc;margin-top:6px">Fix: ${escapeHTML(g.fix||'')}</div>
-          <div style="color:#bfbfbf;margin-top:4px"><small>${escapeHTML(g.why||'')}</small></div>`;
-        grammarList.appendChild(d);
-      });
+      fixEl.textContent = j.one_thing_to_fix || "—";
+      nextEl.textContent = j.next_prompt || "—";
 
-      // pronunciation
-      pronList.innerHTML = '';
-      (Array.isArray(json.pronunciation) ? json.pronunciation : []).forEach(p=>{
-        const d = document.createElement('div'); d.className='chip';
-        d.innerHTML = `<div><strong>${escapeHTML(p.sound_or_word||'')}</strong> — ${escapeHTML(p.issue||'')}</div>
-          <div style="color:#bfbfbf;margin-top:6px"><small>Try: ${escapeHTML(p.minimal_pair||'')}</small></div>`;
-        pronList.appendChild(d);
-      });
+      // Grammar list
+      if(Array.isArray(j.grammar_issues) && j.grammar_issues.length){
+        gramEl.innerHTML = j.grammar_issues.map(g =>
+          `<div style="margin:6px 0">
+             <div><strong>${escapeHtml(g.error||"")}</strong></div>
+             <div class="muted">→ ${escapeHtml(g.fix||"")}</div>
+             <div class="muted" style="font-size:12px">${escapeHtml(g.why||"")}</div>
+           </div>`
+        ).join("");
+      }else{
+        gramEl.textContent = "—";
+      }
+
+      // Pronunciation list
+      if(Array.isArray(j.pronunciation) && j.pronunciation.length){
+        pronEl.innerHTML = j.pronunciation.map(p =>
+          `<div style="margin:6px 0">
+             <div><strong>${escapeHtml(p.sound_or_word||"")}</strong> — ${escapeHtml(p.issue||"")}</div>
+             ${p.minimal_pair ? `<div class="muted" style="font-size:12px">Try: ${escapeHtml(p.minimal_pair)}</div>`:""}
+           </div>`
+        ).join("");
+      }else{
+        pronEl.textContent = "—";
+      }
     }
 
-    function escapeHTML(s){
-      return (s||'').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+    function setBusy(b){
+      [btnStart,btnStop,btnSend].forEach(el => el.disabled = b || (el===btnStop && !mediaRecorder));
+      document.body.style.cursor = b ? "progress" : "default";
     }
-
-    // ===== Endpoint UI =====
-    function syncInputs(){
-      const api = getAPI();
-      apiInput.value = api;
-      debugUrl.value = api;
+    function escapeHtml(s){
+      return String(s||"").replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
     }
-    apiSaveBtn.addEventListener('click', ()=>{ setAPI(apiInput.value); syncInputs(); flash('API saved.'); });
-    debugSave .addEventListener('click', ()=>{ setAPI(debugUrl.value);  syncInputs(); flash('API saved.'); });
 
     // Boot
-    syncInputs();
-    // set “alive” message in debug (GET)
+    setApiUi();
+    // ping GET to set green dot on load
     (async ()=>{
       try{
-        const res = await fetch(getAPI(), {method:'GET'});
-        const raw = await res.text();
-        debugPre.textContent = raw;
-      }catch{ /* ignore */ }
+        const res = await fetch(apiUrl(), { method:"GET" });
+        liveDot.style.background = res.ok ? "var(--ok)" : "#ef4444";
+      }catch{ liveDot.style.background = "#ef4444"; }
     })();
   </script>
 </body>
