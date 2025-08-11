@@ -9,7 +9,6 @@
   <title>English Coach — Instant Feedback</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect rx='22' width='100' height='100' fill='%237c3aed'/%3E%3C/svg%3E" />
   <link rel="stylesheet" href="/styles.css" />
-  <!-- Load Supabase first, then your config, then app.js -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="/config.js"></script>
 </head>
@@ -24,11 +23,12 @@
         <span id="userName" class="muted">Guest</span>
         · <a href="#" id="signinLink">Sign in</a>
         <span class="hide"> · <a href="#" id="signoutLink">Sign out</a></span>
+        · <a href="#" id="openFeedback">Feedback</a>
       </div>
     </header>
 
     <main class="grid">
-      <!-- LEFT: Goal + Recording (one card) -->
+      <!-- LEFT column -->
       <section class="card left">
         <div class="title">
           <div class="t1">Record for 60–90 seconds.</div>
@@ -36,6 +36,7 @@
         </div>
 
         <div class="block">
+          <!-- GOAL -->
           <h3>Goal</h3>
           <div class="goals" id="goals">
             <button class="chip active" data-goal="Work English">Work English</button>
@@ -45,7 +46,11 @@
             <button class="chip" data-goal="Presentation">Presentation</button>
           </div>
 
-          <div class="row" style="margin-top:12px">
+          <div class="hr"></div>
+
+          <!-- RECORDING -->
+          <h3>Recording</h3>
+          <div class="row">
             <button id="btnStart" class="btn btn-brand">▶︎ Start recording</button>
             <button id="btnStop"  class="btn btn-dim" disabled>■ Stop</button>
           </div>
@@ -57,22 +62,23 @@
 
           <div class="row" style="margin-top:12px">
             <button id="btnSend" class="btn btn-brand" disabled>Send & Analyze</button>
+            <span class="pill"><span id="liveDot" class="dot"></span><span id="liveText">Idle</span></span>
           </div>
 
-          <div class="sep"></div>
+          <div class="hr"></div>
 
+          <!-- WHAT TO SAY -->
           <h3>What to say to start</h3>
           <div id="prompt" class="note">
             Describe a recent project you led and one lesson you learned.
           </div>
           <div class="row" style="margin-top:10px">
             <button id="btnRnd" class="btn btn-ghost">🎲 Randomize prompt</button>
-            <span class="pill"><span id="liveDot" class="dot"></span><span id="liveText">Idle</span></span>
           </div>
         </div>
       </section>
 
-      <!-- RIGHT: Results -->
+      <!-- RIGHT column -->
       <section class="card right">
         <div class="block">
           <div class="row headrow">
@@ -89,14 +95,10 @@
           </div>
 
           <h3>Pronunciation</h3>
-          <div id="pronBox" class="panel">
-            <div class="result muted">–</div>
-          </div>
+          <div id="pronBox" class="panel"><div class="result muted">–</div></div>
 
           <h3>Grammar</h3>
-          <div id="gramBox" class="panel">
-            <div class="result muted">–</div>
-          </div>
+          <div id="gramBox" class="panel"><div class="result muted">–</div></div>
 
           <h3>What to fix now</h3>
           <div id="fixBox" class="result">–</div>
@@ -113,8 +115,36 @@
     <footer>
       © 2025 <a href="https://simpleia.com" target="_blank">Simpleia</a> — Built by
       <a href="https://aosama.net" target="_blank">Abdo Osama</a>
-      · <span id="verFoot"></span>
+      · v<span id="verFoot"></span>
     </footer>
+  </div>
+
+  <!-- FEEDBACK MODAL -->
+  <div id="feedbackModal" class="modal" aria-hidden="true">
+    <div class="modal-card">
+      <div class="modal-head">
+        <div class="title">Quick feedback (optional)</div>
+        <button id="fbClose" class="x">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="row cols">
+          <input id="fbName" type="text" placeholder="Your name" />
+          <input id="fbEmail" type="email" placeholder="Email (for follow-up, optional)" />
+        </div>
+        <div class="stars" id="stars">
+          <button data-v="1">★</button>
+          <button data-v="2">★</button>
+          <button data-v="3">★</button>
+          <button data-v="4">★</button>
+          <button data-v="5">★</button>
+        </div>
+        <textarea id="fbText" rows="4" placeholder="Any ideas to improve?"></textarea>
+      </div>
+      <div class="modal-foot">
+        <button id="fbSkip" class="btn btn-dim">Skip</button>
+        <button id="fbSend" class="btn btn-brand">Submit feedback & Continue</button>
+      </div>
+    </div>
   </div>
 
   <script src="/app.js"></script>
