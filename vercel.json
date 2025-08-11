@@ -1,0 +1,8 @@
+{
+  "rewrites": [
+    { "source": "/", "destination": "/english-coach.html" }
+  ],
+  "redirects": [
+    { "source": "/app.js", "destination": "/", "permanent": false }
+  ]
+}
