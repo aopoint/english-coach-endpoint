@@ -4,7 +4,10 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>English Coach</title>
-  <link rel="preconnect" href="https://cdn.jsdelivr.net" />
+
+  <!-- Tiny SVG favicon -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><circle cx='32' cy='32' r='28' fill='%237a5cff'/><circle cx='24' cy='28' r='5' fill='white'/><circle cx='40' cy='28' r='5' fill='white'/><path d='M18 44c4 4 10 6 14 6s10-2 14-6' stroke='white' stroke-width='4' fill='none' stroke-linecap='round'/></svg>">
+
   <link rel="stylesheet" href="/app.css" />
 </head>
 <body>
@@ -12,7 +15,10 @@
   <!-- Header -->
   <header class="topbar glass">
     <div class="brand">
-      <span class="logo-swatch" aria-hidden="true"></span>
+      <!-- Chat bubble SVG logo -->
+      <svg class="logo-icon" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M12 3c4.97 0 9 3.13 9 7 0 3.86-4.03 7-9 7-1.08 0-2.12-.15-3.09-.43L4 18l1.18-2.96C4.43 13.69 3 12.03 3 10c0-3.87 4.03-7 9-7z" fill="currentColor"/>
+      </svg>
       <span>English Coach</span>
     </div>
 
@@ -21,6 +27,7 @@
       <div class="auth">
         <button id="btnAuth" class="link">Log in / Register</button>
         <button id="btnSignOut" class="link hidden">Sign out</button>
+        <img id="avatar" class="avatar hidden" alt="Profile" />
         <span id="userBadge" class="badge hidden"></span>
       </div>
     </nav>
@@ -47,7 +54,6 @@
 
       <section class="card">
         <h3 class="h">Recording</h3>
-
         <div class="rec-controls">
           <button id="btnStart" class="btn primary">
             <span class="ic play" aria-hidden="true"></span> Start recording
@@ -71,9 +77,7 @@
       <section class="card">
         <h3 class="h">What to say to start</h3>
         <div id="prompt" class="prompt">Describe a recent project you led and one lesson you learned.</div>
-        <button id="btnRnd" class="btn icon">
-          <span class="ic dice" aria-hidden="true"></span> Randomize prompt
-        </button>
+        <button id="btnRnd" class="btn icon"><span class="emoji" aria-hidden="true">🎲</span> Randomize prompt</button>
       </section>
 
       <section class="card tight">
@@ -136,7 +140,7 @@
   <dialog id="feedbackModal" class="modal">
     <form method="dialog" class="modal-body">
       <header class="modal-head">
-        <h3 class="h">Quick feedback (optional)</h3>
+        <h3 class="h" style="color:#fff">Quick feedback (optional)</h3>
         <button type="button" class="icon-x" id="fbClose" aria-label="Close"></button>
       </header>
 
@@ -173,9 +177,6 @@
       <div class="auth-grid">
         <button id="authGoogle" type="button" class="btn wide">
           Continue with Google
-        </button>
-        <button id="authFacebook" type="button" class="btn wide">
-          Continue with Facebook
         </button>
       </div>
 
