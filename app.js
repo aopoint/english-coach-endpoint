@@ -1,416 +1,396 @@
-/* ========= config & setup ========= */
-const CFG = window.APP_CONFIG || {};
-const { SUPABASE_URL, SUPABASE_ANON_KEY, API_URL, VERSION } = CFG;
+(() => {
+  const CFG = window.APP_CONFIG || {};
+  document.getElementById('ver').textContent = CFG.VERSION || '';
 
-const verEl = document.getElementById('ver');
-if (verEl) verEl.textContent = `v${VERSION || '0.0.0'}`;
-
-const supabase =
-  (window.supabase && SUPABASE_URL && SUPABASE_ANON_KEY)
-    ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
-    : null;
-
-/* ========= elements ========= */
-const btnStart = document.getElementById('btnStart');
-const btnStop = document.getElementById('btnStop');
-const btnSend = document.getElementById('btnSend');
-const sendSpinner = btnSend.querySelector('.spinner');
-const sendLabel = btnSend.querySelector('.cta-label');
-
-const timerEl = document.getElementById('timer');
-const meterEl = document.getElementById('meter');
-const goalsEl = document.getElementById('goals');
-const promptEl = document.getElementById('prompt');
-const btnRnd = document.getElementById('btnRnd');
-
-const levelLabel = document.getElementById('levelLabel');
-const levelLabelTop = document.getElementById('levelLabelTop');
-const fillersEl = document.getElementById('fillers');
-const fillersTop = document.getElementById('fillersTop');
-const sessionsEl = document.getElementById('sessions');
-const sessionsTop = document.getElementById('sessionsTop');
-const streakEl = document.getElementById('streak');
-const streakTop = document.getElementById('streakTop');
-
-const liveChip = document.getElementById('liveChip');
-const liveText = document.getElementById('liveText');
-
-const pronBox = document.getElementById('pronBox');
-const gramBox = document.getElementById('gramBox');
-const fixBox = document.getElementById('fixBox');
-const nextBox = document.getElementById('nextBox');
-const board = document.getElementById('board');
-
-const feedbackModal = document.getElementById('feedbackModal');
-const fbClose = document.getElementById('fbClose');
-const fbSkip = document.getElementById('fbSkip');
-const fbSend = document.getElementById('fbSend');
-const fbName = document.getElementById('fbName');
-const fbEmail = document.getElementById('fbEmail');
-const fbText = document.getElementById('fbText');
-const starBar = document.getElementById('stars');
-
-const authModal = document.getElementById('authModal');
-const authClose = document.getElementById('authClose');
-const authGoogle = document.getElementById('authGoogle');
-const authEmail = document.getElementById('authEmail');
-const authEmailLink = document.getElementById('authEmailLink');
-
-const btnAuth = document.getElementById('btnAuth');
-const btnSignOut = document.getElementById('btnSignOut');
-const userBadge = document.getElementById('userBadge');
-const avatarImg = document.getElementById('avatar');
-const btnFeedback = document.getElementById('btnFeedback');
-
-/* ========= local state ========= */
-let mediaStream, mediaRec, recChunks = [], startTs = 0, gateTmr=null;
-let canAnalyze = false;
-let currentUser = null;
-let currentGoal = 'Work English';
-let lastRating = 0;
-
-/* ========= helpers ========= */
-const sleep = (ms)=>new Promise(r=>setTimeout(r,ms));
-const fmt = (n)=>String(n).padStart(2,'0');
-const mapFriendly = (s)=>{
-  const x = String(s||'').toUpperCase();
-  if (x.startsWith('A1')) return 'Beginner';
-  if (x.startsWith('A2')) return 'Elementary';
-  if (x.startsWith('B1')) return 'Intermediate';
-  if (x.startsWith('B2')) return 'Advanced';
-  if (x.startsWith('C1')) return 'Fluent';
-  if (x.startsWith('C2')) return 'Native-like';
-  return s||'–';
-}
-const setLive = (state)=>{ // 'idle' | 'live'
-  liveChip.classList.toggle('live', state==='live');
-  liveChip.classList.toggle('idle', state!=='live');
-  liveText.textContent = state==='live' ? 'Live' : 'Idle';
-}
-const setSendLoading = (v)=>{
-  btnSend.disabled = v;
-  sendSpinner.classList.toggle('hidden', !v);
-}
-const escapeHtml=(s)=>String(s||'').replace(/[&<>"']/g,c=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' }[c]))
-
-/* ========= prompts ========= */
-const PROMPTS = [
-  "Describe a recent project you led and one lesson you learned.",
-  "Describe a challenge you faced at work and how you handled it.",
-  "Tell me about your last weekend in 45 seconds.",
-  "Explain one problem your team faced and how you solved it."
-];
-btnRnd.addEventListener('click', ()=>{
-  promptEl.textContent = PROMPTS[Math.floor(Math.random()*PROMPTS.length)];
-});
-
-/* ========= goals ========= */
-goalsEl.addEventListener('click', (e)=>{
-  const b = e.target.closest('button');
-  if (!b) return;
-  goalsEl.querySelectorAll('.pill').forEach(p=>p.classList.remove('active'));
-  b.classList.add('active');
-  currentGoal = b.dataset.goal;
-});
-
-/* ========= timer/meter ========= */
-function tick(){
-  const sec = Math.floor((Date.now()-startTs)/1000);
-  timerEl.textContent = `${fmt(Math.floor(sec/60))}:${fmt(sec%60)}`;
-  const pct = Math.max(0, Math.min(100, Math.floor((sec/90)*100)));
-  meterEl.style.width = `${pct}%`;
-}
-function resetTimer(){
-  if (gateTmr) cancelAnimationFrame(gateTmr);
-  timerEl.textContent = '00:00';
-  meterEl.style.width = '0%';
-}
-
-/* ========= board text (fix) ========= */
-function updateBoard(){
-  const localSessions = Number(localStorage.getItem('ec_sessions')||'0');
-  if (currentUser) {
-    board.textContent = `You — ${localSessions} session${localSessions===1?'':'s'}.`;
-  } else {
-    board.textContent = `You — ${localSessions} session${localSessions===1?'':'s'} (sign in for public board).`;
-  }
-}
-
-/* ========= recording ========= */
-btnStart.addEventListener('click', async ()=>{
-  try{
-    if (!navigator.mediaDevices?.getUserMedia) {
-      alert('Microphone not available in this browser.');
-      return;
-    }
-    mediaStream = await navigator.mediaDevices.getUserMedia({audio:true});
-    recChunks = [];
-    mediaRec = new MediaRecorder(
-      mediaStream,
-      {mimeType: MediaRecorder.isTypeSupported('audio/webm;codecs=opus') ? 'audio/webm;codecs=opus' : 'audio/webm'}
-    );
-    mediaRec.ondataavailable = (ev)=>{ if (ev.data?.size) recChunks.push(ev.data) };
-    mediaRec.onstop = ()=>{ mediaStream.getTracks().forEach(t=>t.stop()) };
-    mediaRec.start(1000);
-
-    btnStart.disabled = true;
-    btnStop.disabled = false;
-    setLive('live');
-    startTs = Date.now();
-    (function rafLoop(){ tick(); gateTmr = requestAnimationFrame(rafLoop); })();
-  }catch(err){
-    console.error('mic error', err);
-    alert('Microphone permission denied or unavailable.');
-  }
-});
-
-btnStop.addEventListener('click', ()=>{
-  if (!mediaRec) return;
-  try{ mediaRec.stop(); }catch{}
-  resetTimer();
-  setLive('idle');
-  btnStart.disabled = false;
-  btnStop.disabled = true;
-
-  canAnalyze = recChunks.length>0;
-  btnSend.disabled = !canAnalyze;
-});
-
-/* ========= analysis ========= */
-btnSend.addEventListener('click', async ()=>{
-  if (!canAnalyze || recChunks.length===0) return;
-  const blob = new Blob(recChunks, {type:'audio/webm'});
-  const durSec = Math.round((Date.now()-startTs)/1000) || 0;
-
-  setSendLoading(true);
-  sendLabel.textContent = 'Analyzing…';
-
-  try{
-    const form = new FormData();
-    form.append('files[]', blob, 'audio.webm');
-    form.append('duration_sec', String(durSec));
-    form.append('goal', currentGoal);
-    form.append('prompt_text', promptEl.textContent || '');
-
-    const res = await fetch(API_URL, {method:'POST', body:form});
-    const json = await res.json();
-
-    if (json?.fallback) {
-      levelLabel.textContent = levelLabelTop.textContent = 'Beginner';
-      fillersEl.textContent = fillersTop.textContent = String(json.fluency?.fillers ?? 0);
-      fixBox.textContent = json.one_thing_to_fix || 'Speak in full sentences.';
-      nextBox.textContent = json.next_prompt || 'Describe your last weekend in 45 seconds.';
-      pronBox.innerHTML = '';
-      gramBox.innerHTML = '';
-    } else {
-      const friendly = json.friendly_level || mapFriendly(json.cefr_estimate);
-      levelLabel.textContent = levelLabelTop.textContent = friendly || '–';
-
-      const f = json.fluency?.fillers ?? 0;
-      fillersEl.textContent = fillersTop.textContent = String(f);
-
-      const gi = Array.isArray(json.grammar_issues) ? json.grammar_issues : [];
-      gramBox.innerHTML = gi.map(g=>(
-        `<div class="card tight">
-           <div>→ ${escapeHtml(g.error||'')}</div>
-           <div class="muted">Try: ${escapeHtml(g.fix||'')}</div>
-           <div class="muted">Why: ${escapeHtml(g.why||'')}</div>
-         </div>`
-      )).join('') || '–';
-
-      const pi = Array.isArray(json.pronunciation) ? json.pronunciation : [];
-      pronBox.innerHTML = pi.map(p=>(
-        `<div class="card tight">
-           ${escapeHtml(p.sound_or_word||'')} — ${escapeHtml(p.issue||'')}
-           <div class="muted">Try: ${escapeHtml(p.minimal_pair||'')}</div>
-         </div>`
-      )).join('') || '–';
-
-      fixBox.textContent = json.one_thing_to_fix || '–';
-      nextBox.textContent = json.next_prompt || '–';
-    }
-
-    bumpSession(durSec, levelLabel.textContent);
-
-    const shownFb = localStorage.getItem('ec_feedback_shown');
-    if (!shownFb) { openFeedback(); }
-  }catch(err){
-    console.error('analyze error', err);
-    alert('Analyze failed. Please try again.');
-  }finally{
-    setSendLoading(false);
-    sendLabel.textContent = 'Send & Analyze';
-    canAnalyze = false;
-    btnSend.disabled = true;
-    recChunks = [];
-  }
-});
-
-function bumpSession(durationSec, level_text){
-  const prev = Number(localStorage.getItem('ec_sessions')||'0') + 1;
-  localStorage.setItem('ec_sessions', String(prev));
-  sessionsEl.textContent = sessionsTop.textContent = String(prev);
-
-  const last = localStorage.getItem('ec_last_day') || '';
-  const today = new Date().toISOString().slice(0,10);
-  const yest = new Date(Date.now()-86400000).toISOString().slice(0,10);
-  let sr = Number(localStorage.getItem('ec_streak')||'0');
-  sr = (last===today) ? sr : (last===yest ? sr+1 : 1);
-  localStorage.setItem('ec_last_day', today);
-  localStorage.setItem('ec_streak', String(sr));
-  streakEl.textContent = streakTop.textContent = String(sr);
-
-  updateBoard(); // <-- refresh the text
-
-  if (supabase){
-    const anon = getAnonId();
-    supabase.from('sessions').insert({
-      user_id: currentUser?.id ?? null,
-      duration_sec: durationSec,
-      level_label: level_text || null,
-      goal: currentGoal || null,
-      anon_id: anon
-    }).then(()=>{}).catch(()=>{});
-  }
-}
-
-/* ========= feedback ========= */
-function openFeedback(){ feedbackModal.showModal(); }
-function closeFeedback(){
-  feedbackModal.close(); localStorage.setItem('ec_feedback_shown', '1');
-}
-fbClose.addEventListener('click', closeFeedback);
-fbSkip.addEventListener('click', closeFeedback);
-
-starBar.addEventListener('click', (e)=>{
-  const b = e.target.closest('button'); if(!b) return;
-  lastRating = Number(b.dataset.v||'0');
-  starBar.querySelectorAll('button').forEach(x=>x.classList.toggle('active', Number(x.dataset.v)<=lastRating));
-});
-
-fbSend.addEventListener('click', async ()=>{
-  const name = fbName.value.trim();
-  const email = fbEmail.value.trim();
-  const text = fbText.value.trim();
-  if (!lastRating && !text){
-    alert('Please add a quick rating or a short note, or press Skip.');
+  // --- Supabase client
+  if (!window.supabase) {
+    alert('Supabase JS not loaded.');
     return;
   }
-  if (!supabase){ closeFeedback(); return; }
-  try{
-    await supabase.from('feedback').insert({
-      user_id: currentUser?.id ?? null,
-      name, email, rating: lastRating||null, text
-    });
-  }catch(e){}
-  closeFeedback();
-});
+  const sb = supabase.createClient(CFG.SUPABASE_URL, CFG.SUPABASE_ANON_KEY);
 
-/* ========= auth ========= */
-btnAuth.addEventListener('click', ()=> authModal.showModal());
-authClose.addEventListener('click', ()=> authModal.close());
+  // --- Elements
+  const btnStart = q('#btnStart');
+  const btnStop = q('#btnStop');
+  const btnSend = q('#btnSend');
+  const sendSpinner = q('#sendSpinner');
+  const meterEl = q('#meter');
+  const timerEl = q('#timer');
+  const recState = q('#recState');
 
-if (supabase){
-  supabase.auth.onAuthStateChange((_event, session)=>{
-    currentUser = session?.user || null;
-    renderAuth();
-  });
-}
+  const levelLabel = q('#levelLabel');
+  const fillersEl = q('#fillers');
+  const sessionsEl = q('#sessions');
+  const streakEl = q('#streak');
+  const pronBox = q('#pronBox');
+  const gramBox = q('#gramBox');
+  const fixBox = q('#fixBox');
+  const nextBox = q('#nextBox');
+  const leaderBox = q('#leaderBox');
 
-authGoogle?.addEventListener('click', ()=> signInOAuth('google'));
-authEmailLink?.addEventListener('click', async ()=>{
-  const email = authEmail.value.trim();
-  if (!email){ alert('Enter an email.'); return; }
-  await supabase.auth.signInWithOtp({
-    email, options:{ emailRedirectTo: window.location.origin }
-  });
-  alert('Check your email for a sign-in link.');
-});
+  const goalWrap = q('#goals');
+  const promptEl = q('#prompt');
+  const btnRnd = q('#btnRnd');
 
-btnSignOut.addEventListener('click', async ()=>{
-  if (!supabase) return;
-  await supabase.auth.signOut();
-});
+  // Auth UI
+  const btnAuth = q('#btnAuth');
+  const btnSignOut = q('#btnSignOut');
+  const userEmail = q('#userEmail');
+  const userAvatar = q('#userAvatar');
+  const userChip = q('#userChip');
 
-async function signInOAuth(provider){
-  if (!supabase){ alert('Auth not available.'); return; }
-  try{
-    await supabase.auth.signInWithOAuth({
-      provider,
-      options:{ redirectTo: window.location.origin }
-    });
-  }catch(e){
-    alert('Sign in failed. Please try again.');
+  const authModal = q('#authModal');
+  const authClose = q('#authClose');
+  const btnGoogle = q('#btnGoogle');
+  const emailInput = q('#email');
+  const btnMagic = q('#btnMagic');
+
+  // Feedback modal
+  const fbModal = q('#fbModal');
+  const fbClose = q('#fbClose');
+  const fbName = q('#fbName');
+  const fbEmail = q('#fbEmail');
+  const fbText = q('#fbText');
+  const fbSend = q('#fbSend');
+  const fbSkip = q('#fbSkip');
+  const stars = q('#stars');
+  let fbRating = 0;
+
+  // --- State
+  let mediaStream = null;
+  let mediaRec = null;
+  let chunks = [];
+  let startTs = 0;
+  let timerInt = null;
+  const MAX_SEC = 95;
+
+  let currentUser = null;
+  let localSessions = Number(localStorage.getItem('ec_sessions') || '0');
+  let allowNextWithoutLogin = false; // flips after feedback submit/skipped
+
+  // per-device id for anonymous unique users
+  const CLIENT_ID = (localStorage.getItem('ec_client_id')) || (() => {
+    const id = crypto.randomUUID();
+    localStorage.setItem('ec_client_id', id);
+    return id;
+  })();
+
+  // --- helpers
+  function q(sel){ return document.querySelector(sel); }
+  function ms(n){ return ('0' + n).slice(-2); }
+  const nowIso = () => new Date().toISOString();
+
+  function getGoal(){
+    const a = [...goalWrap.querySelectorAll('.chip')].find(b => b.classList.contains('chip--active'));
+    return a?.dataset.goal || 'Work English';
   }
-}
+  goalWrap.addEventListener('click', e => {
+    const b = e.target.closest('.chip'); if(!b) return;
+    goalWrap.querySelectorAll('.chip').forEach(x => x.classList.remove('chip--active'));
+    b.classList.add('chip--active');
+  });
 
-function renderAuth(){
-  if (currentUser){
-    btnAuth.classList.add('hidden');
-    btnSignOut.classList.remove('hidden');
+  // randomize prompt
+  const PROMPTS = [
+    "Describe a recent project you led and one lesson you learned.",
+    "Tell me about your weekend in 45 seconds.",
+    "Explain one problem your team faced and how you solved it.",
+    "Describe a challenge you faced and how you overcame it.",
+    "Talk about a time you helped someone at work."
+  ];
+  btnRnd.addEventListener('click', () => {
+    promptEl.value = PROMPTS[Math.floor(Math.random()*PROMPTS.length)];
+  });
 
-    const meta = currentUser.user_metadata || {};
-    const email = currentUser.email || '';
-    const avatar = meta.avatar_url || '';
+  // --- auth modal controls
+  const openAuth = () => authModal.hidden = false;
+  const closeAuth = () => authModal.hidden = true;
+  authClose.onclick = closeAuth;
+  btnAuth.onclick = openAuth;
 
-    userBadge.classList.remove('hidden');
-    userBadge.textContent = email;
+  btnGoogle.onclick = async() => {
+    try {
+      const { data, error } = await sb.auth.signInWithOAuth({
+        provider: 'google',
+        options: { redirectTo: location.origin }
+      });
+      if (error) alert(error.message);
+    } catch (e){ alert(e.message); }
+  };
 
-    if (avatar){
-      avatarImg.src = avatar;
-      avatarImg.classList.remove('hidden');
-    }else{
-      avatarImg.classList.add('hidden');
-      avatarImg.src = '';
+  btnMagic.onclick = async() => {
+    const email = emailInput.value.trim();
+    if (!email) return alert('Enter email first.');
+    const { error } = await sb.auth.signInWithOtp({
+      email, options: { emailRedirectTo: location.origin }
+    });
+    if (error) return alert(error.message);
+    alert('Check your email for a sign-in link.');
+    closeAuth();
+  };
+
+  btnSignOut.onclick = async() => {
+    await sb.auth.signOut();
+    renderUser(null);
+    leaderBox.textContent = 'Public leaderboard requires sign-in. You’ll still see your local totals below.';
+  };
+
+  // auth state
+  sb.auth.onAuthStateChange(async (_evt, sess) => {
+    currentUser = sess?.user || null;
+    renderUser(currentUser);
+    refreshUserStats();
+  });
+
+  function renderUser(user){
+    if (user){
+      btnAuth.style.display = 'none';
+      btnSignOut.style.display = '';
+      userEmail.textContent = user.email || 'User';
+      userChip.style.display = 'flex';
+      // avatar
+      const url = user.user_metadata?.avatar_url || user.user_metadata?.picture;
+      if (url){ userAvatar.src = url; userAvatar.style.display = 'block'; }
+      else userAvatar.style.display = 'none';
+      closeAuth();
+    } else {
+      btnAuth.style.display = '';
+      btnSignOut.style.display = 'none';
+      userEmail.textContent = 'Guest';
+      userAvatar.style.display = 'none';
     }
-    authModal.close();
-  }else{
-    btnAuth.classList.remove('hidden');
-    btnSignOut.classList.add('hidden');
-    userBadge.classList.add('hidden');
-    userBadge.textContent = '';
-    avatarImg.classList.add('hidden');
-    avatarImg.src = '';
   }
-  updateBoard(); // <-- keep leaderboard line correct on auth changes
-}
 
-/* optional: keep a profile row */
-async function upsertProfile(){
-  try{
-    if (!supabase || !currentUser) return;
-    const meta = currentUser.user_metadata || {};
-    await supabase.from('profiles').upsert({
-      id: currentUser.id,
-      display_name: meta.full_name || null,
-      email: currentUser.email || null,
-      avatar_url: meta.avatar_url || null,
-      last_seen: new Date().toISOString()
-    });
-  }catch(e){}
-}
+  // --- recording controls
+  btnStart.onclick = async() => {
+    try {
+      mediaStream = await navigator.mediaDevices.getUserMedia({ audio:true });
+      mediaRec = new MediaRecorder(mediaStream, { mimeType: MediaRecorder.isTypeSupported('audio/webm;codecs=opus') ? 'audio/webm;codecs=opus' : 'audio/webm'});
+      chunks = [];
+      mediaRec.ondataavailable = e => { if (e.data.size>0) chunks.push(e.data); };
+      mediaRec.start();
+      startTs = Date.now();
+      recState.textContent = 'Recording…';
+      btnStart.disabled = true; btnStop.disabled = false; btnSend.disabled = true;
 
-/* header feedback */
-btnFeedback.addEventListener('click', openFeedback);
+      tick(); timerInt = setInterval(tick, 250);
+    } catch(e){
+      alert('Mic permission denied or unavailable.');
+    }
+  };
 
-/* ========= init counters on load ========= */
-(function initCounters(){
-  sessionsEl.textContent = sessionsTop.textContent = String(Number(localStorage.getItem('ec_sessions')||'0'));
-  streakEl.textContent = streakTop.textContent = String(Number(localStorage.getItem('ec_streak')||'0'));
-  updateBoard();
-  const first = localStorage.getItem('ec_first') || '';
-  if (!first) localStorage.setItem('ec_first', new Date().toISOString());
+  function tick(){
+    const sec = Math.max(0, Math.floor((Date.now()-startTs)/1000));
+    timerEl.textContent = `${ms(Math.floor(sec/60))}:${ms(sec%60)}`;
+    const p = Math.min(100, Math.round((sec/90)*100));
+    meterEl.style.width = p + '%';
+  }
+
+  btnStop.onclick = () => {
+    try { mediaRec?.stop(); mediaStream?.getTracks()?.forEach(t=>t.stop()); } catch {}
+    clearInterval(timerInt); timerInt=null;
+    btnStart.disabled = false; btnStop.disabled = true;
+    recState.textContent = 'Recorded';
+    if (chunks.length) btnSend.disabled = false;
+  };
+
+  // --- analyzing
+  btnSend.onclick = analyze;
+  async function analyze(){
+    if (btnSend.disabled) return;
+    const goal = getGoal();
+    const durationSec = Math.round((Date.now()-startTs)/1000);
+    if (durationSec < 5 || !chunks.length) return alert('Please record 5–10 seconds at least.');
+
+    btnSend.disabled = true; sendSpinner.hidden = false;
+    recState.textContent = 'Analyzing…';
+
+    const blob = new Blob(chunks, { type: chunks[0]?.type || 'audio/webm' });
+    const fd = new FormData();
+    fd.append('files[]', new File([blob], 'audio.webm', { type: blob.type }));
+    fd.append('duration_sec', String(durationSec));
+    fd.append('goal', goal);
+    fd.append('prompt_text', promptEl.value.trim());
+
+    try{
+      const res = await fetch(CFG.API_URL, { method:'POST', body: fd });
+      const json = await res.json();
+
+      // fallback case
+      if (json.fallback) {
+        levelLabel.textContent = '–';
+        fillersEl.textContent = String(json.fluency?.fillers ?? 0);
+        fixBox.textContent = json.one_thing_to_fix || 'Speak for ~60 seconds.';
+        nextBox.textContent = json.next_prompt || 'Describe your weekend in 45 seconds.';
+        pronBox.textContent = '–';
+        gramBox.textContent = '–';
+      } else {
+        // render
+        levelLabel.textContent = (json.friendly_level || json.cefr_estimate || '–');
+        fillersEl.textContent = String(json.fluency?.fillers ?? 0);
+        fixBox.textContent = (json.one_thing_to_fix || '–');
+        nextBox.textContent = (json.next_prompt || '–');
+
+        // grammar list
+        if (Array.isArray(json.grammar_issues) && json.grammar_issues.length){
+          gramBox.innerHTML = json.grammar_issues.map(g =>
+            `→ ${escapeHtml(g.error)}\nTry: ${escapeHtml(g.fix)}\nWhy: ${escapeHtml(g.why)}`
+          ).join('\n\n');
+        } else gramBox.textContent = '–';
+
+        // pronunciation list
+        if (Array.isArray(json.pronunciation) && json.pronunciation.length){
+          pronBox.innerHTML = json.pronunciation.map(p =>
+            `${escapeHtml(p.sound_or_word)} — ${escapeHtml(p.issue || '')}${
+              p.minimal_pair ? `\nTry: ${escapeHtml(p.minimal_pair)}` : ''}`
+          ).join('\n\n');
+        } else pronBox.textContent = '–';
+      }
+
+      // Save session row
+      const levelText = levelLabel.textContent || '-';
+      await insertSession({
+        goal, duration_sec: durationSec, level_label: levelText
+      });
+
+      // show feedback (only once before next run)
+      const analyzedCount = Number(localStorage.getItem('ec_cnt')||'0');
+      localStorage.setItem('ec_cnt', String(analyzedCount+1));
+      if (analyzedCount===0 && !allowNextWithoutLogin){
+        fbModal.hidden = false;
+      }
+
+      // allow next run
+      btnSend.disabled = false;
+    } catch(e){
+      alert('Analyze failed. Please try again.\n'+e.message);
+    } finally{
+      sendSpinner.hidden = true;
+      recState.textContent = 'Idle';
+      chunks = [];
+    }
+  }
+
+  async function insertSession({goal, duration_sec, level_label}){
+    try{
+      const { data, error, status } = await sb.from('sessions')
+        .insert({
+          user_id: currentUser?.id ?? null,
+          client_id: CLIENT_ID,
+          goal, duration_sec, level_label,
+          created_at: nowIso()
+        })
+        .select('id')
+        .single();
+
+      if (error) console.warn('insert error', error);
+      else {
+        // local + remote stats
+        localSessions += 1;
+        localStorage.setItem('ec_sessions', String(localSessions));
+        await refreshUserStats();
+        await refreshLeaderboard();
+      }
+    } catch(e){ console.error(e); }
+  }
+
+  // --- Stats / Leaderboard
+  async function refreshUserStats(){
+    try{
+      // sessions for this signed user or local device
+      if (currentUser){
+        const { data, error } = await sb.from('sessions')
+          .select('created_at')
+          .eq('user_id', currentUser.id)
+          .order('created_at', { ascending:false })
+          .limit(365);
+        if (!error && data){
+          sessionsEl.textContent = String(data.length);
+          streakEl.textContent = String(calcStreak(data.map(r => r.created_at)));
+        }
+      } else {
+        sessionsEl.textContent = String(localSessions);
+        streakEl.textContent = String(calcLocalStreak());
+      }
+    } catch(e){ console.log(e); }
+  }
+
+  async function refreshLeaderboard(){
+    if (!currentUser){
+      leaderBox.textContent = `You — ${localSessions} sessions (sign in for public board).`;
+      return;
+    }
+    // lightweight "top by sessions"
+    const { data, error } = await sb.rpc('top_users_by_sessions').select();
+    if (error || !data?.length){
+      leaderBox.textContent = `You — sessions saved. Public board will appear once there’s enough data.`;
+      return;
+    }
+    const rows = data.slice(0, 8).map((r,i)=> `${i+1}. ${r.display_text} — ${r.sessions} sessions`).join('\n');
+    leaderBox.textContent = rows;
+  }
+
+  // compute streak of consecutive days
+  function calcStreak(isoDates){
+    if (!isoDates.length) return 0;
+    const days = [...new Set(isoDates.map(d => d.slice(0,10)))].sort().reverse();
+    let streak = 0;
+    let cursor = new Date(days[0]);
+    const today = new Date(); // allow if last activity is today
+    // If last activity not today, still start from that date
+    for (let i=0;i<days.length;i++){
+      const d = new Date(days[i]);
+      if (i===0){
+        streak = 1; cursor = d;
+      } else {
+        const prev = new Date(cursor);
+        prev.setDate(prev.getDate()-1);
+        if (d.toISOString().slice(0,10) === prev.toISOString().slice(0,10)){
+          streak += 1; cursor = d;
+        } else break;
+      }
+    }
+    return streak;
+  }
+  function calcLocalStreak(){
+    // not stored per-day for anon; return sessions as rough gauge
+    return Math.min(localSessions, 30);
+  }
+
+  // --- feedback modal
+  q('#btnFeedbackLink').onclick = () => (fbModal.hidden = false);
+  fbClose.onclick = () => (fbModal.hidden = true);
+  fbSkip.onclick = () => { allowNextWithoutLogin = true; fbModal.hidden = true; };
+  stars.addEventListener('click', e=>{
+    const b = e.target.closest('button'); if(!b) return;
+    fbRating = Number(b.dataset.val);
+    [...stars.children].forEach(s=>s.classList.toggle('active', Number(s.dataset.val) <= fbRating));
+  });
+  fbSend.onclick = async() => {
+    // allow empty fields if user clicks Submit (but not fully blank; user can Skip instead)
+    if (!fbText.value.trim() && fbRating===0 && !fbName.value.trim()){
+      alert('Either add something or press Skip.');
+      return;
+    }
+    try{
+      await sb.from('feedback').insert({
+        user_id: currentUser?.id ?? null,
+        name: fbName.value.trim() || null,
+        email: fbEmail.value.trim() || null,
+        rating: fbRating || null,
+        text: fbText.value.trim() || null,
+        created_at: nowIso()
+      });
+    } catch(e){ console.warn(e); }
+    allowNextWithoutLogin = true;
+    fbModal.hidden = true;
+  };
+
+  // --- utils
+  function escapeHtml(s){ return (s || '').replace(/[&<>'"]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[m])); }
+
+  // init
+  renderUser(null);
+  sessionsEl.textContent = String(localSessions);
+  refreshLeaderboard();
 })();
-
-/* ========= utilities ========= */
-function getAnonId(){
-  let id = localStorage.getItem('ec_anon');
-  if (!id){ id = crypto.randomUUID(); localStorage.setItem('ec_anon', id); }
-  return id;
-}
-
-/* ===== initial UI ===== */
-renderAuth();
-setLive('idle');
-setSendLoading(false);
-btnSend.disabled = true;
