@@ -3,158 +3,159 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>English Coach — Instant English Feedback</title>
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='64'%3E%3Crect rx='14' ry='14' width='64' height='64' fill='%237a3ff2'/%3E%3C/svg%3E">
-  <link rel="stylesheet" href="./app.css" />
-  <script defer src="./config.js"></script>
-  <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
-  <script defer src="./app.js"></script>
+  <title>English Coach — Instant Feedback</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22><rect rx=%228%22 width=%2232%22 height=%2232%22 fill=%22%239C6BFF%22/></svg>">
+  <link rel="stylesheet" href="coach.css" />
+  <!-- Supabase client -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js" defer></script>
+  <!-- Your config (keys + API URL + version) -->
+  <script src="config.js" defer></script>
+  <!-- App logic -->
+  <script src="app.js" defer></script>
 </head>
 <body>
   <header class="topbar">
     <div class="brand">
-      <span class="logo"></span>
-      <span>English Coach</span>
+      <span class="logo-square"></span>
+      <span class="brand-text">English Coach</span>
     </div>
     <nav class="topnav">
-      <a id="feedbackLink" href="#" class="link">Feedback</a>
-      <span id="userChip">Guest · <button id="btnSignIn" class="link">Sign in</button></span>
+      <a id="feedbackLink" class="link" href="#">Feedback</a>
+      <span id="whoami" class="whoami">Guest</span>
+      <span class="sep">·</span>
+      <a id="authLink" class="link strong" href="#">Sign in / Register</a>
     </nav>
   </header>
 
-  <main class="shell">
-    <!-- LEFT: Goals + Recording + Starter prompt -->
-    <aside class="leftcol">
-      <section class="card">
-        <h2>Record for <b>60–90 seconds</b>.</h2>
+  <main class="grid">
+    <!-- LEFT: controls -->
+    <section class="col leftcol">
+      <div class="card headline">
+        <h1>Record for <strong>60–90 seconds</strong>.</h1>
         <p>We’ll analyze fluency & correctness, then show key corrections and a next prompt.</p>
-      </section>
+      </div>
 
-      <section class="card">
-        <h3>Goal</h3>
-        <div id="goals" class="pillrow">
-          <button class="pill active" data-goal="Work English">Work English</button>
-          <button class="pill" data-goal="Daily Life">Daily Life</button>
-          <button class="pill" data-goal="Interview Prep">Interview Prep</button>
-          <button class="pill" data-goal="Travel">Travel</button>
-          <button class="pill" data-goal="Presentation">Presentation</button>
-        </div>
-      </section>
-
-      <section class="card">
-        <h3>Recording</h3>
-        <div class="row gap">
-          <button id="btnStart" class="cta"><span class="play">▶</span> Start recording</button>
-          <button id="btnStop" class="ghost" disabled>■ Stop</button>
-        </div>
-
-        <div class="recwrap">
-          <div id="timer" class="timer">00:00</div>
-          <div class="meterwrap">
-            <div id="meter" class="meter"></div>
-          </div>
-        </div>
-
-        <div class="row gap">
-          <button id="btnSend" class="wide" disabled>Send & Analyze</button>
-          <span id="stateBadge" class="chip subtle">Idle</span>
-        </div>
-      </section>
-
-      <section class="card">
-        <h3>What to say to start</h3>
-        <div id="prompt" class="promptbox">
-          Describe a recent project you led and one lesson you learned.
-        </div>
-        <div class="row gap between">
-          <button id="btnRnd" class="tiny"><span class="dice">🎲</span> Randomize prompt</button>
-          <span id="recStateMini" class="chip mini subtle">Idle</span>
-        </div>
-      </section>
-
-      <section class="card minirow">
-        <div class="mini">Level: <span id="levelLabel">–</span></div>
-        <div class="mini">Fillers: <span id="fillers">0</span></div>
-        <div class="mini">Sessions: <span id="sessions">0</span></div>
-        <div class="mini">Streak: <span id="streak">0</span> 🔥</div>
-      </section>
-    </aside>
-
-    <!-- RIGHT: Results -->
-    <section class="rightcol card results">
-      <div class="hdrrow">
-        <div class="row badges">
-          <span class="badge">Level: <b id="friendlyLevel">–</b></span>
-          <span class="badge">Fillers: <b id="fillersTop">0</b></span>
-          <span class="badge">Sessions: <b id="sessionsTop">0</b></span>
-          <span class="badge">Streak: <b id="streakTop">0</b> 🔥</span>
+      <div class="card">
+        <h2>Goal</h2>
+        <div id="goals" class="goal-row">
+          <button class="chip active" data-goal="Work English">Work English</button>
+          <button class="chip" data-goal="Daily Life">Daily Life</button>
+          <button class="chip" data-goal="Interview Prep">Interview Prep</button>
+          <button class="chip" data-goal="Travel">Travel</button>
+          <button class="chip" data-goal="Presentation">Presentation</button>
         </div>
       </div>
 
-      <h4>Pronunciation</h4>
-      <div id="pronBox" class="listbox empty">–</div>
+      <div class="card">
+        <h2>Recording</h2>
+        <div class="rec-row">
+          <button id="btnStart" class="btn primary">
+            <span class="dot play"></span> Start recording
+          </button>
+          <button id="btnStop" class="btn ghost" disabled>
+            <span class="dot stop"></span> Stop
+          </button>
+        </div>
+        <div class="timer-row">
+          <div id="timer" class="timer">00:00</div>
+          <div class="meter-wrap"><div id="meter" class="meter"></div></div>
+        </div>
+        <button id="btnSend" class="btn primary block" disabled>
+          <span id="sendSpinner" class="spinner hidden"></span>
+          <span id="sendText">Send & Analyze</span>
+        </button>
+      </div>
 
-      <h4>Grammar</h4>
-      <div id="gramBox" class="listbox empty">–</div>
+      <div class="card">
+        <h2>What to say to start</h2>
+        <div class="prompt-wrap">
+          <textarea id="prompt" rows="3">Describe a recent project you led and one lesson you learned.</textarea>
+        </div>
+        <div class="prompt-actions">
+          <button id="btnRnd" class="btn soft">
+            <span class="dice">🎲</span> Randomize prompt
+          </button>
+          <span id="recState" class="state-pill idle">Idle</span>
+        </div>
+      </div>
+    </section>
 
-      <h4>What to fix now</h4>
-      <div id="fixBox" class="note">–</div>
+    <!-- RIGHT: results -->
+    <section class="col rightcol">
+      <div class="top-metrics">
+        <span id="liveChip" class="pill idle">Idle</span>
+        <span class="pill">Level: <strong id="levelLabel">–</strong></span>
+        <span class="pill">Fillers: <strong id="fillers">0</strong></span>
+        <span class="pill">Sessions: <strong id="sessions">0</strong></span>
+        <span class="pill">Streak: <strong id="streak">0</strong> <span class="fire">🔥</span></span>
+      </div>
 
-      <h4>Next prompt (30–45s)</h4>
-      <div id="nextBox" class="note">–</div>
+      <div class="card">
+        <h3>Pronunciation</h3>
+        <div id="pronBox" class="result mono">–</div>
+      </div>
 
-      <h4>Leaderboard</h4>
-      <div id="board" class="board">Public leaderboard requires sign-in. You’ll still see your local totals below.</div>
+      <div class="card">
+        <h3>Grammar</h3>
+        <div id="gramBox" class="result mono">–</div>
+      </div>
+
+      <div class="card">
+        <h3>What to fix now</h3>
+        <div id="fixBox" class="result mono">–</div>
+      </div>
+
+      <div class="card">
+        <h3>Next prompt (30–45s)</h3>
+        <div id="nextBox" class="result mono">–</div>
+      </div>
+
+      <div class="card">
+        <h3>Leaderboard</h3>
+        <div id="boardBox" class="result mono small">You — <span id="localSessions">0</span> session(s). Sign in for the public board.</div>
+      </div>
     </section>
   </main>
 
   <footer class="footer">
-    <div>© 2025 <a href="https://simpleia.com" target="_blank" rel="noreferrer">Simpleia</a> — Built by <a href="https://aosama.net" target="_blank" rel="noreferrer">Abdo Osama</a></div>
-    <div>v<span id="ver"></span></div>
+    <span>© 2025 <a href="https://simpleia.com" target="_blank" rel="noopener">Simpleia</a> — Built by <a href="https://aosama.net" target="_blank" rel="noopener">Abdo Osama</a></span>
+    <span id="ver" class="version"></span>
   </footer>
 
-  <!-- Feedback modal -->
+  <!-- Feedback Modal -->
   <dialog id="fbDialog" class="modal">
-    <form method="dialog" class="modalcard" id="fbForm">
-      <div class="modalhdr">Quick feedback (optional)</div>
-      <div class="row2">
-        <input id="fbName" type="text" placeholder="Your name" />
-        <input id="fbEmail" type="email" placeholder="Email (optional)" />
+    <form method="dialog" class="modal-card" id="fbForm">
+      <div class="modal-head">
+        <h4>Quick feedback (optional)</h4>
+        <button id="fbClose" class="iconbtn" type="button">×</button>
       </div>
 
-      <div class="stars" id="stars" aria-label="Rating">
-        <input type="radio" name="rating" id="r5" value="5"><label for="r5">★</label>
-        <input type="radio" name="rating" id="r4" value="4"><label for="r4">★</label>
-        <input type="radio" name="rating" id="r3" value="3"><label for="r3">★</label>
-        <input type="radio" name="rating" id="r2" value="2"><label for="r2">★</label>
-        <input type="radio" name="rating" id="r1" value="1"><label for="r1">★</label>
+      <div class="modal-grid">
+        <input id="fbName" type="text" class="input" placeholder="Your name" />
+        <input id="fbEmail" type="email" class="input" placeholder="Email (optional)" />
       </div>
 
-      <textarea id="fbText" rows="5" placeholder="Any ideas to improve?"></textarea>
-
-      <div class="row gap end">
-        <button type="button" id="fbSkip" class="ghost">Skip</button>
-        <button id="fbSend" class="cta">Submit feedback & Continue</button>
+      <div class="stars-row" id="stars">
+        <!-- 5 stars -->
+        <button type="button" data-rate="1">★</button>
+        <button type="button" data-rate="2">★</button>
+        <button type="button" data-rate="3">★</button>
+        <button type="button" data-rate="4">★</button>
+        <button type="button" data-rate="5">★</button>
       </div>
+
+      <textarea id="fbText" rows="6" class="input" placeholder="Any ideas to improve?"></textarea>
+      <div class="modal-actions">
+        <button type="button" id="fbSkip" class="btn ghost">Skip</button>
+        <button type="submit" id="fbSubmit" class="btn primary">
+          Submit feedback & Continue
+        </button>
+      </div>
+      <p id="fbHint" class="hint">Write something (or choose stars) — or just press “Skip”.</p>
     </form>
   </dialog>
 
-  <!-- Auth modal -->
-  <dialog id="authBox" class="modal">
-    <div class="modalcard">
-      <div class="modalhdr">Sign in to save your streak & appear on the leaderboard</div>
-      <div class="row gap">
-        <button id="btnMagic" class="ghost">Email link</button>
-        <input id="authEmail" class="grow" type="email" placeholder="you@email.com" />
-      </div>
-      <div class="row gap">
-        <button id="btnGoogle" class="cta ghost">Continue with Google</button>
-        <button id="btnFacebook" class="ghost">Continue with Facebook</button>
-      </div>
-      <div class="row gap end">
-        <button id="authClose" class="ghost">Close</button>
-      </div>
-    </div>
-  </dialog>
+  <!-- Small toast -->
+  <div id="toast" class="toast hidden"></div>
 </body>
 </html>
