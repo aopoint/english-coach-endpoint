@@ -591,3 +591,17 @@
     els.prompt.value = pick;
   }
 })();
+/* ===== Feedback modal hardening (append at bottom) ===== */
+(function hardenFeedbackModal() {
+  function _fbToggle(on) {
+    const back = document.getElementById('fbBack');
+    const box  = document.getElementById('fbBox');
+    [back, box].forEach(el => el && el.classList.toggle('open', !!on));
+  }
+  // global fallbacks used by app.js show/hide
+  window.showFeedback = () => _fbToggle(true);
+  window.hideFeedback = () => _fbToggle(false);
+
+  // Ensure hidden once DOM is ready (covers script-in-<head> without defer)
+  document.addEventListener('DOMContentLoaded', () => _fbToggle(false));
+})();
