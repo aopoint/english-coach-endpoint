@@ -91,6 +91,7 @@ const setSendLoading = (v)=>{
   btnSend.disabled = v;
   sendSpinner.classList.toggle('hidden', !v);
 }
+const escapeHtml=(s)=>String(s||'').replace(/[&<>"']/g,c=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' }[c]))
 
 /* ========= prompts ========= */
 const PROMPTS = [
@@ -123,6 +124,16 @@ function resetTimer(){
   if (gateTmr) cancelAnimationFrame(gateTmr);
   timerEl.textContent = '00:00';
   meterEl.style.width = '0%';
+}
+
+/* ========= board text (fix) ========= */
+function updateBoard(){
+  const localSessions = Number(localStorage.getItem('ec_sessions')||'0');
+  if (currentUser) {
+    board.textContent = `You — ${localSessions} session${localSessions===1?'':'s'}.`;
+  } else {
+    board.textContent = `You — ${localSessions} session${localSessions===1?'':'s'} (sign in for public board).`;
+  }
 }
 
 /* ========= recording ========= */
@@ -249,7 +260,7 @@ function bumpSession(durationSec, level_text){
   localStorage.setItem('ec_streak', String(sr));
   streakEl.textContent = streakTop.textContent = String(sr);
 
-  board.textContent = `You — ${prev} session${prev===1?'':'s'} (sign in for public board).`;
+  updateBoard(); // <-- refresh the text
 
   if (supabase){
     const anon = getAnonId();
@@ -303,7 +314,6 @@ if (supabase){
   supabase.auth.onAuthStateChange((_event, session)=>{
     currentUser = session?.user || null;
     renderAuth();
-    if (currentUser) upsertProfile(); // optional profiles table
   });
 }
 
@@ -362,9 +372,10 @@ function renderAuth(){
     avatarImg.classList.add('hidden');
     avatarImg.src = '';
   }
+  updateBoard(); // <-- keep leaderboard line correct on auth changes
 }
 
-/* optional: keep a profile row in public.profiles */
+/* optional: keep a profile row */
 async function upsertProfile(){
   try{
     if (!supabase || !currentUser) return;
@@ -386,12 +397,12 @@ btnFeedback.addEventListener('click', openFeedback);
 (function initCounters(){
   sessionsEl.textContent = sessionsTop.textContent = String(Number(localStorage.getItem('ec_sessions')||'0'));
   streakEl.textContent = streakTop.textContent = String(Number(localStorage.getItem('ec_streak')||'0'));
+  updateBoard();
   const first = localStorage.getItem('ec_first') || '';
   if (!first) localStorage.setItem('ec_first', new Date().toISOString());
 })();
 
 /* ========= utilities ========= */
-function escapeHtml(s){ return String(s||'').replace(/[&<>"']/g, c=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c])) }
 function getAnonId(){
   let id = localStorage.getItem('ec_anon');
   if (!id){ id = crypto.randomUUID(); localStorage.setItem('ec_anon', id); }
