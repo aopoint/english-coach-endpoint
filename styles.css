@@ -96,3 +96,14 @@ body{
 
 /* Footer */
 .footer{opacity:.6; display:flex; justify-content:flex-end; margin-top:8px}
+
+/* --- Feedback modal safety / visibility --- */
+#fbBack,
+#fbBox { display: none; }
+
+#fbBack.open,
+#fbBox.open { display: block; }
+
+/* Optional: prevent click-through when open */
+#fbBack.open { pointer-events: auto; }
+#fbBack { pointer-events: none; }
