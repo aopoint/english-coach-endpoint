@@ -1,345 +1,382 @@
-/* global supabase */
-/* CONFIG */
-const { SUPABASE_URL, SUPABASE_ANON_KEY, API_URL, VERSION } = window.APP_CONFIG || {};
-document.getElementById('ver').textContent = VERSION || '';
+/* global supabase, window, document */
 
-/* Supabase */
-const sb = (SUPABASE_URL && SUPABASE_ANON_KEY)
-  ? supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
-  : null;
+(function () {
+  // ----- CONFIG -----
+  const { SUPABASE_URL, SUPABASE_ANON_KEY, API_URL, VERSION } =
+    window.APP_CONFIG || {};
+  document.getElementById("ver").textContent = VERSION ? `v${VERSION}` : "";
 
-let currentUser = null;
-async function initAuth() {
-  if (!sb) return;
-  const { data: { user } } = await sb.auth.getUser();
-  currentUser = user || null;
-  paintUser();
-  sb.auth.onAuthStateChange((_evt, session) => {
-    currentUser = session?.user || null;
-    paintUser();
-    refreshBoard();
-  });
-}
-function paintUser() {
-  const chip = document.getElementById('userChip');
-  chip.innerHTML = currentUser
-    ? `${currentUser.email || 'Account'} · <button id="btnSignOut" class="link">Sign out</button>`
-    : `Guest · <button id="btnSignIn" class="link">Sign in</button>`;
-  (document.getElementById('btnSignIn')||{}).onclick = () => openAuth();
-  (document.getElementById('btnSignOut')||{}).onclick = async () => { await sb.auth.signOut(); };
-}
+  // ----- SUPABASE -----
+  const sb =
+    SUPABASE_URL && SUPABASE_ANON_KEY
+      ? supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+      : null;
 
-/* UI refs */
-const goalsEl = document.getElementById('goals');
-const levelLabel = document.getElementById('levelLabel');
-const friendlyLevel = document.getElementById('friendlyLevel');
-const fillersEl = document.getElementById('fillers');
-const fillersTop = document.getElementById('fillersTop');
-const sessionsEl = document.getElementById('sessions');
-const sessionsTop = document.getElementById('sessionsTop');
-const streakEl = document.getElementById('streak');
-const streakTop = document.getElementById('streakTop');
+  let currentUser = null;
+  let localSessions = Number(localStorage.getItem("ec_sessions") || "0");
+  let allowNextWithoutLogin = false; // flipped after feedback submit for guests
 
-const pronBox = document.getElementById('pronBox');
-const gramBox = document.getElementById('gramBox');
-const fixBox  = document.getElementById('fixBox');
-const nextBox = document.getElementById('nextBox');
+  // ----- UI refs -----
+  const btnStart = document.getElementById("btnStart");
+  const btnStop = document.getElementById("btnStop");
+  const btnSend = document.getElementById("btnSend");
+  const btnRnd = document.getElementById("btnRnd");
+  const sendSpinner = document.getElementById("sendSpinner");
+  const sendText = document.getElementById("sendText");
 
-const timerEl = document.getElementById('timer');
-const meterEl = document.getElementById('meter');
-const stateBadge = document.getElementById('stateBadge');
-const recStateMini = document.getElementById('recStateMini');
+  const timerEl = document.getElementById("timer");
+  const meterEl = document.getElementById("meter");
+  const goalsEl = document.getElementById("goals");
+  const promptEl = document.getElementById("prompt");
+  const liveChip = document.getElementById("liveChip");
 
-const btnStart = document.getElementById('btnStart');
-const btnStop  = document.getElementById('btnStop');
-const btnSend  = document.getElementById('btnSend');
-const btnRnd   = document.getElementById('btnRnd');
-const promptEl = document.getElementById('prompt');
-const boardEl  = document.getElementById('board');
+  const levelLabelEl = document.getElementById("levelLabel");
+  const fillersEl = document.getElementById("fillers");
+  const streakEl = document.getElementById("streak");
+  const sessionsEl = document.getElementById("sessions");
 
-/* Local progress */
-let localSessions = Number(localStorage.getItem('ec_sessions')||'0');
-let lastFeedbackOk = localStorage.getItem('ec_fb_ok') === '1';
-let streak = Number(localStorage.getItem('ec_streak')||'0');
-let streakDate = localStorage.getItem('ec_streak_date') || '';
+  const pronBox = document.getElementById("pronBox");
+  const gramBox = document.getElementById("gramBox");
+  const fixBox = document.getElementById("fixBox");
+  const nextBox = document.getElementById("nextBox");
+  const boardBox = document.getElementById("boardBox");
+  const localSessionsEl = document.getElementById("localSessions");
 
-paintProgress();
+  const authLink = document.getElementById("authLink");
+  const whoami = document.getElementById("whoami");
+  const feedbackLink = document.getElementById("feedbackLink");
 
-function paintProgress() {
-  sessionsEl.textContent = sessionsTop.textContent = String(localSessions);
-  streakEl.textContent = streakTop.textContent = String(streak);
-}
+  const fbDialog = document.getElementById("fbDialog");
+  const fbForm = document.getElementById("fbForm");
+  const fbName = document.getElementById("fbName");
+  const fbEmail = document.getElementById("fbEmail");
+  const fbText = document.getElementById("fbText");
+  const fbSkip = document.getElementById("fbSkip");
+  const fbClose = document.getElementById("fbClose");
+  const starsRow = document.getElementById("stars");
+  const fbHint = document.getElementById("fbHint");
 
-/* Goals */
-let goal = 'Work English';
-goalsEl.addEventListener('click', (e) => {
-  const b = e.target.closest('button'); if(!b) return;
-  [...goalsEl.children].forEach(x=>x.classList.remove('active'));
-  b.classList.add('active');
-  goal = b.dataset.goal || goal;
-  // change the starter prompt lightly
-  const prompts = {
-    'Work English': [
-      'Describe a recent project you led and one lesson you learned.',
-      'Explain one challenge your team faced and how you solved it.',
-      'Tell me about a time you influenced a decision at work.'
-    ],
-    'Daily Life': [
-      'Describe your last weekend in 45 seconds.',
-      'What’s your morning routine? Speak for 45 seconds.',
-      'Tell me about your favorite hobby and why you enjoy it.'
-    ],
-    'Interview Prep': [
-      'Introduce yourself and your professional background.',
-      'Describe your biggest strength with one example.',
-      'Tell me about a difficult problem you solved.'
-    ],
-    'Travel': [
-      'Describe your best trip and what made it memorable.',
-      'Explain how you plan a trip from scratch.',
-      'Talk about a city you want to visit and why.'
-    ],
-    'Presentation': [
-      'Summarize a 2-minute talk you recently gave.',
-      'Explain a product or idea as if to a new colleague.',
-      'Describe an audience question and your answer.'
-    ]
-  };
-  promptEl.textContent = prompts[goal][0];
-});
+  const toast = document.getElementById("toast");
+  const recState = document.getElementById("recState");
 
-/* Randomize prompt */
-btnRnd.onclick = () => {
-  const list = [...document.querySelectorAll('#goals .pill')].find(p=>p.classList.contains('active'))?.dataset.goal || goal;
-  const L = {
-    'Work English': [
-      'Explain one challenge your team faced and how you solved it.',
-      'Describe a recent conflict and how you handled it.'
-    ],
-    'Daily Life': [
-      'What did you do last weekend?',
-      'Tell me about your favorite food and why you love it.'
-    ],
-    'Interview Prep': [
-      'What is your biggest weakness and how are you improving it?',
-      'Describe a project you’re proud of.'
-    ],
-    'Travel': [
-      'Describe a trip that changed your perspective.',
-      'Plan a weekend in a city you like.'
-    ],
-    'Presentation': [
-      'Outline the main message of your latest talk.',
-      'Explain a complex topic in simple terms.'
-    ]
-  }[list];
-  promptEl.textContent = L[Math.floor(Math.random()*L.length)];
-};
+  // ----- State -----
+  let goal = "Work English";
+  let chunks = [];
+  let mediaStream = null;
+  let mediaRec = null;
+  let recording = false;
+  let tStart = null;
+  let tTimer = null;
+  let tmpStreak = Number(localStorage.getItem("ec_streak") || "0");
+  let lastDate = localStorage.getItem("ec_last_date") || ""; // yyyy-mm-dd
 
-/* Recording */
-let rec, chunks=[], mediaStream=null, durationSec=0, tickInt=null, startTs=0;
+  // ----- Helpers -----
+  const fmt = (sec) =>
+    `${String(Math.floor(sec / 60)).padStart(2, "0")}:${String(sec % 60).padStart(2, "0")}`;
 
-function setLive(on){
-  stateBadge.textContent = on ? 'Live' : 'Idle';
-  recStateMini.textContent = on ? 'Live' : 'Idle';
-  stateBadge.classList.toggle('subtle', !on);
-  recStateMini.classList.toggle('subtle', !on);
-}
-function zero(n){return n<10?'0'+n:String(n)}
-function paintTimer(sec){
-  timerEl.textContent = `${zero(Math.floor(sec/60))}:${zero(sec%60)}`;
-  // width
-  const pct = Math.min(100, Math.round((sec/90)*100));
-  meterEl.style.width = pct+'%';
-  // color thresholds: 0–20s red, 20–45 amber, >=45 green
-  if (sec < 20) meterEl.style.background = 'linear-gradient(90deg, var(--bad), #ff6b6b)';
-  else if (sec < 45) meterEl.style.background = 'linear-gradient(90deg, var(--warn), #ffca57)';
-  else meterEl.style.background = 'linear-gradient(90deg, var(--ok), #34d399)';
-}
-
-btnStart.onclick = async () => {
-  try{
-    chunks=[]; durationSec=0; startTs=Date.now();
-    mediaStream = await navigator.mediaDevices.getUserMedia({ audio:true });
-    const mime = MediaRecorder.isTypeSupported('audio/webm;codecs=opus') ? 'audio/webm;codecs=opus'
-               : (MediaRecorder.isTypeSupported('audio/mp4;codecs=mp4a.40.2') ? 'audio/mp4' : '');
-    rec = new MediaRecorder(mediaStream,{ mimeType:mime });
-    rec.ondataavailable = e => { if(e.data && e.data.size) chunks.push(e.data); };
-    rec.onstop = () => mediaStream.getTracks().forEach(t=>t.stop());
-    rec.start(250);
-    setLive(true);
-    btnStart.disabled = true; btnStop.disabled = false; btnSend.disabled = true;
-    meterEl.style.width = '0%'; paintTimer(0);
-    tickInt = setInterval(()=>{
-      durationSec = Math.max(0, Math.round((Date.now()-startTs)/1000));
-      paintTimer(durationSec);
-    }, 1000);
-  }catch(e){
-    alert('Mic permission denied or unavailable.');
+  function setLive(on) {
+    liveChip.classList.toggle("live", on);
+    liveChip.classList.toggle("idle", !on);
+    liveChip.textContent = on ? "Live" : "Idle";
+    recState.textContent = on ? "Live" : "Idle";
+    recState.classList.toggle("live", on);
+    recState.classList.toggle("idle", !on);
   }
-};
 
-btnStop.onclick = () => stopRec();
-function stopRec(){
-  try{ rec && rec.state!=='inactive' && rec.stop(); }catch{}
-  clearInterval(tickInt); tickInt=null;
-  setLive(false);
-  btnStart.disabled = false; btnStop.disabled = true; btnSend.disabled = chunks.length===0;
-}
+  function setMeter(sec) {
+    const MAX = 90;
+    const pct = Math.min(100, Math.round((sec / MAX) * 100));
+    meterEl.style.width = `${pct}%`;
+    // color thresholds
+    const color =
+      sec < 30 ? "var(--bad)" : sec < 45 ? "var(--warn)" : "var(--good)";
+    meterEl.style.background = color;
+  }
 
-/* Analyze */
-btnSend.onclick = async () => {
-  // block: require login after 5 sessions (but count is still stored)
-  if (!currentUser && localSessions >= 5) { openAuth(); return; }
+  function nowISODate() { return new Date().toISOString().slice(0, 10); }
 
-  const blob = new Blob(chunks, { type: chunks[0]?.type || 'audio/webm' });
-  const fd = new FormData();
-  fd.append('files[]', blob, blob.type.includes('mp4') ? 'audio.m4a' : 'audio.webm');
-  fd.append('duration_sec', String(durationSec));
-  fd.append('goal', goal);
-  fd.append('prompt_text', promptEl.textContent);
+  function showToast(msg) {
+    toast.textContent = msg;
+    toast.classList.remove("hidden");
+    setTimeout(() => toast.classList.add("hidden"), 2200);
+  }
 
-  btnSend.disabled = true;
-  fixBox.textContent = 'Analyzing...';
+  function lockSend(locked) {
+    btnSend.disabled = locked;
+    sendSpinner.classList.toggle("hidden", !locked);
+    sendText.textContent = locked ? "Analyzing…" : "Send & Analyze";
+  }
 
-  try{
-    const res = await fetch(API_URL, { method:'POST', body:fd });
-    const json = await res.json();
+  // ----- Auth -----
+  if (sb) {
+    sb.auth.onAuthStateChange(async (_evt, session) => {
+      currentUser = session?.user || null;
+      whoami.textContent = currentUser
+        ? (currentUser.user_metadata?.full_name || currentUser.email || "User")
+        : "Guest";
+      if (currentUser) {
+        authLink.textContent = "Sign out";
+        loadLeaderboard();
+      } else {
+        authLink.textContent = "Sign in / Register";
+        boardBox.textContent =
+          "You — " + localSessions + " session(s). Sign in for public board.";
+      }
+    });
+  }
 
-    // fallback when too short
-    if (json.fallback) {
-      levelLabel.textContent = friendlyLevel.textContent = 'Beginner';
-      fillersEl.textContent = fillersTop.textContent = String(json.fluency?.fillers ?? 0);
-      gramBox.innerHTML = liMap(json.grammar_issues || []);
-      pronBox.innerHTML = pronMap(json.pronunciation || []);
-      setEmptyStates();
-      fixBox.textContent = json.one_thing_to_fix || 'Speak for at least 45 seconds.';
-      nextBox.textContent = json.next_prompt || 'Describe your last weekend in 45 seconds.';
-    } else {
-      const lvl = json.friendly_level || json.cefr_estimate || 'Intermediate';
-      levelLabel.textContent = friendlyLevel.textContent = lvl;
-      const fill = Number(json.fluency?.fillers ?? 0);
-      fillersEl.textContent = fillersTop.textContent = String(fill);
+  authLink.addEventListener("click", async (e) => {
+    e.preventDefault();
+    if (!sb) return showToast("Auth unavailable.");
+    if (currentUser) {
+      await sb.auth.signOut();
+      return;
+    }
+    // Pick a provider quickly (Google). You can add FB/email UI later.
+    const { error } = await sb.auth.signInWithOAuth({
+      provider: "google",
+      options: { redirectTo: location.href }
+    });
+    if (error) showToast(error.message);
+  });
 
-      gramBox.innerHTML = liMap(json.grammar_issues || []);
-      pronBox.innerHTML = pronMap(json.pronunciation || []);
-      setEmptyStates();
+  // Open feedback modal explicitly
+  feedbackLink.addEventListener("click", (e) => {
+    e.preventDefault();
+    fbDialog.showModal();
+  });
 
-      fixBox.textContent = json.one_thing_to_fix || 'Focus on clarity.';
-      nextBox.textContent = json.next_prompt || 'Tell me about a recent challenge.';
+  // ----- Goals -----
+  goalsEl.addEventListener("click", (e) => {
+    const b = e.target.closest("button");
+    if (!b) return;
+    goalsEl.querySelectorAll(".chip").forEach((n) => n.classList.remove("active"));
+    b.classList.add("active");
+    goal = b.dataset.goal;
+  });
+
+  // ----- Recording -----
+  async function startRec() {
+    if (recording) return;
+    try {
+      mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    } catch {
+      return showToast("Mic permission is required.");
+    }
+    chunks = [];
+    const mime =
+      MediaRecorder.isTypeSupported("audio/webm;codecs=opus") ? "audio/webm;codecs=opus" : "audio/webm";
+    mediaRec = new MediaRecorder(mediaStream, { mimeType: mime });
+    mediaRec.ondataavailable = (e) => { if (e.data && e.data.size) chunks.push(e.data); };
+    mediaRec.start();
+
+    recording = true;
+    btnStart.disabled = true;
+    btnStop.disabled = false;
+    btnSend.disabled = true;
+    btnRnd.disabled = true;
+    setLive(true);
+
+    tStart = Date.now();
+    tTimer = setInterval(() => {
+      const sec = Math.floor((Date.now() - tStart) / 1000);
+      timerEl.textContent = fmt(sec);
+      setMeter(sec);
+    }, 250);
+  }
+
+  function stopRec() {
+    if (!recording) return;
+    mediaRec.stop();
+    mediaStream.getTracks().forEach((t) => t.stop());
+    clearInterval(tTimer);
+    recording = false;
+    btnStart.disabled = false;
+    btnStop.disabled = true;
+    btnSend.disabled = chunks.length === 0;
+    btnRnd.disabled = false;
+    setLive(false);
+  }
+
+  btnStart.addEventListener("click", startRec);
+  btnStop.addEventListener("click", stopRec);
+
+  // ----- Randomize prompt -----
+  const PROMPTS = [
+    "Describe a recent challenge you faced at work and how you handled it.",
+    "Tell me about your last weekend in 45 seconds.",
+    "Explain one problem your team faced and how you solved it.",
+    "What is one skill you want to improve and why?",
+    "Describe your last travel experience in brief."
+  ];
+  btnRnd.addEventListener("click", () => {
+    if (btnRnd.disabled) return;
+    promptEl.value = PROMPTS[Math.floor(Math.random() * PROMPTS.length)];
+  });
+
+  // ----- Analyze -----
+  btnSend.addEventListener("click", async () => {
+    if (!chunks.length) return showToast("Nothing to send.");
+    const durSec = Math.max(1, Math.floor((Date.now() - tStart) / 1000));
+    const blob = new Blob(chunks, { type: "audio/webm" });
+
+    // Gating: if this is the 2nd analysis and guest, ask feedback first (but allow skip).
+    if (localSessions === 1 && !allowNextWithoutLogin) {
+      fbDialog.showModal();
+      return; // continue after user closes/submit
+    }
+    // Gating: after 5, require sign-in (still save local session in DB as anonymous).
+    if (localSessions >= 5 && !currentUser) {
+      showToast("Please sign in to continue.");
+      return;
     }
 
-    // update local counters
-    localSessions += 1;
-    localStorage.setItem('ec_sessions', String(localSessions));
-    bumpStreak();
-    paintProgress();
+    lockSend(true);
+    try {
+      const fd = new FormData();
+      fd.append("files[]", blob, "audio.webm");
+      fd.append("duration_sec", String(durSec));
+      fd.append("goal", goal);
+      fd.append("prompt_text", promptEl.value || "");
 
-    // store session row (even guests -> user_id null)
-    if (sb) {
-      try {
-        await sb.from('sessions').insert({
+      const res = await fetch(API_URL, { method: "POST", body: fd });
+      const json = await res.json();
+
+      // Render
+      const level =
+        json.friendly_level ||
+        json.cefr_estimate ||
+        (json.fluency?.note ? "—" : "—");
+
+      levelLabelEl.textContent = level;
+      fillersEl.textContent = String(json.fluency?.fillers ?? 0);
+      fixBox.textContent = json.one_thing_to_fix || "—";
+      nextBox.textContent = json.next_prompt || "—";
+
+      // grammar list
+      const grammar = Array.isArray(json.grammar_issues) ? json.grammar_issues : [];
+      gramBox.innerHTML = grammar.length
+        ? grammar.map(g => `→ ${g.error}\nTry: ${g.fix}\nWhy: ${g.why}\n`).join("\n")
+        : "—";
+
+      // pronunciation list
+      const pr = Array.isArray(json.pronunciation) ? json.pronunciation : [];
+      pronBox.innerHTML = pr.length
+        ? pr.map(p => `${p.sound_or_word} — ${p.issue}\nTry: ${p.minimal_pair}`).join("\n")
+        : "—";
+
+      // Update counts / streak
+      localSessions += 1;
+      localStorage.setItem("ec_sessions", String(localSessions));
+      sessionsEl.textContent = String(localSessions);
+      localSessionsEl.textContent = String(localSessions);
+
+      // daily streak
+      const today = nowISODate();
+      if (lastDate !== today) {
+        tmpStreak = (lastDate ? tmpStreak + 1 : 1);
+        lastDate = today;
+        localStorage.setItem("ec_streak", String(tmpStreak));
+        localStorage.setItem("ec_last_date", today);
+      }
+      streakEl.textContent = String(tmpStreak);
+
+      // Save session in DB (guest or user)
+      if (sb) {
+        await sb.from("sessions").insert({
           user_id: currentUser?.id ?? null,
-          duration_sec: durationSec,
-          level_label: friendlyLevel.textContent || null,
+          duration_sec: durSec,
+          level_label: level,
           goal
         });
-      } catch {}
+      }
+    } catch (err) {
+      console.error(err);
+      showToast("Analyze failed. Please try again.");
+    } finally {
+      lockSend(false);
+      // reset one recording
+      chunks = [];
+      btnSend.disabled = true;
+      timerEl.textContent = "00:00";
+      meterEl.style.width = "0";
+      meterEl.style.background = "var(--bad)";
+    }
+  });
+
+  // ----- Feedback modal -----
+  let rating = 0;
+  starsRow.addEventListener("click", (e) => {
+    const b = e.target.closest("button");
+    if (!b) return;
+    rating = Number(b.dataset.rate);
+    starsRow.querySelectorAll("button").forEach((n) =>
+      n.classList.toggle("active", Number(n.dataset.rate) <= rating)
+    );
+  });
+
+  fbForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    // Require SOME content (rating OR text OR name/email). Otherwise ask to Skip.
+    const hasContent =
+      rating > 0 || !!fbText.value.trim() || !!fbName.value.trim() || !!fbEmail.value.trim();
+
+    if (!hasContent) {
+      fbHint.textContent = "Please write something (or choose stars) — or press Skip.";
+      fbHint.style.color = "#ffb8c6";
+      return;
     }
 
-    // feedback: show after first completion if not yet
-    if (!lastFeedbackOk && localSessions >= 1) {
-      openFeedback(() => { lastFeedbackOk = true; localStorage.setItem('ec_fb_ok','1'); });
-    }
-
-    refreshBoard();
-  } catch(err){
-    fixBox.textContent = 'Analyzer error. Please try again.';
-  } finally {
-    btnSend.disabled = false;
-  }
-};
-
-function setEmptyStates(){
-  if (!gramBox.innerHTML.trim()) { gramBox.classList.add('empty'); gramBox.textContent='–'; } else { gramBox.classList.remove('empty'); }
-  if (!pronBox.innerHTML.trim()) { pronBox.classList.add('empty'); pronBox.textContent='–'; } else { pronBox.classList.remove('empty'); }
-}
-
-function liMap(arr){
-  if (!Array.isArray(arr) || !arr.length) return '';
-  return arr.map(x=>`<div class="li">→ ${escapeHtml(x.error||x.sound_or_word||'')}<br><span class="try">Try:</span> ${escapeHtml(x.fix||x.minimal_pair||'')}</div>`).join('');
-}
-function pronMap(arr){
-  if (!Array.isArray(arr) || !arr.length) return '';
-  return arr.map(x=>`<div class="li">→ <b>${escapeHtml(x.sound_or_word||'')}</b> — ${escapeHtml(x.issue||'')}<br><span class="try">Try:</span> ${escapeHtml(x.minimal_pair||'')}</div>`).join('');
-}
-function escapeHtml(s){return String(s||'').replace(/[&<>"']/g,m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m]))}
-
-/* Streak: one increase per day with at least one session */
-function bumpStreak(){
-  const today = new Date().toISOString().slice(0,10);
-  if (streakDate !== today) { streak += 1; streakDate = today; }
-  localStorage.setItem('ec_streak', String(streak));
-  localStorage.setItem('ec_streak_date', streakDate);
-}
-
-/* Leaderboard */
-async function refreshBoard(){
-  if (!sb || !currentUser) {
-    boardEl.textContent = `You — ${localSessions} session${localSessions===1?'':'s'} (sign in for public board).`;
-    return;
-  }
-  try{
-    const { data, error } = await sb
-      .rpc('top_users_by_sessions')  // helper function from earlier SQL
-      .select?.(); // some environments require .select(); harmless if unsupported
-    if (error || !data) throw error || new Error('No data');
-    boardEl.innerHTML = data.map((r,i)=>`<div>${i+1}. ${escapeHtml(r.display)} — <b>${r.sessions}</b> sessions</div>`).join('');
-  }catch{
-    boardEl.textContent = `You — ${localSessions} session${localSessions===1?'':'s'}.`;
-  }
-}
-
-/* Feedback modal */
-const fbDialog = document.getElementById('fbDialog');
-const fbForm   = document.getElementById('fbForm');
-document.getElementById('feedbackLink').onclick = () => fbDialog.showModal();
-document.getElementById('fbSkip').onclick = () => fbDialog.close();
-fbForm.onsubmit = async (e) => {
-  e.preventDefault();
-  const rating = Number((new FormData(fbForm)).get('rating')||0);
-  const name = document.getElementById('fbName').value.trim();
-  const email = document.getElementById('fbEmail').value.trim();
-  const text = document.getElementById('fbText').value.trim();
-  if (sb) {
     try {
-      await sb.from('feedback').insert({
-        user_id: currentUser?.id ?? null, name, email, rating, text
-      });
-    } catch {}
+      if (sb) {
+        await sb.from("feedback").insert({
+          user_id: currentUser?.id ?? null,
+          name: fbName.value.trim() || null,
+          email: fbEmail.value.trim() || null,
+          rating: rating || null,
+          text: fbText.value.trim() || null
+        });
+      }
+      allowNextWithoutLogin = true;
+      fbDialog.close();
+      showToast("Thanks for your feedback!");
+    } catch (err) {
+      console.error(err);
+      showToast("Could not save feedback (still continuing).");
+      allowNextWithoutLogin = true;
+      fbDialog.close();
+    }
+  });
+
+  fbSkip.addEventListener("click", () => {
+    allowNextWithoutLogin = true;
+    fbDialog.close();
+  });
+  fbClose.addEventListener("click", () => fbDialog.close());
+
+  // ----- Leaderboard (simple) -----
+  async function loadLeaderboard() {
+    if (!sb || !currentUser) return;
+    try {
+      // If you created a SQL function `top_users_by_sessions()`
+      const { data, error } = await sb.rpc("top_users_by_sessions");
+      if (error) throw error;
+      if (!Array.isArray(data) || !data.length) {
+        boardBox.textContent = "No public data yet.";
+        return;
+      }
+      boardBox.textContent = data
+        .slice(0, 10)
+        .map((r, i) => `${i + 1}. ${r.display_text || r.email || "User"} — ${r.sessions} sessions`)
+        .join("\n");
+    } catch (e) {
+      console.warn(e.message);
+      boardBox.textContent = "Public board temporarily unavailable.";
+    }
   }
-  localStorage.setItem('ec_fb_ok','1');
-  fbDialog.close();
-};
-function openFeedback(cb){ fbDialog.showModal(); fbDialog.addEventListener('close', ()=>cb?.(), { once:true }); }
 
-/* Auth modal */
-const authBox = document.getElementById('authBox');
-function openAuth(){ authBox.showModal(); }
-document.getElementById('authClose').onclick = ()=> authBox.close();
-document.getElementById('btnMagic').onclick = async ()=>{
-  const email = document.getElementById('authEmail').value.trim();
-  if (!email) return alert('Enter email first.');
-  try{ await sb.auth.signInWithOtp({ email, emailRedirectTo: location.origin }); alert('Check your inbox.'); }catch{ alert('Could not send link.'); }
-};
-document.getElementById('btnGoogle').onclick = async ()=>{
-  try{ await sb.auth.signInWithOAuth({ provider:'google', options:{ redirectTo: location.origin } }); }catch{ alert('Sign-in failed'); }
-};
-document.getElementById('btnFacebook').onclick = async ()=>{
-  try{ await sb.auth.signInWithOAuth({ provider:'facebook', options:{ redirectTo: location.origin } }); }catch{ alert('Sign-in failed'); }
-};
-
-/* Init */
-setLive(false);
-initAuth();
-refreshBoard();
+  // ----- Init render -----
+  sessionsEl.textContent = String(localSessions);
+  localSessionsEl.textContent = String(localSessions);
+  streakEl.textContent = String(tmpStreak || 0);
+})();
