@@ -1,8 +1,6 @@
 /* ========= config & setup ========= */
 const CFG = window.APP_CONFIG || {};
-const {
-  SUPABASE_URL, SUPABASE_ANON_KEY, API_URL, VERSION
-} = CFG;
+const { SUPABASE_URL, SUPABASE_ANON_KEY, API_URL, VERSION } = CFG;
 
 const verEl = document.getElementById('ver');
 if (verEl) verEl.textContent = `v${VERSION || '0.0.0'}`;
@@ -55,13 +53,13 @@ const starBar = document.getElementById('stars');
 const authModal = document.getElementById('authModal');
 const authClose = document.getElementById('authClose');
 const authGoogle = document.getElementById('authGoogle');
-const authFacebook = document.getElementById('authFacebook');
 const authEmail = document.getElementById('authEmail');
 const authEmailLink = document.getElementById('authEmailLink');
 
 const btnAuth = document.getElementById('btnAuth');
 const btnSignOut = document.getElementById('btnSignOut');
 const userBadge = document.getElementById('userBadge');
+const avatarImg = document.getElementById('avatar');
 const btnFeedback = document.getElementById('btnFeedback');
 
 /* ========= local state ========= */
@@ -136,7 +134,10 @@ btnStart.addEventListener('click', async ()=>{
     }
     mediaStream = await navigator.mediaDevices.getUserMedia({audio:true});
     recChunks = [];
-    mediaRec = new MediaRecorder(mediaStream, {mimeType: MediaRecorder.isTypeSupported('audio/webm;codecs=opus') ? 'audio/webm;codecs=opus' : 'audio/webm'});
+    mediaRec = new MediaRecorder(
+      mediaStream,
+      {mimeType: MediaRecorder.isTypeSupported('audio/webm;codecs=opus') ? 'audio/webm;codecs=opus' : 'audio/webm'}
+    );
     mediaRec.ondataavailable = (ev)=>{ if (ev.data?.size) recChunks.push(ev.data) };
     mediaRec.onstop = ()=>{ mediaStream.getTracks().forEach(t=>t.stop()) };
     mediaRec.start(1000);
@@ -145,10 +146,7 @@ btnStart.addEventListener('click', async ()=>{
     btnStop.disabled = false;
     setLive('live');
     startTs = Date.now();
-    (function rafLoop(){
-      tick();
-      gateTmr = requestAnimationFrame(rafLoop);
-    })();
+    (function rafLoop(){ tick(); gateTmr = requestAnimationFrame(rafLoop); })();
   }catch(err){
     console.error('mic error', err);
     alert('Microphone permission denied or unavailable.');
@@ -186,7 +184,6 @@ btnSend.addEventListener('click', async ()=>{
     const res = await fetch(API_URL, {method:'POST', body:form});
     const json = await res.json();
 
-    // fallback (too short)
     if (json?.fallback) {
       levelLabel.textContent = levelLabelTop.textContent = 'Beginner';
       fillersEl.textContent = fillersTop.textContent = String(json.fluency?.fillers ?? 0);
@@ -195,15 +192,12 @@ btnSend.addEventListener('click', async ()=>{
       pronBox.innerHTML = '';
       gramBox.innerHTML = '';
     } else {
-      // level
       const friendly = json.friendly_level || mapFriendly(json.cefr_estimate);
       levelLabel.textContent = levelLabelTop.textContent = friendly || '–';
 
-      // fillers
       const f = json.fluency?.fillers ?? 0;
       fillersEl.textContent = fillersTop.textContent = String(f);
 
-      // grammar
       const gi = Array.isArray(json.grammar_issues) ? json.grammar_issues : [];
       gramBox.innerHTML = gi.map(g=>(
         `<div class="card tight">
@@ -213,7 +207,6 @@ btnSend.addEventListener('click', async ()=>{
          </div>`
       )).join('') || '–';
 
-      // pron
       const pi = Array.isArray(json.pronunciation) ? json.pronunciation : [];
       pronBox.innerHTML = pi.map(p=>(
         `<div class="card tight">
@@ -222,19 +215,14 @@ btnSend.addEventListener('click', async ()=>{
          </div>`
       )).join('') || '–';
 
-      // what to fix / next
       fixBox.textContent = json.one_thing_to_fix || '–';
       nextBox.textContent = json.next_prompt || '–';
     }
 
-    // session counters + streak
     bumpSession(durSec, levelLabel.textContent);
 
-    // show feedback after first session
     const shownFb = localStorage.getItem('ec_feedback_shown');
-    if (!shownFb) {
-      openFeedback();
-    }
+    if (!shownFb) { openFeedback(); }
   }catch(err){
     console.error('analyze error', err);
     alert('Analyze failed. Please try again.');
@@ -248,12 +236,10 @@ btnSend.addEventListener('click', async ()=>{
 });
 
 function bumpSession(durationSec, level_text){
-  // local counters
   const prev = Number(localStorage.getItem('ec_sessions')||'0') + 1;
   localStorage.setItem('ec_sessions', String(prev));
   sessionsEl.textContent = sessionsTop.textContent = String(prev);
 
-  // streak
   const last = localStorage.getItem('ec_last_day') || '';
   const today = new Date().toISOString().slice(0,10);
   const yest = new Date(Date.now()-86400000).toISOString().slice(0,10);
@@ -263,10 +249,8 @@ function bumpSession(durationSec, level_text){
   localStorage.setItem('ec_streak', String(sr));
   streakEl.textContent = streakTop.textContent = String(sr);
 
-  // local board
   board.textContent = `You — ${prev} session${prev===1?'':'s'} (sign in for public board).`;
 
-  // supabase (optional)
   if (supabase){
     const anon = getAnonId();
     supabase.from('sessions').insert({
@@ -297,12 +281,10 @@ fbSend.addEventListener('click', async ()=>{
   const name = fbName.value.trim();
   const email = fbEmail.value.trim();
   const text = fbText.value.trim();
-
   if (!lastRating && !text){
     alert('Please add a quick rating or a short note, or press Skip.');
     return;
   }
-
   if (!supabase){ closeFeedback(); return; }
   try{
     await supabase.from('feedback').insert({
@@ -321,11 +303,11 @@ if (supabase){
   supabase.auth.onAuthStateChange((_event, session)=>{
     currentUser = session?.user || null;
     renderAuth();
+    if (currentUser) upsertProfile(); // optional profiles table
   });
 }
 
 authGoogle?.addEventListener('click', ()=> signInOAuth('google'));
-authFacebook?.addEventListener('click', ()=> signInOAuth('facebook'));
 authEmailLink?.addEventListener('click', async ()=>{
   const email = authEmail.value.trim();
   if (!email){ alert('Enter an email.'); return; }
@@ -356,17 +338,48 @@ function renderAuth(){
   if (currentUser){
     btnAuth.classList.add('hidden');
     btnSignOut.classList.remove('hidden');
+
+    const meta = currentUser.user_metadata || {};
+    const email = currentUser.email || '';
+    const avatar = meta.avatar_url || '';
+
     userBadge.classList.remove('hidden');
-    userBadge.textContent = currentUser.email || 'Signed in';
+    userBadge.textContent = email;
+
+    if (avatar){
+      avatarImg.src = avatar;
+      avatarImg.classList.remove('hidden');
+    }else{
+      avatarImg.classList.add('hidden');
+      avatarImg.src = '';
+    }
+    authModal.close();
   }else{
     btnAuth.classList.remove('hidden');
     btnSignOut.classList.add('hidden');
     userBadge.classList.add('hidden');
     userBadge.textContent = '';
+    avatarImg.classList.add('hidden');
+    avatarImg.src = '';
   }
 }
 
-/* ========= feedback button in header ========= */
+/* optional: keep a profile row in public.profiles */
+async function upsertProfile(){
+  try{
+    if (!supabase || !currentUser) return;
+    const meta = currentUser.user_metadata || {};
+    await supabase.from('profiles').upsert({
+      id: currentUser.id,
+      display_name: meta.full_name || null,
+      email: currentUser.email || null,
+      avatar_url: meta.avatar_url || null,
+      last_seen: new Date().toISOString()
+    });
+  }catch(e){}
+}
+
+/* header feedback */
 btnFeedback.addEventListener('click', openFeedback);
 
 /* ========= init counters on load ========= */
@@ -388,5 +401,5 @@ function getAnonId(){
 /* ===== initial UI ===== */
 renderAuth();
 setLive('idle');
-setSendLoading(false); // ensure no spinner at start
+setSendLoading(false);
 btnSend.disabled = true;
