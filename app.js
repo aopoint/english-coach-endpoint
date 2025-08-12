@@ -1,350 +1,392 @@
-(() => {
-  // ==== config ====
-  const CFG = window.APP_CONFIG || {};
-  const { SUPABASE_URL, SUPABASE_ANON_KEY, API_URL, VERSION } = CFG;
+/* ========= config & setup ========= */
+const CFG = window.APP_CONFIG || {};
+const {
+  SUPABASE_URL, SUPABASE_ANON_KEY, API_URL, VERSION
+} = CFG;
 
-  // version to footer
-  try { document.getElementById("ver").textContent = VERSION || ""; } catch {}
+const verEl = document.getElementById('ver');
+if (verEl) verEl.textContent = `v${VERSION || '0.0.0'}`;
 
-  // supabase (guard if library not present)
-  const sbLib = (typeof window !== 'undefined') ? window.supabase : undefined;
-  const supabase = (SUPABASE_URL && SUPABASE_ANON_KEY && sbLib && typeof sbLib.createClient === 'function')
-    ? sbLib.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+const supabase =
+  (window.supabase && SUPABASE_URL && SUPABASE_ANON_KEY)
+    ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
     : null;
 
-  // ==== DOM refs ====
-  const btnStart = byId('btnStart');
-  const btnStop  = byId('btnStop');
-  const btnSend  = byId('btnSend');
-  const timerEl  = byId('timer');
-  const meter    = byId('meterFill');
-  const goalsEl  = byId('goals');
-  const promptEl = byId('prompt');
-  const btnRnd   = byId('btnRnd');
+/* ========= elements ========= */
+const btnStart = document.getElementById('btnStart');
+const btnStop = document.getElementById('btnStop');
+const btnSend = document.getElementById('btnSend');
+const sendSpinner = btnSend.querySelector('.spinner');
+const sendLabel = btnSend.querySelector('.cta-label');
 
-  const liveDot  = byId('liveDot');
-  const liveTxt  = byId('liveTxt');
-  const levelLabel = byId('levelLabel');
-  const fillersEl  = byId('fillers');
-  const streakEl   = byId('streak');
-  const sessionsEl = byId('sessions');
+const timerEl = document.getElementById('timer');
+const meterEl = document.getElementById('meter');
+const goalsEl = document.getElementById('goals');
+const promptEl = document.getElementById('prompt');
+const btnRnd = document.getElementById('btnRnd');
 
-  const pronBox = byId('pronBox');
-  const gramBox = byId('gramBox');
-  const fixBox  = byId('fixBox');
-  const nextBox = byId('nextBox');
-  const boardBox= byId('boardBox');
+const levelLabel = document.getElementById('levelLabel');
+const levelLabelTop = document.getElementById('levelLabelTop');
+const fillersEl = document.getElementById('fillers');
+const fillersTop = document.getElementById('fillersTop');
+const sessionsEl = document.getElementById('sessions');
+const sessionsTop = document.getElementById('sessionsTop');
+const streakEl = document.getElementById('streak');
+const streakTop = document.getElementById('streakTop');
 
-  const signInLink = byId('signInLink');
-  const feedbackLink = byId('feedbackLink');
-  const userTag = byId('userTag');
+const liveChip = document.getElementById('liveChip');
+const liveText = document.getElementById('liveText');
 
-  // dialogs
-  const fbDlg = byId('feedbackDlg');
-  const fbClose = byId('fbClose');
-  const fbSkip  = byId('fbSkip');
-  const fbSend  = byId('fbSend');
-  const fbName  = byId('fbName');
-  const fbEmail = byId('fbEmail');
-  const fbText  = byId('fbText');
-  const starsEl = byId('stars');
+const pronBox = document.getElementById('pronBox');
+const gramBox = document.getElementById('gramBox');
+const fixBox = document.getElementById('fixBox');
+const nextBox = document.getElementById('nextBox');
+const board = document.getElementById('board');
 
-  const authDlg = byId('authDlg');
-  const authClose = byId('authClose');
-  const authGoogle = byId('authGoogle');
-  const authFacebook = byId('authFacebook');
-  const authEmail = byId('authEmail');
-  const authMagic = byId('authMagic');
+const feedbackModal = document.getElementById('feedbackModal');
+const fbClose = document.getElementById('fbClose');
+const fbSkip = document.getElementById('fbSkip');
+const fbSend = document.getElementById('fbSend');
+const fbName = document.getElementById('fbName');
+const fbEmail = document.getElementById('fbEmail');
+const fbText = document.getElementById('fbText');
+const starBar = document.getElementById('stars');
 
-  // ==== state ====
-  let currentUser = null;
-  let mediaStream = null;
-  let mediaRec = null;
-  let chunks = [];
-  let tStart = 0;
-  let tInt = null;
-  let analyzedCount = Number(localStorage.getItem('ec_sessions') || '0');
-  let forcedAuthAfter = 5;
-  let showFeedbackGate = true;
+const authModal = document.getElementById('authModal');
+const authClose = document.getElementById('authClose');
+const authGoogle = document.getElementById('authGoogle');
+const authFacebook = document.getElementById('authFacebook');
+const authEmail = document.getElementById('authEmail');
+const authEmailLink = document.getElementById('authEmailLink');
 
-  setAnalyzeEnabled(false);
-  setAnalyzeLoading(false);
-  setLive(false);
+const btnAuth = document.getElementById('btnAuth');
+const btnSignOut = document.getElementById('btnSignOut');
+const userBadge = document.getElementById('userBadge');
+const btnFeedback = document.getElementById('btnFeedback');
 
-  // prompts
-  const PROMPTS = {
-    "Work English":[
-      "Describe a recent project you led and one lesson you learned.",
-      "Tell me about a challenge your team faced and how you solved it."
-    ],
-    "Daily Life":[
-      "Describe your ideal weekend and why you enjoy it.",
-      "Talk about a hobby you recently started."
-    ],
-    "Interview Prep":[
-      "Tell me about a time you handled conflicting priorities.",
-      "Explain a complex idea you’ve taught to someone."
-    ],
-    "Travel":[
-      "Describe your last trip and what surprised you most.",
-      "Talk about a place you want to visit and why."
-    ],
-    "Presentation":[
-      "Pitch a product in 60 seconds and explain the benefit.",
-      "Describe your audience and the key takeaway you want."
-    ]
-  };
+/* ========= local state ========= */
+let mediaStream, mediaRec, recChunks = [], startTs = 0, gateTmr=null;
+let canAnalyze = false;
+let currentUser = null;
+let currentGoal = 'Work English';
+let lastRating = 0;
 
-  function setPromptForGoal(goal){
-    const items = PROMPTS[goal] || PROMPTS["Work English"];
-    document.getElementById('prompt').value = items[0];
-  }
+/* ========= helpers ========= */
+const sleep = (ms)=>new Promise(r=>setTimeout(r,ms));
+const fmt = (n)=>String(n).padStart(2,'0');
+const mapFriendly = (s)=>{
+  const x = String(s||'').toUpperCase();
+  if (x.startsWith('A1')) return 'Beginner';
+  if (x.startsWith('A2')) return 'Elementary';
+  if (x.startsWith('B1')) return 'Intermediate';
+  if (x.startsWith('B2')) return 'Advanced';
+  if (x.startsWith('C1')) return 'Fluent';
+  if (x.startsWith('C2')) return 'Native-like';
+  return s||'–';
+}
+const setLive = (state)=>{ // 'idle' | 'live'
+  liveChip.classList.toggle('live', state==='live');
+  liveChip.classList.toggle('idle', state!=='live');
+  liveText.textContent = state==='live' ? 'Live' : 'Idle';
+}
+const setSendLoading = (v)=>{
+  btnSend.disabled = v;
+  sendSpinner.classList.toggle('hidden', !v);
+}
 
-  let goal = "Work English";
-  document.getElementById('goals').addEventListener('click', (e)=>{
-    const b = e.target.closest('.chip');
-    if(!b) return;
-    document.querySelectorAll('#goals .chip').forEach(c=>c.classList.remove('chip-on'));
-    b.classList.add('chip-on');
-    goal = b.dataset.goal;
-    setPromptForGoal(goal);
-  });
-  setPromptForGoal(goal);
-  document.getElementById('btnRnd').addEventListener('click',()=>{
-    const list = PROMPTS[goal] || [];
-    if(!list.length) return;
-    const next = list[Math.floor(Math.random()*list.length)];
-    document.getElementById('prompt').value = next;
-  });
+/* ========= prompts ========= */
+const PROMPTS = [
+  "Describe a recent project you led and one lesson you learned.",
+  "Describe a challenge you faced at work and how you handled it.",
+  "Tell me about your last weekend in 45 seconds.",
+  "Explain one problem your team faced and how you solved it."
+];
+btnRnd.addEventListener('click', ()=>{
+  promptEl.textContent = PROMPTS[Math.floor(Math.random()*PROMPTS.length)];
+});
 
-  // recorder
-  btnStart.addEventListener('click', startRec);
-  btnStop.addEventListener('click', stopRec);
-  btnSend.addEventListener('click', analyzeNow);
+/* ========= goals ========= */
+goalsEl.addEventListener('click', (e)=>{
+  const b = e.target.closest('button');
+  if (!b) return;
+  goalsEl.querySelectorAll('.pill').forEach(p=>p.classList.remove('active'));
+  b.classList.add('active');
+  currentGoal = b.dataset.goal;
+});
 
-  async function startRec(){
-    try{
-      chunks = [];
-      setAnalyzeEnabled(false);
-      setAnalyzeLoading(false);
-      meter.style.width = '0%';
-      meter.classList.remove('good','warn');
+/* ========= timer/meter ========= */
+function tick(){
+  const sec = Math.floor((Date.now()-startTs)/1000);
+  timerEl.textContent = `${fmt(Math.floor(sec/60))}:${fmt(sec%60)}`;
+  const pct = Math.max(0, Math.min(100, Math.floor((sec/90)*100)));
+  meterEl.style.width = `${pct}%`;
+}
+function resetTimer(){
+  if (gateTmr) cancelAnimationFrame(gateTmr);
+  timerEl.textContent = '00:00';
+  meterEl.style.width = '0%';
+}
 
-      mediaStream = await navigator.mediaDevices.getUserMedia({ audio:true });
-      const options = getSupportedOptions();
-      mediaRec = new MediaRecorder(mediaStream, options);
-      mediaRec.ondataavailable = (ev)=>{ if(ev.data && ev.data.size>0) chunks.push(ev.data); };
-      mediaRec.start();
-
-      btnStart.disabled = true;
-      btnStop.disabled  = false;
-      setLive(true);
-
-      tStart = Date.now();
-      clearInterval(tInt);
-      tInt = setInterval(()=>{
-        const sec = Math.floor((Date.now()-tStart)/1000);
-        timerEl.textContent = fmt(sec);
-        const p = Math.min(100, Math.floor((sec/90)*100));
-        meter.style.width = `${p}%`;
-        meter.classList.remove('good','warn');
-        if(sec>=60 && sec<=90) meter.classList.add('good');
-        else if(sec>=45)        meter.classList.add('warn');
-      }, 200);
-    }catch{
-      alert('Mic permission denied or unavailable.');
+/* ========= recording ========= */
+btnStart.addEventListener('click', async ()=>{
+  try{
+    if (!navigator.mediaDevices?.getUserMedia) {
+      alert('Microphone not available in this browser.');
+      return;
     }
-  }
-  function stopRec(){
-    if(!mediaRec) return;
-    try{ mediaRec.stop(); }catch{}
-    try{ mediaStream.getTracks().forEach(t=>t.stop()); }catch{}
-    mediaStream = null; mediaRec = null;
-    btnStart.disabled = false;
-    btnStop.disabled  = true;
-    clearInterval(tInt);
-    setLive(false);
-    setAnalyzeEnabled(chunks.length>0);
-  }
+    mediaStream = await navigator.mediaDevices.getUserMedia({audio:true});
+    recChunks = [];
+    mediaRec = new MediaRecorder(mediaStream, {mimeType: MediaRecorder.isTypeSupported('audio/webm;codecs=opus') ? 'audio/webm;codecs=opus' : 'audio/webm'});
+    mediaRec.ondataavailable = (ev)=>{ if (ev.data?.size) recChunks.push(ev.data) };
+    mediaRec.onstop = ()=>{ mediaStream.getTracks().forEach(t=>t.stop()) };
+    mediaRec.start(1000);
 
-  async function analyzeNow(){
-    if(!chunks.length) return;
-    setAnalyzeLoading(true);
-    setAnalyzeEnabled(false);
+    btnStart.disabled = true;
+    btnStop.disabled = false;
+    setLive('live');
+    startTs = Date.now();
+    (function rafLoop(){
+      tick();
+      gateTmr = requestAnimationFrame(rafLoop);
+    })();
+  }catch(err){
+    console.error('mic error', err);
+    alert('Microphone permission denied or unavailable.');
+  }
+});
 
-    const blob = new Blob(chunks, { type: chunks[0]?.type || 'audio/webm' });
+btnStop.addEventListener('click', ()=>{
+  if (!mediaRec) return;
+  try{ mediaRec.stop(); }catch{}
+  resetTimer();
+  setLive('idle');
+  btnStart.disabled = false;
+  btnStop.disabled = true;
+
+  canAnalyze = recChunks.length>0;
+  btnSend.disabled = !canAnalyze;
+});
+
+/* ========= analysis ========= */
+btnSend.addEventListener('click', async ()=>{
+  if (!canAnalyze || recChunks.length===0) return;
+  const blob = new Blob(recChunks, {type:'audio/webm'});
+  const durSec = Math.round((Date.now()-startTs)/1000) || 0;
+
+  setSendLoading(true);
+  sendLabel.textContent = 'Analyzing…';
+
+  try{
     const form = new FormData();
-    form.append('files[]', blob, 'speech.webm');
-    form.append('duration_sec', getSecFromTimer());
-    form.append('goal', goal);
-    form.append('prompt_text', promptEl.value || '');
+    form.append('files[]', blob, 'audio.webm');
+    form.append('duration_sec', String(durSec));
+    form.append('goal', currentGoal);
+    form.append('prompt_text', promptEl.textContent || '');
 
-    try{
-      const res = await fetch(API_URL, { method:'POST', body: form });
-      const json = await res.json();
+    const res = await fetch(API_URL, {method:'POST', body:form});
+    const json = await res.json();
 
-      if(json.fallback){
-        levelLabel.textContent = 'Beginner';
-        fillersEl.textContent = '0';
-        pronBox.textContent = '–';
-        gramBox.innerHTML = 'Speak for at least 30–60 seconds.';
-        fixBox.textContent = json.one_thing_to_fix || 'Speak longer in full sentences.';
-        nextBox.textContent = json.next_prompt || 'Describe your last weekend in ~45s.';
-        finalizeSession(false);
-        return;
-      }
+    // fallback (too short)
+    if (json?.fallback) {
+      levelLabel.textContent = levelLabelTop.textContent = 'Beginner';
+      fillersEl.textContent = fillersTop.textContent = String(json.fluency?.fillers ?? 0);
+      fixBox.textContent = json.one_thing_to_fix || 'Speak in full sentences.';
+      nextBox.textContent = json.next_prompt || 'Describe your last weekend in 45 seconds.';
+      pronBox.innerHTML = '';
+      gramBox.innerHTML = '';
+    } else {
+      // level
+      const friendly = json.friendly_level || mapFriendly(json.cefr_estimate);
+      levelLabel.textContent = levelLabelTop.textContent = friendly || '–';
 
-      levelLabel.textContent = json.friendly_level || json.cefr_estimate || '–';
-      fillersEl.textContent  = String(json.fluency?.fillers ?? '0');
+      // fillers
+      const f = json.fluency?.fillers ?? 0;
+      fillersEl.textContent = fillersTop.textContent = String(f);
 
-      gramBox.innerHTML = (json.grammar_issues||[])
-        .map(g=>row(`→ ${esc(g.error)}<br><small>Try: ${esc(g.fix)}</small><br><small>Why: ${esc(g.why)}</small>`))
-        .join('') || '–';
+      // grammar
+      const gi = Array.isArray(json.grammar_issues) ? json.grammar_issues : [];
+      gramBox.innerHTML = gi.map(g=>(
+        `<div class="card tight">
+           <div>→ ${escapeHtml(g.error||'')}</div>
+           <div class="muted">Try: ${escapeHtml(g.fix||'')}</div>
+           <div class="muted">Why: ${escapeHtml(g.why||'')}</div>
+         </div>`
+      )).join('') || '–';
 
-      pronBox.innerHTML = (json.pronunciation||[])
-        .map(p=>row(`<b>${esc(p.sound_or_word)}</b> — ${esc(p.issue)}<br><small>Try: ${esc(p.minimal_pair)}</small>`))
-        .join('') || '–';
+      // pron
+      const pi = Array.isArray(json.pronunciation) ? json.pronunciation : [];
+      pronBox.innerHTML = pi.map(p=>(
+        `<div class="card tight">
+           ${escapeHtml(p.sound_or_word||'')} — ${escapeHtml(p.issue||'')}
+           <div class="muted">Try: ${escapeHtml(p.minimal_pair||'')}</div>
+         </div>`
+      )).join('') || '–';
 
-      fixBox.textContent  = json.one_thing_to_fix || '–';
+      // what to fix / next
+      fixBox.textContent = json.one_thing_to_fix || '–';
       nextBox.textContent = json.next_prompt || '–';
-
-      finalizeSession(true);
-    }catch(err){
-      console.error(err);
-      alert('Analyze failed. Please try again.');
-    }finally{
-      setAnalyzeLoading(false);
-      setAnalyzeEnabled(true);
-    }
-  }
-
-  function finalizeSession(){
-    analyzedCount = Number(localStorage.getItem('ec_sessions') || '0') + 1;
-    localStorage.setItem('ec_sessions', String(analyzedCount));
-    sessionsEl.textContent = String(analyzedCount);
-    incrementStreak();
-
-    if(supabase){
-      supabase.from('sessions').insert({
-        user_id: currentUser?.id || null,
-        duration_sec: getSecFromTimer(),
-        level_label: levelLabel.textContent || null,
-        goal
-      }).catch(()=>{});
     }
 
-    if(showFeedbackGate){
-      showFeedbackGate = false;
+    // session counters + streak
+    bumpSession(durSec, levelLabel.textContent);
+
+    // show feedback after first session
+    const shownFb = localStorage.getItem('ec_feedback_shown');
+    if (!shownFb) {
       openFeedback();
-      return;
     }
-    if(!currentUser && analyzedCount >= 5){
-      openAuth();
-    }
+  }catch(err){
+    console.error('analyze error', err);
+    alert('Analyze failed. Please try again.');
+  }finally{
+    setSendLoading(false);
+    sendLabel.textContent = 'Send & Analyze';
+    canAnalyze = false;
+    btnSend.disabled = true;
+    recChunks = [];
+  }
+});
+
+function bumpSession(durationSec, level_text){
+  // local counters
+  const prev = Number(localStorage.getItem('ec_sessions')||'0') + 1;
+  localStorage.setItem('ec_sessions', String(prev));
+  sessionsEl.textContent = sessionsTop.textContent = String(prev);
+
+  // streak
+  const last = localStorage.getItem('ec_last_day') || '';
+  const today = new Date().toISOString().slice(0,10);
+  const yest = new Date(Date.now()-86400000).toISOString().slice(0,10);
+  let sr = Number(localStorage.getItem('ec_streak')||'0');
+  sr = (last===today) ? sr : (last===yest ? sr+1 : 1);
+  localStorage.setItem('ec_last_day', today);
+  localStorage.setItem('ec_streak', String(sr));
+  streakEl.textContent = streakTop.textContent = String(sr);
+
+  // local board
+  board.textContent = `You — ${prev} session${prev===1?'':'s'} (sign in for public board).`;
+
+  // supabase (optional)
+  if (supabase){
+    const anon = getAnonId();
+    supabase.from('sessions').insert({
+      user_id: currentUser?.id ?? null,
+      duration_sec: durationSec,
+      level_label: level_text || null,
+      goal: currentGoal || null,
+      anon_id: anon
+    }).then(()=>{}).catch(()=>{});
+  }
+}
+
+/* ========= feedback ========= */
+function openFeedback(){ feedbackModal.showModal(); }
+function closeFeedback(){
+  feedbackModal.close(); localStorage.setItem('ec_feedback_shown', '1');
+}
+fbClose.addEventListener('click', closeFeedback);
+fbSkip.addEventListener('click', closeFeedback);
+
+starBar.addEventListener('click', (e)=>{
+  const b = e.target.closest('button'); if(!b) return;
+  lastRating = Number(b.dataset.v||'0');
+  starBar.querySelectorAll('button').forEach(x=>x.classList.toggle('active', Number(x.dataset.v)<=lastRating));
+});
+
+fbSend.addEventListener('click', async ()=>{
+  const name = fbName.value.trim();
+  const email = fbEmail.value.trim();
+  const text = fbText.value.trim();
+
+  if (!lastRating && !text){
+    alert('Please add a quick rating or a short note, or press Skip.');
+    return;
   }
 
-  // feedback
-  let rating = 0;
-  starsEl.addEventListener('click', (e)=>{
-    const b = e.target.closest('button');
-    if(!b) return;
-    rating = Number(b.dataset.val);
-    [...starsEl.children].forEach(btn=>{
-      btn.classList.toggle('active', Number(btn.dataset.val) <= rating);
+  if (!supabase){ closeFeedback(); return; }
+  try{
+    await supabase.from('feedback').insert({
+      user_id: currentUser?.id ?? null,
+      name, email, rating: lastRating||null, text
     });
-  });
-  feedbackLink.addEventListener('click', openFeedback);
-  fbClose.addEventListener('click', ()=>fbDlg.close());
-  fbSkip.addEventListener('click', ()=>fbDlg.close());
-  fbSend.addEventListener('click', async ()=>{
-    if(rating===0 && !fbText.value.trim()){
-      alert('Please add a short note or choose a star rating — or press Skip.');
-      return;
-    }
-    try{
-      fbSend.classList.add('loading'); fbSend.disabled = true;
-      if(supabase){
-        await supabase.from('feedback').insert({
-          user_id: currentUser?.id || null,
-          name: fbName.value || null,
-          email: fbEmail.value || null,
-          rating,
-          text: fbText.value || null
-        });
-      }
-      fbDlg.close();
-    }catch{ fbDlg.close(); }
-    finally{ fbSend.classList.remove('loading'); fbSend.disabled = false; }
-  });
-  function openFeedback(){ fbDlg.showModal(); }
+  }catch(e){}
+  closeFeedback();
+});
 
-  // auth
-  signInLink.addEventListener('click', openAuth);
-  authClose.addEventListener('click', ()=>authDlg.close());
-  authGoogle.addEventListener('click', ()=>oauth('google'));
-  authFacebook.addEventListener('click', ()=>oauth('facebook'));
-  authMagic.addEventListener('click', async ()=>{
-    const email = authEmail.value.trim();
-    if(!email) return alert('Enter an email.');
-    try{
-      authMagic.classList.add('loading'); authMagic.disabled=true;
-      await supabase.auth.signInWithOtp({
-        email,
-        options:{ emailRedirectTo: location.origin }
-      });
-      alert('Check your email for the sign-in link.');
-      authDlg.close();
-    }catch{ alert('Email sign-in failed.'); }
-    finally{ authMagic.classList.remove('loading'); authMagic.disabled=false; }
-  });
-  function openAuth(){
-    if(!supabase){ alert('Sign-in is not configured.'); return; }
-    authDlg.showModal();
-  }
-  async function oauth(provider){
-    try{
-      await supabase.auth.signInWithOAuth({ provider, options:{ redirectTo: location.origin } });
-    }catch{ alert('Sign-in failed.'); }
-  }
+/* ========= auth ========= */
+btnAuth.addEventListener('click', ()=> authModal.showModal());
+authClose.addEventListener('click', ()=> authModal.close());
 
-  if(supabase){
-    supabase.auth.onAuthStateChange((_e, session)=>{
-      currentUser = session?.user || null;
-      userTag.textContent = currentUser ? (currentUser.email || 'Account')+' ·' : 'Guest ·';
+if (supabase){
+  supabase.auth.onAuthStateChange((_event, session)=>{
+    currentUser = session?.user || null;
+    renderAuth();
+  });
+}
+
+authGoogle?.addEventListener('click', ()=> signInOAuth('google'));
+authFacebook?.addEventListener('click', ()=> signInOAuth('facebook'));
+authEmailLink?.addEventListener('click', async ()=>{
+  const email = authEmail.value.trim();
+  if (!email){ alert('Enter an email.'); return; }
+  await supabase.auth.signInWithOtp({
+    email, options:{ emailRedirectTo: window.location.origin }
+  });
+  alert('Check your email for a sign-in link.');
+});
+
+btnSignOut.addEventListener('click', async ()=>{
+  if (!supabase) return;
+  await supabase.auth.signOut();
+});
+
+async function signInOAuth(provider){
+  if (!supabase){ alert('Auth not available.'); return; }
+  try{
+    await supabase.auth.signInWithOAuth({
+      provider,
+      options:{ redirectTo: window.location.origin }
     });
-    supabase.auth.getSession().then(({ data })=>{
-      currentUser = data?.session?.user || null;
-      userTag.textContent = currentUser ? (currentUser.email || 'Account')+' ·' : 'Guest ·';
-    });
+  }catch(e){
+    alert('Sign in failed. Please try again.');
   }
+}
 
-  // helpers
-  function byId(id){ return document.getElementById(id); }
-  function fmt(s){ const m=String(Math.floor(s/60)).padStart(2,'0'); const r=String(Math.floor(s%60)).padStart(2,'0'); return `${m}:${r}`; }
-  function getSecFromTimer(){ const [m,s]=(timerEl.textContent||'0:0').split(':').map(Number); return (m*60+s)||0; }
-  function setLive(on){ liveTxt.textContent = on ? 'Live' : 'Idle'; liveDot.classList.toggle('on', on); }
-  function setAnalyzeEnabled(on){ btnSend.disabled = !on; }
-  function setAnalyzeLoading(on){ btnSend.classList.toggle('loading', !!on); }
-  function row(html){ return `<div class="row">${html}</div>`; }
-  function esc(s){ return (s ?? '').toString().replace(/[&<>"]/g, m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' }[m])); }
-  function getSupportedOptions(){
-    const t = MediaRecorder.isTypeSupported('audio/webm;codecs=opus') ? 'audio/webm;codecs=opus'
-            : MediaRecorder.isTypeSupported('audio/webm') ? 'audio/webm' : '';
-    return t ? { mimeType:t } : {};
+function renderAuth(){
+  if (currentUser){
+    btnAuth.classList.add('hidden');
+    btnSignOut.classList.remove('hidden');
+    userBadge.classList.remove('hidden');
+    userBadge.textContent = currentUser.email || 'Signed in';
+  }else{
+    btnAuth.classList.remove('hidden');
+    btnSignOut.classList.add('hidden');
+    userBadge.classList.add('hidden');
+    userBadge.textContent = '';
   }
-  function incrementStreak(){
-    const today = new Date().toISOString().slice(0,10);
-    const last = localStorage.getItem('ec_last');
-    let s = Number(localStorage.getItem('ec_streak')||'0');
-    if(!last) s = 1;
-    else { const d = Math.floor((new Date(today)-new Date(last))/86400000);
-      if(d===1) s += 1; else if(d>1) s = 1;
-    }
-    localStorage.setItem('ec_last', today);
-    localStorage.setItem('ec_streak', String(s));
-    streakEl.textContent = String(s);
-  }
+}
 
-  sessionsEl.textContent = String(analyzedCount);
-  streakEl.textContent   = String(Number(localStorage.getItem('ec_streak')||'0'));
+/* ========= feedback button in header ========= */
+btnFeedback.addEventListener('click', openFeedback);
+
+/* ========= init counters on load ========= */
+(function initCounters(){
+  sessionsEl.textContent = sessionsTop.textContent = String(Number(localStorage.getItem('ec_sessions')||'0'));
+  streakEl.textContent = streakTop.textContent = String(Number(localStorage.getItem('ec_streak')||'0'));
+  const first = localStorage.getItem('ec_first') || '';
+  if (!first) localStorage.setItem('ec_first', new Date().toISOString());
 })();
+
+/* ========= utilities ========= */
+function escapeHtml(s){ return String(s||'').replace(/[&<>"']/g, c=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c])) }
+function getAnonId(){
+  let id = localStorage.getItem('ec_anon');
+  if (!id){ id = crypto.randomUUID(); localStorage.setItem('ec_anon', id); }
+  return id;
+}
+
+/* ===== initial UI ===== */
+renderAuth();
+setLive('idle');
+setSendLoading(false); // ensure no spinner at start
+btnSend.disabled = true;
