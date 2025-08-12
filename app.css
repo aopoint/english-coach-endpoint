@@ -94,3 +94,7 @@ textarea, input[type="text"], input[type="email"]{width:100%;background:var(--pa
   .col-left{order:1}
   .grid2,.auth-grid,.magic{grid-template-columns:1fr}
 }
+
+/* --- Feedback modal: default hidden --- */
+#fbBack, #fbBox { display: none; }
+#fbBack.open, #fbBox.open { display: block; }
