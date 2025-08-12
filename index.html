@@ -150,7 +150,7 @@
   </div>
 
   <!-- FEEDBACK MODAL -->
-  <div id="fbModal" class="modal" hidden>
+  <div id="fbModal" class="modal">
     <div class="modal__inner">
       <button class="modal__close" id="fbClose">×</button>
       <h3 class="white">Quick feedback (optional)</h3>
@@ -173,6 +173,19 @@
     </div>
   </div>
 
+  <!-- Backdrop (required for dim background) -->
+  <div id="fbBack" class="modal-backdrop"></div>
+
+  <!-- ORDER MATTERS -->
+  <script src="./config.js"></script>
+
+  <!-- Supabase client (needed if you use Supabase auth/DB on the client) -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+
+  <!-- Feedback controller (drop-in from me) -->
+  <script src="./feedback.js"></script>
+
+  <!-- Your app logic LAST -->
   <script src="./app.js"></script>
 </body>
 </html>
